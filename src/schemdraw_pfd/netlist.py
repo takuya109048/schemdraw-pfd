@@ -27,6 +27,14 @@ def jsonable(v: Any) -> Any:
     return v
 
 
+def _changed(d: dict[str, Any], *fields: tuple[str, Any, Any]) -> dict[str, Any]:
+    """Add each ``(key, value, default)`` to ``d`` unless it is the default."""
+    for key, value, default in fields:
+        if value != default:
+            d[key] = value
+    return d
+
+
 def check_id(id: str) -> None:
     if not id or "." in id:
         raise ValueError(f"id {id!r} must be non-empty and contain no '.'")
@@ -50,21 +58,15 @@ class Equipment:
         return geo
 
     def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = {"id": self.id, "type": self.type, "level": self.level}
-        if self.elevation is not None:
-            d["elevation"] = self.elevation
-        if self.span != 1:
-            d["span"] = self.span
-        if self.desc:
-            d["desc"] = self.desc
-        if self.ports:
-            d["ports"] = {
-                k: [p.side, p.offset]
-                for k, p in ((k, parse_port(v)) for k, v in self.ports.items())
-            }
-        if self.params:
-            d["params"] = jsonable(self.params)
-        return d
+        ports = {k: parse_port(v) for k, v in self.ports.items()}
+        return _changed(
+            {"id": self.id, "type": self.type, "level": self.level},
+            ("elevation", self.elevation, None),
+            ("span", self.span, 1),
+            ("desc", self.desc, ""),
+            ("ports", {k: [p.side, p.offset] for k, p in ports.items()}, {}),
+            ("params", jsonable(self.params), {}),
+        )
 
 
 @dataclass
@@ -116,8 +118,8 @@ class InlineItem:
         return item
 
     def to_dict(self) -> dict[str, Any] | str:
-        d: dict[str, Any] = {"type": self.type}
-        for key, value, default in (
+        d = _changed(
+            {"type": self.type},
             ("id", self.id, None),
             ("params", jsonable(self.params), {}),
             ("level", self.level, None),
@@ -125,9 +127,7 @@ class InlineItem:
             ("desc", self.desc, ""),
             ("in", self.port_in, "in"),
             ("out", self.port_out, "out"),
-        ):
-            if value != default:
-                d[key] = value
+        )
         return self.type if len(d) == 1 else d
 
 
@@ -145,13 +145,10 @@ class Connection:
         return split_ref(self.src), split_ref(self.dst)
 
     def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = {"from": self.src, "to": self.dst}
-        if self.kind != "pipe":
-            d["type"] = self.kind
-        if self.inline:
-            d["inline"] = [i.to_dict() for i in self.inline]
-        if self.anchor != "auto":
-            d["anchor"] = self.anchor
-        if self.recycle:
-            d["recycle"] = True
-        return d
+        return _changed(
+            {"from": self.src, "to": self.dst},
+            ("type", self.kind, "pipe"),
+            ("inline", [i.to_dict() for i in self.inline], []),
+            ("anchor", self.anchor, "auto"),
+            ("recycle", self.recycle, False),
+        )

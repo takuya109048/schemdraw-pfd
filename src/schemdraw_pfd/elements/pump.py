@@ -20,8 +20,8 @@ class PumpSpec(ElementSpec):
         shapes = [
             Ellipse(1, 2, 1, 1),
             Polyline(((2, 2), (2, 3))),  # tangential discharge
-            Polyline(((0, 2), (1, 2)), False, False),  # suction to the eye
-            Polyline(((0.7, 2.3), (1, 2), (0.7, 1.7)), False, False),
+            Polyline(((0, 2), (1.2, 2)), False, False),  # suction past the eye
+            Polyline(((0.8, 2.2), (1.2, 2), (0.8, 1.8)), False, False),  # arrowhead
             Polyline(((0.5, 1.13), (0.1, 0.3), (1.9, 0.3), (1.5, 1.13)), False, False),
         ]
         ports = {"in": Port("W", 2), "out": Port("N", 2)}

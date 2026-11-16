@@ -1,0 +1,22 @@
+{
+  "layout": "flow",
+  "elements": [
+    {"id": "D-1", "type": "vertical_drum", "level": 1, "desc": "Feed drum"},
+    {"id": "P-1", "type": "pump", "level": 0, "desc": "Feed pump"},
+    {"id": "H-1", "type": "header", "level": 1, "params": {"branches": 2}},
+    {"id": "E-1", "type": "heat_exchanger", "level": 1,
+     "params": {"orientation": "vertical", "rotation": 180},
+     "desc": "Vertical exchanger"},
+    {"id": "P-2", "type": "pump", "level": 0, "desc": "Transfer pump"},
+    {"id": "D-2", "type": "vertical_drum", "level": 1, "desc": "Product drum"}
+  ],
+  "connections": [
+    {"from": "D-1.bottom", "to": "P-1.in"},
+    {"from": "P-1.out", "to": "H-1.main_w"},
+    {"from": "H-1.b0", "to": "D-1.n3", "recycle": true},
+    {"from": "H-1.b1", "to": "E-1.tube_in"},
+    {"from": "E-1.tube_out", "to": "P-2.in"},
+    {"from": "P-2.out", "to": "D-2.w_mid"},
+    {"from": "D-2.bottom", "to": "D-1.n1", "recycle": true}
+  ]
+}

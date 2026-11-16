@@ -3,7 +3,7 @@
 import pytest
 
 from schemdraw_pfd import Flowsheet, RoutingError, model
-from schemdraw_pfd.router import DIRS, _estimate, _min_bends
+from schemdraw_pfd.router import DIRS, _estimate, _min_bends, needless_uturn
 
 # found by fuzzing: routed in the given order, an early line takes the only
 # corridor of a later one; routing the failing line first solves it
@@ -60,3 +60,23 @@ def test_estimate_is_consistent():
                     dx, dy = DIRS[nd]
                     step = 1 + (TURN_COST if nd != d else 0)
                     assert h <= step + _estimate((x + dx, y + dy), nd, t, td)
+
+
+# -- which U-turns are worth a warning ---------------------------------------
+@pytest.mark.parametrize(
+    ("points", "boxes", "needless"),
+    [
+        # down, under a vessel, up: goes around it
+        ([(0, 5), (0, 0), (10, 0), (10, 5)], [(3, 1, 7, 6)], False),
+        # the same U with nothing in it
+        ([(0, 5), (0, 0), (10, 0), (10, 5)], [(20, 0, 25, 5)], True),
+        # a hop over a small item whose top edge is on the line's own row
+        ([(0, 8), (3, 8), (3, 9), (7, 9), (7, 8), (9, 8)], [(4, 6, 6, 8)], False),
+        # a dip in front of a nozzle: the vessel touches but is not inside
+        ([(8, 2), (2, 2), (2, 1), (1, 1), (1, 3)], [(-3, 3, 7, 7)], True),
+        # an L never turns back
+        ([(0, 0), (5, 0), (5, 5)], [], False),
+    ],
+)
+def test_needless_uturn(points, boxes, needless):
+    assert needless_uturn(points, boxes) is needless

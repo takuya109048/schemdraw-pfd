@@ -7,6 +7,7 @@ the element's bounding box).
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 
 Point = tuple[float, float]
@@ -19,7 +20,6 @@ NORMALS: dict[str, tuple[int, int]] = {
     "E": (1, 0),
     "W": (-1, 0),
 }
-OPPOSITE = {"N": "S", "S": "N", "E": "W", "W": "E"}
 
 
 @dataclass(frozen=True)
@@ -148,3 +148,25 @@ class Port:
     side: str
     offset: int
     meta: dict = field(default_factory=dict)
+
+
+def find_crossings(
+    paths: Sequence[Sequence[Point]],
+) -> list[tuple[int, int, int, int, Point]]:
+    """All line crossings as ``(h_route, h_seg, v_route, v_seg, point)``.
+
+    ``h_*`` identify the horizontal segment, ``v_*`` the vertical one.
+    """
+    horiz, vert = [], []
+    for ri, pts in enumerate(paths):
+        for si, (p, q) in enumerate(zip(pts, pts[1:])):
+            if p[1] == q[1]:
+                horiz.append((ri, si, p[1], min(p[0], q[0]), max(p[0], q[0])))
+            else:
+                vert.append((ri, si, p[0], min(p[1], q[1]), max(p[1], q[1])))
+    out = []
+    for hr, hs, y, x0, x1 in horiz:
+        for vr, vs, x, y0, y1 in vert:
+            if x0 < x < x1 and y0 < y < y1:
+                out.append((hr, hs, vr, vs, (x, y)))
+    return out

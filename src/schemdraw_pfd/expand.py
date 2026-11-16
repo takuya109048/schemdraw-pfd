@@ -160,6 +160,9 @@ def _expand_line(
 
 
 # -- shared ports -> main pipe (header) with taps ----------------------------------
+Use = tuple[int, int]  # (connection index, end: 0 = src, 1 = dst)
+
+
 def _auto_tees(
     eqs: list[Equipment],
     conns: list[Connection],
@@ -174,10 +177,11 @@ def _auto_tees(
     arms: from the port, on along the main pipe, out to the line).  The line
     that best continues straight on ends the main pipe; the others tap in
     ordered by how far along the flow their other end lies, the nearest
-    closest to the port, so lines do not cross.  There is no limit on the
-    number of lines.
+    closest to the port, so lines do not cross.  A top / bottom port whose
+    lines go both ways rises (drops) into the middle of the main pipe, which
+    then runs both ways.  There is no limit on the number of lines.
     """
-    uses: dict[tuple[str, str], list[tuple[int, int]]] = {}
+    uses: dict[tuple[str, str], list[Use]] = {}
     for ci, c in enumerate(conns):
         for end, ref in enumerate(c.ends):
             uses.setdefault(ref, []).append((ci, end))
@@ -199,85 +203,114 @@ def _auto_tees(
             raise ValueError(f"{where} is both the start and the end of lines")
         order = {e.id: i for i, e in enumerate(eqs)}
         base_id = f"{GENERATED_PREFIX}T_{owner_id}_{pname}"
-        tee_ids = [base_id] + [f"{base_id}_{k}" for k in range(2, len(us))]
-        for t in tee_ids:
+        ids = [base_id] + [f"{base_id}_{k}" for k in range(2, len(us))]
+        for t in ids:
             if t in by_id:
                 raise ValueError(f"duplicate id {t!r}")
+        tee_ids = iter(ids)
+
+        def other(u: Use) -> Equipment | None:
+            return by_id.get(conns[u[0]].ends[1 - u[1]][0])
+
+        def rel(u: Use) -> int:
+            """Where the line's other end lies in the order (+: right)."""
+            o = other(u)
+            return 0 if o is None else order[o.id] - order[owner_id]
 
         side = ports[pname].side
         level = owner.level
         settle = False
-        if side in "EW":
-            after = side == "E"
-        else:
-            others = [by_id.get(conns[ci].ends[1 - end][0]) for ci, end in us]
-            right = sum(o is not None and order[o.id] > order[owner_id] for o in others)
-            after = 2 * right >= len(others)
+        if side in "NS":
             if side == "S" and owner.level > 0:
                 level -= 1  # hang the main pipe in the band below
             elif side == "N" and owner.level < top:
                 level += 1  # or stand it in the band above
             else:
                 settle = True
-        trunk = "w" if after else "e"
-        straight = "e" if after else "w"
         # on a tie, a main pipe lifted above an N port turns down, below an S up
-        across = "sn" if side == "N" else "ns"
+        across = "s" if side == "N" else "n"
 
-        def along(u: tuple[int, int]) -> int:
-            """How far the line's other end lies along the main pipe."""
-            o = by_id.get(conns[u[0]].ends[1 - u[1]][0])
-            if o is None:
-                return 0
-            return (order[o.id] - order[owner_id]) * (1 if after else -1)
-
-        def dy(u: tuple[int, int]) -> int:
-            o = by_id.get(conns[u[0]].ends[1 - u[1]][0])
+        def dy(u: Use) -> int:
+            o = other(u)
             return 0 if o is None else _sign(o.level - level)
 
-        # the line that carries on straight ends the main pipe
-        last = max(
-            us, key=lambda u: (along(u) > 0 and dy(u) == 0, along(u) > 0, along(u))
-        )
-        taps = sorted((u for u in us if u is not last), key=along)
+        kind = conns[us[0][0]].kind
+        split = roles == {0}
+        refs: dict[Use, str] = {}
+        made = len(trunks.get(us[0][0], []))  # main-pipe pieces made before
 
-        at = order[owner_id] + (1 if after else 0)
-        chain = [
-            Equipment(
-                t,
-                "tee",
-                level,
-                {
-                    "arms": trunk
-                    + straight
-                    + ({1: "n", -1: "s"}.get(dy(u)) or across[0])
-                },
+        def join(a: str, b: str) -> None:
+            """Pipe from ``a`` (nearer the shared port) to ``b``."""
+            c = Connection(a, b, kind) if split else Connection(b, a, kind)
+            trunks.setdefault(us[0][0], []).append(c)
+
+        def run(start: str, way: str, lines: list[Use]) -> list[Equipment]:
+            """Main pipe from ``start`` running ``way`` ("e"/"w"); the lines
+            cut into it in order.  Returns its taps, nearest first."""
+            sign = 1 if way == "e" else -1
+            back = "w" if way == "e" else "e"
+            last = max(
+                lines,
+                key=lambda u: (
+                    sign * rel(u) > 0 and dy(u) == 0,
+                    sign * rel(u) > 0,
+                    sign * rel(u),
+                ),
             )
-            for t, u in zip(tee_ids, taps)
-        ]
-        eqs[at:at] = chain if after else chain[::-1]
-        headers.append([t.id for t in chain])
-        for tee in chain:
+            taps = sorted(
+                (u for u in lines if u is not last), key=lambda u: sign * rel(u)
+            )
+            chain: list[Equipment] = []
+            prev = start
+            for u in taps:
+                arm = {1: "n", -1: "s"}.get(dy(u)) or across
+                tee = Equipment(next(tee_ids), "tee", level, {"arms": back + way + arm})
+                join(prev, f"{tee.id}.{back}")
+                refs[u] = f"{tee.id}.{arm}"
+                prev = f"{tee.id}.{way}"
+                chain.append(tee)
+            refs[last] = prev
+            return chain
+
+        port_ref = f"{owner_id}.{pname}"
+        west = [u for u in us if rel(u) < 0]
+        east = [u for u in us if rel(u) >= 0]
+        at = order[owner_id] + 1
+        if side in "NS" and west and east:
+            # the riser enters the middle of the main pipe, which runs both ways
+            riser = "s" if side == "N" else "n"
+            mid = Equipment(next(tee_ids), "tee", level, {"arms": riser + "we"})
+            join(port_ref, f"{mid.id}.{riser}")
+            w_chain = run(f"{mid.id}.w", "w", west)
+            e_chain = run(f"{mid.id}.e", "e", east)
+            placed = w_chain[::-1] + [mid] + e_chain
+        else:
+            if side in "EW":
+                way = side.lower()
+            else:
+                way = "e" if 2 * len(east) >= len(us) else "w"
+            chain = run(port_ref, way, us)
+            placed = chain if way == "e" else chain[::-1]
+            if way == "w":
+                at -= 1  # in front of the port's element
+        eqs[at:at] = placed
+        headers.append([t.id for t in placed])
+        for tee in placed:
             by_id[tee.id] = tee
             if settle:
                 pending.append(PendingTee(tee.id, owner_id, pname, side))
-
-        first = us[0][0]
-        kind = conns[first].kind
-        split = roles == {0}
-        prev = f"{owner_id}.{pname}"
-        for tee in chain:
-            here = f"{tee.id}.{trunk}"
-            trunks.setdefault(first, []).append(
-                Connection(prev, here, kind) if split else Connection(here, prev, kind)
-            )
-            prev = f"{tee.id}.{straight}"
-        refs = {u: f"{t.id}.{t.params['arms'][2]}" for t, u in zip(chain, taps)}
-        refs[last] = prev
+        # only recycles merge into a top / bottom port: the lines flow on into
+        # the main pipe, which is what runs back (a side port keeps its main
+        # pipe right in front of it, so there the lines keep the flag)
+        back = side in "NS" and not split and all(conns[ci].recycle for ci, _ in us)
         for ci, end in us:
             c = conns[ci]
             ref = refs[(ci, end)]
-            conns[ci] = replace(c, src=ref) if end == 0 else replace(c, dst=ref)
+            c = replace(c, src=ref) if end == 0 else replace(c, dst=ref)
+            conns[ci] = replace(c, recycle=False) if back else c
+        if back:
+            pieces = trunks[us[0][0]]
+            pieces[made:] = [replace(c, recycle=True) for c in pieces[made:]]
 
     out: list[Connection] = []
     for ci, c in enumerate(conns):

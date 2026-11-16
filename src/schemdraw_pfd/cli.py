@@ -22,7 +22,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("-o", "--output", default="pfd.svg", help="svg/png/pdf output path")
     ap.add_argument("--no-labels", action="store_true")
     ap.add_argument("--no-frame", action="store_true", help="omit the sheet border")
-    ap.add_argument("--fontsize", type=float, help="tag/spec font size (points)")
+    ap.add_argument(
+        "--fontsize", type=float, help="tag/spec font size (points, default 20)"
+    )
     ap.add_argument(
         "--layout",
         choices=("order", "flow"),

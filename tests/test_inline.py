@@ -1,5 +1,8 @@
 """Inline items on lines and automatic tees on shared ports."""
 
+import json
+from pathlib import Path
+
 import pytest
 
 from schemdraw_pfd import Flowsheet
@@ -210,3 +213,87 @@ def test_merging_lines_cut_into_a_main_pipe_one_after_another():
     assert not d.warnings
     ys = {p.y for p in d.placed if p.id.startswith("_T_")}
     assert len(ys) == 1  # one straight main pipe
+
+
+def test_riser_enters_the_middle_of_a_main_pipe_running_both_ways():
+    fs = Flowsheet(layout="flow")
+    fs.add("vertical_drum", "D-1", level=1)
+    fs.add("pump", "P-1")
+    fs.add("heat_exchanger", "E-1", level=1, orientation="vertical", rotation=180)
+    fs.connect("D-1.bottom", "P-1.in")
+    fs.connect("P-1.out", "D-1.top", recycle=True)
+    fs.connect("P-1.out", "E-1.tube_in")
+    net = fs.expand()
+    taps = [e for e in net.equipment if e.type == "tee"]
+    assert [t.params["arms"] for t in taps] == ["swe"]  # up into the middle
+    pairs = [(c.src, c.dst) for c in net.connections]
+    assert ("_T_P-1_out.w", "D-1.top") in pairs  # back to the feed drum
+    assert ("_T_P-1_out.e", "E-1.tube_in") in pairs  # on to the exchanger
+    d = fs.build()
+    assert not d.warnings
+    assert max(r.bends for _, r in d.routes) == 1  # every line an I or an L
+
+
+def test_header_branches_arch_over_into_top_nozzles():
+    # branches rise from the header and drop into the tops: an arch, no warning
+    d = Flowsheet.from_json("examples/header_loop.json").build()
+    assert not [w for w in d.warnings if w.startswith("H-1.")]
+    arches = [r for c, r in d.routes if c.src.startswith("H-1.b")]
+    assert [r.bends for r in arches] == [2, 2]
+    for r in arches:
+        (_, y0), (_, y1), (_, y2) = r.points[0], r.points[1], r.points[-1]
+        assert y1 > y0 and y1 > y2  # up, over, down
+
+
+def _loop(d1_branch: str, d1_return: str) -> Flowsheet:
+    """The header_loop example, D-2 raised a level, with the two lines into
+    D-1 on given ports."""
+    data = json.loads(Path("examples/header_loop.json").read_text("utf-8"))
+    for e in data["elements"]:
+        if e["id"] == "D-2":
+            e["level"] = 2  # a gravity return: the drum stands higher
+    for c in data["connections"]:
+        if c["from"] == "H-1.b0":
+            c["to"] = f"D-1.{d1_branch}"
+        if c["from"] == "D-2.bottom":
+            c["to"] = f"D-1.{d1_return}"
+    return Flowsheet.from_dict(data)
+
+
+def test_merging_recycles_run_back_on_the_main_pipe():
+    # a branch and a gravity return both end on D-1's top: the main pipe into
+    # the top runs back, the lines flow forwards into it
+    fs = _loop("top", "top")
+    net = fs.expand()
+    back = {(c.src, c.dst) for c in net.connections if c.recycle}
+    assert back == {("_T_D-1_top.w", "D-1.top")}
+    d = fs.build()
+    assert not d.warnings
+    by = {p.id: p for p in d.placed}
+    tap = next(r for c, r in d.routes if c.src == "H-1.b0")
+    assert tap.bends == 0  # the branch rises straight into the main pipe
+    assert d.crossings == 1  # only P-2's riser passes behind the main pipe
+    assert by["D-2"].y > by["E-1"].bbox[3]  # the return drum stands higher
+
+
+def test_lines_reach_a_drum_head_through_nozzles_of_their_own():
+    fs = _loop("n3", "n1")
+    net = fs.expand()
+    assert not [e for e in net.equipment if e.type == "tee"]  # nothing merges
+    d = fs.build()
+    assert not d.warnings
+    ends = {c.dst: r.points[-1] for c, r in d.routes if c.dst.startswith("D-1.n")}
+    (x1, y1), (x3, y3) = ends["D-1.n1"], ends["D-1.n3"]
+    assert x1 < x3 and y1 == y3  # two nozzles side by side on the top head
+    assert d.crossings == 1  # nested arches: only P-2's riser crosses a line
+
+
+def test_tank_bottom_to_tank_top_on_one_level_keeps_the_tank_on_its_floor():
+    # D-2 beside D-1: its bottom feeds D-1's top, so the line has to go down
+    # and back up around the equipment (a U, but no warning) -- and D-2 is not
+    # lifted for it
+    d = Flowsheet.from_json("examples/header_loop.json").build()
+    by = {p.id: p for p in d.placed}
+    assert by["D-2"].y == by["D-1"].y
+    assert d.uturns == 1 and not d.warnings
+    assert d.crossings == 0

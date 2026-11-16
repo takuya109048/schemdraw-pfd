@@ -11,8 +11,11 @@ class VerticalDrumSpec(ElementSpec):
 
     params: ``width`` (diameter, even, default 6), ``height`` (default 10),
     ``beds`` (number of packed beds drawn as crossed boxes, default 0).
-    Ports: ``top``, ``bottom`` (head apexes) and ``w<i>`` / ``e<i>`` on every grid
-    row of the cylindrical shell (``w_low``, ``w_mid``, ``w_high``, ... aliases).
+    Ports: ``top``, ``bottom`` (head apexes), ``n<i>`` / ``s<i>`` on every inner
+    grid column of the top / bottom head (left to right; the centre one is
+    ``top`` / ``bottom``), so several lines can reach a head through nozzles of
+    their own, and ``w<i>`` / ``e<i>`` on every grid row of the cylindrical
+    shell (``w_low``, ``w_mid``, ``w_high``, ... aliases).
     """
 
     name = "vertical_drum"
@@ -48,6 +51,10 @@ class VerticalDrumSpec(ElementSpec):
                     Polyline(((0, y1), (w, y0)), False, False),
                 ]
         ports = {"top": Port("N", r), "bottom": Port("S", r)}
+        # nozzles on the heads, one per inner grid column (top = the centre one)
+        for i, x in enumerate(range(1, w)):
+            ports[f"n{i}"] = Port("N", x)
+            ports[f"s{i}"] = Port("S", x)
         rows = list(range(lo, hi + 1))
         for i, y in enumerate(rows):
             ports[f"w{i}"] = Port("W", y)

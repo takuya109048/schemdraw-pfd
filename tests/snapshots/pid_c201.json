@@ -1063,5 +1063,7059 @@
    ]
   ]
  ],
- "warnings": []
+ "warnings": [],
+ "drawing": [
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       6,
+       45
+      ],
+      [
+       1,
+       45
+      ],
+      [
+       0,
+       46
+      ],
+      [
+       1,
+       47
+      ],
+      [
+       6,
+       47
+      ],
+      [
+       6,
+       45
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 16.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "PID-010\nto T-901",
+     "visible": true,
+     "xy": [
+      3.3,
+      46
+     ],
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       6,
+       25
+      ],
+      [
+       1,
+       25
+      ],
+      [
+       0,
+       26
+      ],
+      [
+       1,
+       27
+      ],
+      [
+       6,
+       27
+      ],
+      [
+       6,
+       25
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 16.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "PID-009\nto C-801",
+     "visible": true,
+     "xy": [
+      3.3,
+      26
+     ],
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       0,
+       22
+      ],
+      [
+       5,
+       22
+      ],
+      [
+       6,
+       23
+      ],
+      [
+       5,
+       24
+      ],
+      [
+       0,
+       24
+      ],
+      [
+       0,
+       22
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 16.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "PID-002\nfrom P-104",
+     "visible": true,
+     "xy": [
+      2.7,
+      23
+     ],
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       0,
+       19
+      ],
+      [
+       5,
+       19
+      ],
+      [
+       6,
+       20
+      ],
+      [
+       5,
+       21
+      ],
+      [
+       0,
+       21
+      ],
+      [
+       0,
+       19
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 16.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "PID-001\nfrom P-103",
+     "visible": true,
+     "xy": [
+      2.7,
+      20
+     ],
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       8,
+       13
+      ],
+      [
+       14,
+       13
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       8,
+       17
+      ],
+      [
+       14,
+       17
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      8,
+      15
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 4,
+     "ls": null,
+     "lw": null,
+     "theta1": 90,
+     "theta2": 270,
+     "visible": true,
+     "width": 2,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      14,
+      15
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 4,
+     "ls": null,
+     "lw": null,
+     "theta1": -90,
+     "theta2": 90,
+     "visible": true,
+     "width": 2,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 20,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "V-201",
+     "visible": true,
+     "xy": [
+      11.0,
+      15.0
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": 0.8,
+     "path": [
+      [
+       10.138889,
+       14.655556
+      ],
+      [
+       11.861111,
+       14.655556
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       16,
+       1
+      ],
+      [
+       15,
+       1
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       16,
+       1
+      ],
+      [
+       16,
+       2
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       16,
+       1
+      ],
+      [
+       17,
+       1
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      19,
+      4
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 2,
+     "ls": null,
+     "lw": null,
+     "theta1": 0.0,
+     "theta2": 360.0,
+     "visible": true,
+     "width": 2,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       20,
+       4
+      ],
+      [
+       20,
+       5
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       18,
+       4
+      ],
+      [
+       19.2,
+       4
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       18.8,
+       4.2
+      ],
+      [
+       19.2,
+       4
+      ],
+      [
+       18.8,
+       3.8
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       18.5,
+       3.13
+      ],
+      [
+       18.1,
+       2.3
+      ],
+      [
+       19.9,
+       2.3
+      ],
+      [
+       19.5,
+       3.13
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 20,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "P-201A",
+     "visible": true,
+     "xy": [
+      18.5,
+      5.777778
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": 0.8,
+     "path": [
+      [
+       17.466667,
+       5.433333
+      ],
+      [
+       19.533333,
+       5.433333
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      24,
+      4
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 2,
+     "ls": null,
+     "lw": null,
+     "theta1": 0.0,
+     "theta2": 360.0,
+     "visible": true,
+     "width": 2,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       25,
+       4
+      ],
+      [
+       25,
+       5
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       23,
+       4
+      ],
+      [
+       24.2,
+       4
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       23.8,
+       4.2
+      ],
+      [
+       24.2,
+       4
+      ],
+      [
+       23.8,
+       3.8
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       23.5,
+       3.13
+      ],
+      [
+       23.1,
+       2.3
+      ],
+      [
+       24.9,
+       2.3
+      ],
+      [
+       24.5,
+       3.13
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 20,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "P-201B",
+     "visible": true,
+     "xy": [
+      24.0,
+      1.222222
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": 0.8,
+     "path": [
+      [
+       22.966667,
+       0.877778
+      ],
+      [
+       25.033333,
+       0.877778
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       26,
+       9
+      ],
+      [
+       25,
+       9
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       26,
+       9
+      ],
+      [
+       26,
+       8
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       26,
+       9
+      ],
+      [
+       26,
+       10
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       26,
+       9
+      ],
+      [
+       27,
+       9
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      29,
+      9
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 2,
+     "ls": null,
+     "lw": null,
+     "theta1": 0.0,
+     "theta2": 360.0,
+     "visible": true,
+     "width": 2,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 15.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "PG",
+     "visible": true,
+     "xy": [
+      29,
+      9.38
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 15.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "201",
+     "visible": true,
+     "xy": [
+      29,
+      8.62
+     ],
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       30,
+       22.5
+      ],
+      [
+       30,
+       23.5
+      ],
+      [
+       32,
+       22.5
+      ],
+      [
+       32,
+       23.5
+      ],
+      [
+       30,
+       22.5
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       33,
+       22.5
+      ],
+      [
+       33,
+       23.5
+      ],
+      [
+       35,
+       22.5
+      ],
+      [
+       35,
+       23.5
+      ],
+      [
+       33,
+       22.5
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       34,
+       23
+      ],
+      [
+       34,
+       23.6
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       33.5,
+       23.6
+      ],
+      [
+       34.5,
+       23.6
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      34,
+      23.6
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 0.8,
+     "ls": null,
+     "lw": null,
+     "theta1": 0,
+     "theta2": 180,
+     "visible": true,
+     "width": 1.0,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      37,
+      27
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 2,
+     "ls": null,
+     "lw": null,
+     "theta1": 0.0,
+     "theta2": 360.0,
+     "visible": true,
+     "width": 2,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       36,
+       26
+      ],
+      [
+       38,
+       26
+      ],
+      [
+       38,
+       28
+      ],
+      [
+       36,
+       28
+      ],
+      [
+       36,
+       26
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 15.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "FIC",
+     "visible": true,
+     "xy": [
+      37,
+      27.38
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 15.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "201",
+     "visible": true,
+     "xy": [
+      37,
+      26.62
+     ],
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       38,
+       22.5
+      ],
+      [
+       38,
+       23.5
+      ],
+      [
+       40,
+       22.5
+      ],
+      [
+       40,
+       23.5
+      ],
+      [
+       38,
+       22.5
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      41,
+      30
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 2,
+     "ls": null,
+     "lw": null,
+     "theta1": 0.0,
+     "theta2": 360.0,
+     "visible": true,
+     "width": 2,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       40,
+       29
+      ],
+      [
+       42,
+       29
+      ],
+      [
+       42,
+       31
+      ],
+      [
+       40,
+       31
+      ],
+      [
+       40,
+       29
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 15.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "TI",
+     "visible": true,
+     "xy": [
+      41,
+      30.38
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 15.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "201",
+     "visible": true,
+     "xy": [
+      41,
+      29.62
+     ],
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      43,
+      16
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 2,
+     "ls": null,
+     "lw": null,
+     "theta1": 0.0,
+     "theta2": 360.0,
+     "visible": true,
+     "width": 2,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       42,
+       15
+      ],
+      [
+       44,
+       15
+      ],
+      [
+       44,
+       17
+      ],
+      [
+       42,
+       17
+      ],
+      [
+       42,
+       15
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 15.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "LIC",
+     "visible": true,
+     "xy": [
+      43,
+      16.38
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 15.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "201",
+     "visible": true,
+     "xy": [
+      43,
+      15.62
+     ],
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       45,
+       15
+      ],
+      [
+       45,
+       31
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       49,
+       15
+      ],
+      [
+       49,
+       31
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      47,
+      31
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 4,
+     "ls": null,
+     "lw": null,
+     "theta1": 0,
+     "theta2": 180,
+     "visible": true,
+     "width": 4,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      47,
+      15
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 4,
+     "ls": null,
+     "lw": null,
+     "theta1": 180,
+     "theta2": 360,
+     "visible": true,
+     "width": 4,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       45,
+       16.0
+      ],
+      [
+       49,
+       16.0
+      ],
+      [
+       49,
+       22.5
+      ],
+      [
+       45,
+       22.5
+      ],
+      [
+       45,
+       16.0
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       45,
+       16.0
+      ],
+      [
+       49,
+       22.5
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       45,
+       22.5
+      ],
+      [
+       49,
+       16.0
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       45,
+       23.5
+      ],
+      [
+       49,
+       23.5
+      ],
+      [
+       49,
+       30.0
+      ],
+      [
+       45,
+       30.0
+      ],
+      [
+       45,
+       23.5
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       45,
+       23.5
+      ],
+      [
+       49,
+       30.0
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       45,
+       30.0
+      ],
+      [
+       49,
+       23.5
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 20,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "C-201",
+     "visible": true,
+     "xy": [
+      43.638889,
+      22.0
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": 0.8,
+     "path": [
+      [
+       42.777778,
+       21.655556
+      ],
+      [
+       44.5,
+       21.655556
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      51,
+      21
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 2,
+     "ls": null,
+     "lw": null,
+     "theta1": 0.0,
+     "theta2": 360.0,
+     "visible": true,
+     "width": 2,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       50,
+       20
+      ],
+      [
+       52,
+       20
+      ],
+      [
+       52,
+       22
+      ],
+      [
+       50,
+       22
+      ],
+      [
+       50,
+       20
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 15.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "TI",
+     "visible": true,
+     "xy": [
+      51,
+      21.38
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 15.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "202",
+     "visible": true,
+     "xy": [
+      51,
+      20.62
+     ],
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       52,
+       28.5
+      ],
+      [
+       52,
+       29.5
+      ],
+      [
+       54,
+       28.5
+      ],
+      [
+       54,
+       29.5
+      ],
+      [
+       52,
+       28.5
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       53,
+       29
+      ],
+      [
+       53,
+       29.6
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       52.5,
+       29.6
+      ],
+      [
+       53.5,
+       29.6
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      53,
+      29.6
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 0.8,
+     "ls": null,
+     "lw": null,
+     "theta1": 0,
+     "theta2": 180,
+     "visible": true,
+     "width": 1.0,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      56,
+      32
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 2,
+     "ls": null,
+     "lw": null,
+     "theta1": 0.0,
+     "theta2": 360.0,
+     "visible": true,
+     "width": 2,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       55,
+       31
+      ],
+      [
+       57,
+       31
+      ],
+      [
+       57,
+       33
+      ],
+      [
+       55,
+       33
+      ],
+      [
+       55,
+       31
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 15.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "FIC",
+     "visible": true,
+     "xy": [
+      56,
+      32.38
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 15.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "202",
+     "visible": true,
+     "xy": [
+      56,
+      31.62
+     ],
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       58,
+       43
+      ],
+      [
+       68,
+       43
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       58,
+       47
+      ],
+      [
+       68,
+       47
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      58,
+      45.0
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 4.0,
+     "ls": null,
+     "lw": null,
+     "theta1": 90,
+     "theta2": 270,
+     "visible": true,
+     "width": 2,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      68,
+      45.0
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 4.0,
+     "ls": null,
+     "lw": null,
+     "theta1": -90,
+     "theta2": 90,
+     "visible": true,
+     "width": 2,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       58.8,
+       42.75
+      ],
+      [
+       58.8,
+       47.25
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       59.1,
+       42.75
+      ],
+      [
+       59.1,
+       47.25
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       66.9,
+       42.75
+      ],
+      [
+       66.9,
+       47.25
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       67.2,
+       42.75
+      ],
+      [
+       67.2,
+       47.25
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       59.1,
+       43.8
+      ],
+      [
+       66.9,
+       43.8
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       59.1,
+       44.6
+      ],
+      [
+       66.9,
+       44.6
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       59.1,
+       45.4
+      ],
+      [
+       66.9,
+       45.4
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       59.1,
+       46.2
+      ],
+      [
+       66.9,
+       46.2
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 20,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "E-201",
+     "visible": true,
+     "xy": [
+      63.0,
+      47.777778
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": 0.8,
+     "path": [
+      [
+       62.138889,
+       47.433333
+      ],
+      [
+       63.861111,
+       47.433333
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       69.0,
+       38.0
+      ],
+      [
+       69.0,
+       40.0
+      ],
+      [
+       73.0,
+       40.0
+      ],
+      [
+       73.0,
+       38.0
+      ],
+      [
+       71.0,
+       36.0
+      ],
+      [
+       69.0,
+       38.0
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 20,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "V-202",
+     "visible": true,
+     "xy": [
+      71.0,
+      38.0
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": 0.8,
+     "path": [
+      [
+       70.138889,
+       37.655556
+      ],
+      [
+       71.861111,
+       37.655556
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       75,
+       35
+      ],
+      [
+       74,
+       35
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       75,
+       35
+      ],
+      [
+       76,
+       35
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       75,
+       35
+      ],
+      [
+       75,
+       34
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       80,
+       14
+      ],
+      [
+       80,
+       22
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       76,
+       14
+      ],
+      [
+       76,
+       22
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      78.0,
+      14
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 2,
+     "ls": null,
+     "lw": null,
+     "theta1": 180,
+     "theta2": 360,
+     "visible": true,
+     "width": 4.0,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      78.0,
+      22
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 2,
+     "ls": null,
+     "lw": null,
+     "theta1": 0,
+     "theta2": 180,
+     "visible": true,
+     "width": 4.0,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       80.25,
+       14.8
+      ],
+      [
+       75.75,
+       14.8
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       80.25,
+       15.1
+      ],
+      [
+       75.75,
+       15.1
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       80.25,
+       20.9
+      ],
+      [
+       75.75,
+       20.9
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       80.25,
+       21.2
+      ],
+      [
+       75.75,
+       21.2
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       79.2,
+       15.1
+      ],
+      [
+       79.2,
+       20.9
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       78.4,
+       15.1
+      ],
+      [
+       78.4,
+       20.9
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       77.6,
+       15.1
+      ],
+      [
+       77.6,
+       20.9
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       76.8,
+       15.1
+      ],
+      [
+       76.8,
+       20.9
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 20,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "E-202",
+     "visible": true,
+     "xy": [
+      74.638889,
+      18.0
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": 0.8,
+     "path": [
+      [
+       73.777778,
+       17.655556
+      ],
+      [
+       75.5,
+       17.655556
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       81,
+       16.4
+      ],
+      [
+       83,
+       16.4
+      ],
+      [
+       83,
+       17.6
+      ],
+      [
+       81,
+       17.6
+      ],
+      [
+       81,
+       16.4
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 14.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "ST",
+     "visible": true,
+     "xy": [
+      82.0,
+      17.0
+     ],
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       83.0,
+       15.0
+      ],
+      [
+       83.7,
+       14.0
+      ],
+      [
+       83.7,
+       13.0
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       85.0,
+       15.0
+      ],
+      [
+       84.3,
+       14.0
+      ],
+      [
+       84.3,
+       13.0
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       83.7,
+       14.0
+      ],
+      [
+       84.3,
+       14.0
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       85,
+       18.5
+      ],
+      [
+       85,
+       19.5
+      ],
+      [
+       87,
+       18.5
+      ],
+      [
+       87,
+       19.5
+      ],
+      [
+       85,
+       18.5
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       86,
+       19
+      ],
+      [
+       86,
+       19.6
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       85.5,
+       19.6
+      ],
+      [
+       86.5,
+       19.6
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      86,
+      19.6
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 0.8,
+     "ls": null,
+     "lw": null,
+     "theta1": 0,
+     "theta2": 180,
+     "visible": true,
+     "width": 1.0,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      89,
+      23
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 2,
+     "ls": null,
+     "lw": null,
+     "theta1": 0.0,
+     "theta2": 360.0,
+     "visible": true,
+     "width": 2,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       88,
+       22
+      ],
+      [
+       90,
+       22
+      ],
+      [
+       90,
+       24
+      ],
+      [
+       88,
+       24
+      ],
+      [
+       88,
+       22
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 15.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "TIC",
+     "visible": true,
+     "xy": [
+      89,
+      23.38
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 15.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "203",
+     "visible": true,
+     "xy": [
+      89,
+      22.62
+     ],
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       116,
+       18
+      ],
+      [
+       111,
+       18
+      ],
+      [
+       110,
+       19
+      ],
+      [
+       111,
+       20
+      ],
+      [
+       116,
+       20
+      ],
+      [
+       116,
+       18
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 16.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "PID-011",
+     "visible": true,
+     "xy": [
+      113.3,
+      19
+     ],
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       91,
+       1
+      ],
+      [
+       90,
+       1
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       91,
+       1
+      ],
+      [
+       91,
+       2
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       91,
+       1
+      ],
+      [
+       92,
+       1
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      94,
+      4
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 2,
+     "ls": null,
+     "lw": null,
+     "theta1": 0.0,
+     "theta2": 360.0,
+     "visible": true,
+     "width": 2,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       95,
+       4
+      ],
+      [
+       95,
+       5
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       93,
+       4
+      ],
+      [
+       94.2,
+       4
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       93.8,
+       4.2
+      ],
+      [
+       94.2,
+       4
+      ],
+      [
+       93.8,
+       3.8
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       93.5,
+       3.13
+      ],
+      [
+       93.1,
+       2.3
+      ],
+      [
+       94.9,
+       2.3
+      ],
+      [
+       94.5,
+       3.13
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 20,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "P-202A",
+     "visible": true,
+     "xy": [
+      93.5,
+      5.777778
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": 0.8,
+     "path": [
+      [
+       92.466667,
+       5.433333
+      ],
+      [
+       94.533333,
+       5.433333
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      99,
+      4
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 2,
+     "ls": null,
+     "lw": null,
+     "theta1": 0.0,
+     "theta2": 360.0,
+     "visible": true,
+     "width": 2,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       100,
+       4
+      ],
+      [
+       100,
+       5
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       98,
+       4
+      ],
+      [
+       99.2,
+       4
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       98.8,
+       4.2
+      ],
+      [
+       99.2,
+       4
+      ],
+      [
+       98.8,
+       3.8
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       98.5,
+       3.13
+      ],
+      [
+       98.1,
+       2.3
+      ],
+      [
+       99.9,
+       2.3
+      ],
+      [
+       99.5,
+       3.13
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 20,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "P-202B",
+     "visible": true,
+     "xy": [
+      99.0,
+      1.222222
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": 0.8,
+     "path": [
+      [
+       97.966667,
+       0.877778
+      ],
+      [
+       100.033333,
+       0.877778
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       101,
+       9
+      ],
+      [
+       100,
+       9
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       101,
+       9
+      ],
+      [
+       101,
+       8
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       101,
+       9
+      ],
+      [
+       102,
+       9
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       103,
+       8.5
+      ],
+      [
+       103,
+       9.5
+      ],
+      [
+       105,
+       8.5
+      ],
+      [
+       105,
+       9.5
+      ],
+      [
+       103,
+       8.5
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       104,
+       9
+      ],
+      [
+       104,
+       9.6
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       103.5,
+       9.6
+      ],
+      [
+       104.5,
+       9.6
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      104,
+      9.6
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 0.8,
+     "ls": null,
+     "lw": null,
+     "theta1": 0,
+     "theta2": 180,
+     "visible": true,
+     "width": 1.0,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       110,
+       8
+      ],
+      [
+       115,
+       8
+      ],
+      [
+       116,
+       9
+      ],
+      [
+       115,
+       10
+      ],
+      [
+       110,
+       10
+      ],
+      [
+       110,
+       8
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 16.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "PID-005\nto T-203",
+     "visible": true,
+     "xy": [
+      112.7,
+      9
+     ],
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       105,
+       34.5
+      ],
+      [
+       105,
+       35.5
+      ],
+      [
+       107,
+       34.5
+      ],
+      [
+       107,
+       35.5
+      ],
+      [
+       105,
+       34.5
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       110,
+       34
+      ],
+      [
+       115,
+       34
+      ],
+      [
+       116,
+       35
+      ],
+      [
+       115,
+       36
+      ],
+      [
+       110,
+       36
+      ],
+      [
+       110,
+       34
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 16.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "PID-004\nto T-202",
+     "visible": true,
+     "xy": [
+      112.7,
+      35
+     ],
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       107,
+       38.5
+      ],
+      [
+       107,
+       39.5
+      ],
+      [
+       109,
+       38.5
+      ],
+      [
+       109,
+       39.5
+      ],
+      [
+       107,
+       38.5
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       116,
+       38
+      ],
+      [
+       111,
+       38
+      ],
+      [
+       110,
+       39
+      ],
+      [
+       111,
+       40
+      ],
+      [
+       116,
+       40
+      ],
+      [
+       116,
+       38
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 16.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "PID-010\nfrom T-901",
+     "visible": true,
+     "xy": [
+      113.3,
+      39
+     ],
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       116,
+       45
+      ],
+      [
+       111,
+       45
+      ],
+      [
+       110,
+       46
+      ],
+      [
+       111,
+       47
+      ],
+      [
+       116,
+       47
+      ],
+      [
+       116,
+       45
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 16.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "T-201\nfrom P-103",
+     "visible": true,
+     "xy": [
+      113.3,
+      46
+     ],
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       6.0,
+       20.0
+      ],
+      [
+       9,
+       20
+      ],
+      [
+       9,
+       17
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       8.7,
+       17.45
+      ],
+      [
+       9.3,
+       17.45
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       6.0,
+       23.0
+      ],
+      [
+       11,
+       23
+      ],
+      [
+       11,
+       17
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       10.7,
+       17.45
+      ],
+      [
+       11.3,
+       17.45
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       13.0,
+       17.0
+      ],
+      [
+       13,
+       26
+      ],
+      [
+       6,
+       26
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       12.7,
+       17.45
+      ],
+      [
+       13.3,
+       17.45
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       11.0,
+       13.0
+      ],
+      [
+       11,
+       1
+      ],
+      [
+       15,
+       1
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       11.3,
+       12.55
+      ],
+      [
+       10.7,
+       12.55
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       16,
+       2
+      ],
+      [
+       16,
+       4
+      ],
+      [
+       18,
+       4
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       17,
+       1
+      ],
+      [
+       21,
+       1
+      ],
+      [
+       21,
+       4
+      ],
+      [
+       23,
+       4
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       20,
+       5
+      ],
+      [
+       20,
+       9
+      ],
+      [
+       25,
+       9
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       25,
+       5
+      ],
+      [
+       25,
+       6
+      ],
+      [
+       26,
+       6
+      ],
+      [
+       26,
+       8
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 0.8,
+     "path": [
+      [
+       27,
+       9
+      ],
+      [
+       28,
+       9
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       26,
+       10
+      ],
+      [
+       26,
+       23
+      ],
+      [
+       30,
+       23
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       32.0,
+       23.0
+      ],
+      [
+       33,
+       23
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       35.0,
+       23.0
+      ],
+      [
+       38,
+       23
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       40.0,
+       23.0
+      ],
+      [
+       45,
+       23
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       44.55,
+       23.3
+      ],
+      [
+       44.55,
+       22.7
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "--",
+     "lw": 0.8,
+     "path": [
+      [
+       36.0,
+       27.0
+      ],
+      [
+       34,
+       27
+      ],
+      [
+       34,
+       24
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 0.8,
+     "path": [
+      [
+       45.0,
+       30.0
+      ],
+      [
+       42,
+       30
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 0.8,
+     "path": [
+      [
+       45.0,
+       16.0
+      ],
+      [
+       44,
+       16
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 0.8,
+     "path": [
+      [
+       49.0,
+       21.0
+      ],
+      [
+       50,
+       21
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       47.0,
+       33.0
+      ],
+      [
+       47,
+       44
+      ],
+      [
+       57.133975,
+       44.0
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       46.7,
+       33.45
+      ],
+      [
+       47.3,
+       33.45
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       56.683975,
+       44.3
+      ],
+      [
+       56.683975,
+       43.7
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       110.0,
+       46.0
+      ],
+      [
+       68.866025,
+       46.0
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       69.316025,
+       45.7
+      ],
+      [
+       69.316025,
+       46.3
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       57.133975,
+       46.0
+      ],
+      [
+       6,
+       46
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       56.683975,
+       46.3
+      ],
+      [
+       56.683975,
+       45.7
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       65.0,
+       43.0
+      ],
+      [
+       65,
+       42
+      ],
+      [
+       70,
+       42
+      ],
+      [
+       70,
+       40
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       65.3,
+       42.55
+      ],
+      [
+       64.7,
+       42.55
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       69.7,
+       40.45
+      ],
+      [
+       70.3,
+       40.45
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       110.0,
+       39.0
+      ],
+      [
+       109,
+       39
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       107.0,
+       39.0
+      ],
+      [
+       73,
+       39
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       73.45,
+       38.7
+      ],
+      [
+       73.45,
+       39.3
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       71.0,
+       36.0
+      ],
+      [
+       71,
+       35
+      ],
+      [
+       74,
+       35
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       71.3,
+       35.55
+      ],
+      [
+       70.7,
+       35.55
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       76,
+       35
+      ],
+      [
+       105,
+       35
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       107.0,
+       35.0
+      ],
+      [
+       110,
+       35
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       75,
+       34
+      ],
+      [
+       75,
+       29
+      ],
+      [
+       54,
+       29
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       52.0,
+       29.0
+      ],
+      [
+       49,
+       29
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       49.45,
+       28.7
+      ],
+      [
+       49.45,
+       29.3
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "--",
+     "lw": 0.8,
+     "path": [
+      [
+       55.0,
+       32.0
+      ],
+      [
+       53,
+       32
+      ],
+      [
+       53,
+       30
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       49.0,
+       17.0
+      ],
+      [
+       76,
+       17
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       49.45,
+       16.7
+      ],
+      [
+       49.45,
+       17.3
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       75.55,
+       17.3
+      ],
+      [
+       75.55,
+       16.7
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       78.0,
+       23.0
+      ],
+      [
+       78,
+       25
+      ],
+      [
+       49,
+       25
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       77.7,
+       23.45
+      ],
+      [
+       78.3,
+       23.45
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       49.45,
+       24.7
+      ],
+      [
+       49.45,
+       25.3
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       110.0,
+       19.0
+      ],
+      [
+       87,
+       19
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       85.0,
+       19.0
+      ],
+      [
+       80,
+       19
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       80.45,
+       18.7
+      ],
+      [
+       80.45,
+       19.3
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "--",
+     "lw": 0.8,
+     "path": [
+      [
+       88.0,
+       23.0
+      ],
+      [
+       86,
+       23
+      ],
+      [
+       86,
+       20
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       80.0,
+       17.0
+      ],
+      [
+       81,
+       17
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       80.45,
+       16.7
+      ],
+      [
+       80.45,
+       17.3
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       83.0,
+       17.0
+      ],
+      [
+       84,
+       17
+      ],
+      [
+       84.0,
+       14.0
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       47.0,
+       13.0
+      ],
+      [
+       47.0,
+       12.3
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       47.0,
+       11.7
+      ],
+      [
+       47,
+       1
+      ],
+      [
+       90,
+       1
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       47.3,
+       12.55
+      ],
+      [
+       46.7,
+       12.55
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       91,
+       2
+      ],
+      [
+       91,
+       4
+      ],
+      [
+       93,
+       4
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       92,
+       1
+      ],
+      [
+       96,
+       1
+      ],
+      [
+       96,
+       4
+      ],
+      [
+       98,
+       4
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       95,
+       5
+      ],
+      [
+       95,
+       9
+      ],
+      [
+       100,
+       9
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       100,
+       5
+      ],
+      [
+       100,
+       6
+      ],
+      [
+       101,
+       6
+      ],
+      [
+       101,
+       8
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       102,
+       9
+      ],
+      [
+       103,
+       9
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       105.0,
+       9.0
+      ],
+      [
+       110,
+       9
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "--",
+     "lw": 0.8,
+     "path": [
+      [
+       43.0,
+       15.0
+      ],
+      [
+       43,
+       12
+      ],
+      [
+       104,
+       12
+      ],
+      [
+       104,
+       10
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "bottom"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 20,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "V-201\n反応液タンク\n3m³, SUS316",
+     "visible": true,
+     "xy": [
+      11.0,
+      49.0
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "bottom"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 20,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "C-201\n蒸留塔\nID500×8000H, SUS316",
+     "visible": true,
+     "xy": [
+      47.0,
+      49.0
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "bottom"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 20,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "E-201\n蒸留塔コンデンサー\n5m², SUS316",
+     "visible": true,
+     "xy": [
+      63.0,
+      49.0
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "bottom"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 20,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "V-202\n還流槽\n1m³, SUS316",
+     "visible": true,
+     "xy": [
+      71.0,
+      49.0
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "bottom"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 20,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "E-202\n蒸留塔リボイラー\n30m², SUS316",
+     "visible": true,
+     "xy": [
+      78.0,
+      49.0
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "top"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 20,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "P-201A\n蒸留塔フィードポンプ (A/B)\n5.0m3/h×25mH",
+     "visible": true,
+     "xy": [
+      19.0,
+      -2.0
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "top"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 20,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "P-202A\n蒸留塔ボトムポンプ (A/B)\n4.0m3/h×25mH",
+     "visible": true,
+     "xy": [
+      94.0,
+      -2.0
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": 2.0,
+     "path": [
+      [
+       -2.0,
+       -5.416667
+      ],
+      [
+       118.0,
+       -5.416667
+      ],
+      [
+       118.0,
+       52.416667
+      ],
+      [
+       -2.0,
+       52.416667
+      ],
+      [
+       -2.0,
+       -5.416667
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ]
+ ]
 }

@@ -11,6 +11,7 @@ from typing import Any
 from .elements import DEFAULT_LIBRARY, CustomSpec, ElementLibrary, Geometry
 from .expand import GENERATED_PREFIX, Expanded, expand
 from .flow import plan_flow
+from .geometry import find_crossings
 from .layout import (
     FlowLink,
     Item,
@@ -30,7 +31,7 @@ from .netlist import (
     check_id,
     split_ref,
 )
-from .router import Route, Router, RoutingError, resolve_port
+from .router import Route, Router, RoutingError, needless_uturn, resolve_port
 from .style import DEFAULT_LINE_STYLES, LineStyle
 
 __all__ = [
@@ -48,30 +49,23 @@ REROUTE_ROUNDS = 3  # rip-up and reroute attempts per placement
 BEND_COST = 6  # flow layout: sheet cells (width + height) one bend is worth
 KINDS = tuple(DEFAULT_LINE_STYLES)  # built-in line kinds (kept for compatibility)
 
-_ELEMENT_KEYS = {
-    "id",
-    "type",
-    "level",
-    "params",
-    "ports",
-    "desc",
-    "elevation",
-    "span",
-}
+_ELEMENT_KEYS = {"id", "type", "level", "params", "ports", "desc", "elevation", "span"}
 _CONNECTION_KEYS = {"from", "to", "type", "inline", "anchor", "recycle"}
-_TOP_KEYS = {
-    "version",
-    "layout",
-    "custom_elements",
-    "line_kinds",
-    "elements",
-    "connections",
-}
+_TOP_KEYS = set(
+    "version layout custom_elements line_kinds elements connections".split()
+)
 LAYOUTS = ("order", "flow")
 
 
 @dataclass
 class Diagram:
+    """A routed sheet.
+
+    ``warnings``: lines that turn back with nothing in the way (needless
+    U-turns).  ``uturns``: lines that turn back at all, around equipment
+    included -- the layout keeps them as few as it can.
+    """
+
     placed: list[Placed]
     routes: list[tuple[Connection, Route]]
     warnings: list[str]
@@ -79,33 +73,42 @@ class Diagram:
     line_styles: dict[str, LineStyle] = field(
         default_factory=lambda: dict(DEFAULT_LINE_STYLES)
     )
+    uturns: int = 0
 
     @property
     def bends(self) -> int:
         return sum(r.bends for _, r in self.routes)
 
     @property
+    def crossings(self) -> int:
+        """Places where two lines cross."""
+        return len(find_crossings([r.points for _, r in self.routes]))
+
+    @property
     def size(self) -> tuple[int, int]:
         """Overall (width, height) of the equipment area in grid cells."""
-        return (
-            max(p.bbox[2] for p in self.placed) - min(p.bbox[0] for p in self.placed),
-            max(p.bbox[3] for p in self.placed) - min(p.bbox[1] for p in self.placed),
-        )
+        return _size(self.placed)
+
+
+def _size(placed: list[Placed]) -> tuple[int, int]:
+    """(width, height) of the bounding box of ``placed`` in grid cells."""
+    boxes = [p.bbox for p in placed]
+    return (
+        max(b[2] for b in boxes) - min(b[0] for b in boxes),
+        max(b[3] for b in boxes) - min(b[1] for b in boxes),
+    )
 
 
 def _score(d: Diagram) -> tuple[int, int]:
-    """Lower is better: unavoidable U-turns first, then bends."""
-    return len(d.warnings), d.bends
+    """Lower is better: U-turns first, then bends."""
+    return d.uturns, d.bends
 
 
-def _extent(placed: list[Placed]) -> int:
-    """Width + height of the equipment area (cells), as in ``Diagram.size``."""
-    return (
-        max(p.bbox[2] for p in placed)
-        - min(p.bbox[0] for p in placed)
-        + max(p.bbox[3] for p in placed)
-        - min(p.bbox[1] for p in placed)
-    )
+def _check_new_id(id: str, known: set[str]) -> None:
+    if id.startswith(GENERATED_PREFIX):
+        raise ValueError(f"id {id!r}: ids starting with '_' are reserved")
+    if id in known:
+        raise ValueError(f"duplicate id {id!r}")
 
 
 def _context(where: str, fn: Callable[[], Any]) -> Any:
@@ -190,10 +193,7 @@ class Flowsheet:
             raise ValueError("span must be >= 1")
         id = id or f"{type}{len(self.equipment) + 1}"
         check_id(id)
-        if id.startswith(GENERATED_PREFIX):
-            raise ValueError(f"id {id!r}: ids starting with '_' are reserved")
-        if id in self.ids():
-            raise ValueError(f"duplicate id {id!r}")
+        _check_new_id(id, self.ids())
         eq = Equipment(
             id, type, level, params, dict(ports or {}), desc, elevation, span
         )
@@ -239,13 +239,9 @@ class Flowsheet:
         known = self.ids()
         for item in items:
             self.library.get(item.type)
-            if item.id is None:
-                continue
-            if item.id.startswith(GENERATED_PREFIX):
-                raise ValueError(f"id {item.id!r}: ids starting with '_' are reserved")
-            if item.id in known:
-                raise ValueError(f"duplicate id {item.id!r}")
-            known.add(item.id)
+            if item.id is not None:
+                _check_new_id(item.id, known)
+                known.add(item.id)
         for ref in (src, dst):
             i, _ = split_ref(ref)
             if i not in known:
@@ -275,14 +271,16 @@ class Flowsheet:
             if found is None:
                 return self.expand().geos[eq]
             eq = found
-        e = eq
+        e: Equipment = eq
         return _context(e.id, lambda: e.geometry(self.library))
 
-    def expand(self) -> Expanded:
+    def expand(self, equipment: list[Equipment] | None = None) -> Expanded:
         """The flat netlist that is laid out: inline items and automatic tees
-        become equipment, every port carries at most one line."""
+        become equipment, every port carries at most one line.
+
+        ``equipment``: the items in another order (default: as added)."""
         return expand(
-            self.equipment,
+            self.equipment if equipment is None else equipment,
             self.connections,
             self.library,
             lambda e, build: _context(e.id, build),
@@ -294,17 +292,19 @@ class Flowsheet:
 
         0. Expand inline items and shared ports (:meth:`expand`).
         1. Find the smallest uniform spacing that routes every pipe in strict mode
-           (no U/I-turns); only if that is impossible is the relaxed mode used, and
-           each affected pipe is reported in ``Diagram.warnings``.
+           (no U/I-turns); only if that is impossible is the relaxed mode used.
+           A pipe that then turns back with no equipment in the way is reported
+           in ``Diagram.warnings``; turning back around equipment is fine.
         2. Compaction: every individual gap (between neighbouring elements and
            between level bands) is squeezed cell by cell as long as all pipes still
-           route with no more warnings and no more bends than before.
+           route with no more U-turns and no more bends than before.
         ``layout="flow"`` packs densely: an item only keeps clear of the items
         it could touch (those on its own height), so items on different levels
         share X from the start.  A squeeze is then kept when it has no more
-        U-turns and its *cost* -- ``bend_cost`` per bend plus the sheet's width
-        and height in cells -- does not grow: pipes stay simple (fewest bends
-        first), and an extra bend is only paid for by a clearly smaller sheet.
+        U-turns and its *cost* -- ``bend_cost`` per bend and per line crossing
+        plus the sheet's width and height in cells -- does not grow: pipes stay
+        simple (fewest bends and crossings first), and an extra bend or
+        crossing is only paid for by a clearly smaller sheet.
         """
         net, items, links, flow = self._prepare()
         free = self.layout == "flow"
@@ -320,7 +320,8 @@ class Flowsheet:
         def cost(d: Diagram) -> tuple[int, int]:
             if not weight:
                 return _score(d)
-            return len(d.warnings), d.bends * weight + sum(d.size)
+            # a crossing weighs like a bend: a squeeze may not buy a crossing
+            return d.uturns, (d.bends + d.crossings) * weight + sum(d.size)
 
         # many gap changes do not move anything (a pipe corridor or the
         # neighbour's height decides); route each distinct placement only once
@@ -337,9 +338,9 @@ class Flowsheet:
             if key not in seen:
                 bound = None
                 if best is not None:  # most bends this placement can afford
-                    warnings, total = cost(best)
-                    size = _extent(placed) if weight else 0
-                    bound = (warnings, (total - size) // max(weight, 1))
+                    turns, total = cost(best)
+                    size = sum(_size(placed)) if weight else 0
+                    bound = (turns, (total - size) // max(weight, 1))
                 seen[key] = self._route_all(net, placed, relaxed, bound)
             return seen[key]
 
@@ -351,10 +352,12 @@ class Flowsheet:
         relaxed = False
         gx, gy = spread(0)
         for k in range(max_expand):  # strict: the tightest spacing that routes
-            best, failures = attempt(*spread(k), False)
-            if best:
-                gx, gy = spread(k)
-                break
+            trial, fails = attempt(*spread(k), False)
+            failures = failures or fails
+            if trial and (best is None or cost(trial) < cost(best)):
+                best, (gx, gy) = trial, spread(k)
+            if best and not weight:
+                break  # order layout: the tightest one; flow: the cheapest one
         if best is None:  # relaxed: the spacing with the fewest U-turns, then bends
             relaxed = True
             for k in range(max_expand):
@@ -398,14 +401,8 @@ class Flowsheet:
             )
             pos = {self.equipment[i].id: k for k, i in enumerate(first.order)}
             # copies: heights are settled on them, never on the user's items
-            ordered = [
-                replace(e) for e in sorted(self.equipment, key=lambda e: pos[e.id])
-            ]
-            net = expand(
-                ordered,
-                self.connections,
-                self.library,
-                lambda e, build: _context(e.id, build),
+            net = self.expand(
+                [replace(e) for e in sorted(self.equipment, key=lambda e: pos[e.id])]
             )
             flow, flags = self._apply_flow(net)
         links = _links(net)
@@ -493,7 +490,7 @@ class Flowsheet:
             )
             if d is not None and (best is None or _score(d) < _score(best)):
                 best = d
-                if not d.warnings:
+                if not d.uturns:
                     break
             if first_failures is None:
                 first_failures = failures
@@ -517,14 +514,14 @@ class Flowsheet:
     ) -> tuple[Diagram | None, list[str], list[int]]:
         """Route the lines in ``order``; also returns the problem lines.
 
-        ``bound``: (warnings, bends) of the best diagram so far.  Both only grow
+        ``bound``: (U-turns, bends) of the best diagram so far.  Both only grow
         line by line, so routing stops -- returning no diagram -- as soon as
         this placement can no longer beat it, and at its first failure.
         """
         by_id = {p.id: p for p in placed}
         router = Router(placed)
         routes: dict[int, Route] = {}
-        warnings: dict[int, str] = {}
+        turned: list[int] = []  # lines that turn back, in routing order
         failures: list[str] = []
         failed: list[int] = []  # problem lines: failures first, then U-turns
         bends = 0
@@ -541,25 +538,30 @@ class Flowsheet:
                     return None, failures, failed
                 continue
             if not r.strict:
-                warnings[ci] = (
-                    f"{c.src} -> {c.dst}: U-turn/doubling back was unavoidable"
-                )
+                turned.append(ci)
             routes[ci] = r
             bends += r.bends
-            if bound is not None and (len(warnings), bends) > bound:
+            if bound is not None and (len(turned), bends) > bound:
                 return None, ["worse than the best layout so far"], failed
         if failures:
             return None, failures, failed
-        problems = list(warnings)
+        boxes = [p.bbox for p in placed]
+        warnings = [
+            f"{c.src} -> {c.dst}: U-turn with nothing in the way"
+            for ci in sorted(turned)
+            if needless_uturn(routes[ci].points, boxes)
+            for c in [net.connections[ci]]
+        ]
         descs = {e.id: e.desc for e in net.equipment if e.desc}
         diagram = Diagram(
             placed,
             [(net.connections[ci], routes[ci]) for ci in sorted(routes)],
-            [warnings[ci] for ci in sorted(warnings)],
+            warnings,
             descs,
             dict(self.line_styles),
+            len(turned),
         )
-        return diagram, [], problems
+        return diagram, [], turned
 
     # -- io -------------------------------------------------------------------
     @classmethod
@@ -739,6 +741,27 @@ def _links(net: Expanded) -> list[Link]:
     return links
 
 
+def _heights(
+    net: Expanded,
+    links: list[Link],
+    flags: dict[str, str] | None = None,
+    anchor_free: bool = False,
+) -> tuple[list[Item], list[int], list[int]]:
+    """Items, their bottom y and the band floors on the tightest band gaps."""
+    items = _items(net, flags)
+    gap = [MIN_GAP] * _band_count(net.equipment)
+    _, base = _bands(items, gap)
+    return items, place_y(items, gap, links, anchor_free), base
+
+
+def _lift(eq: Equipment, elevation: int) -> bool:
+    """Set ``eq``'s elevation; True if it changed."""
+    if eq.elevation == elevation:
+        return False
+    eq.elevation = elevation
+    return True
+
+
 def _settle_lifts(net: Expanded, flags: dict[str, str], links: list[Link]) -> None:
     """Heights that a top or bottom nozzle needs (flow layout).
 
@@ -755,10 +778,7 @@ def _settle_lifts(net: Expanded, flags: dict[str, str], links: list[Link]) -> No
     # the taps of one main pipe are lifted together: the main pipe stays straight
     group = {t: [index[u] for u in h] for h in net.headers for t in h}
     for _ in range(8):
-        items = _items(net, flags)
-        gap = [MIN_GAP] * _band_count(eqs)
-        ys = place_y(items, gap, links, anchor_free=True)
-        _, base = _bands(items, gap)
+        items, ys, base = _heights(net, links, flags, anchor_free=True)
         moved = False
         for lk in links:
             if items[lk.a].level != items[lk.b].level:
@@ -769,18 +789,20 @@ def _settle_lifts(net: Expanded, flags: dict[str, str], links: list[Link]) -> No
             ):
                 top = ys[q] + items[q].geo.height
                 if (q_side, p_side) == ("N", "S"):
-                    # facing nozzles (a controller over its valve): p goes above
-                    if ys[p] < top + 2 and eqs[p].id not in fixed:
-                        elevation = top + 2 - base[items[p].level]
-                        if eqs[p].elevation != elevation:
-                            eqs[p].elevation = elevation
-                            moved = True
+                    # facing nozzles (a controller over its valve): p goes
+                    # above -- but a vessel stays on its floor (a tank whose
+                    # bottom feeds another tank's top on the same level)
+                    lift = eqs[p].id not in fixed and not items[p].geo.nozzles
+                    if ys[p] < top + 2 and lift:
+                        moved |= _lift(eqs[p], top + 2 - base[items[p].level])
                     continue
                 if q_side not in "NS" or p_side not in "WE":
                     continue
                 port = ys[p] + p_off
-                if q_side == "N" and port <= top:
-                    j, y = p, top + 1 - p_off
+                if q_side == "N" and port <= top + 1:
+                    # the pipe turns down one cell above the nozzle: the port
+                    # must be two cells up for an L
+                    j, y = p, top + 2 - p_off
                 elif q_side == "S" and port >= ys[q]:
                     j, y = (q, port + 1) if eqs[q].id not in fixed else (p, -1)
                 else:
@@ -794,9 +816,7 @@ def _settle_lifts(net: Expanded, flags: dict[str, str], links: list[Link]) -> No
                         [elevation] + [eqs[k].elevation or 0 for k in members]
                     )
                 for k in members:
-                    if eqs[k].elevation != elevation:
-                        eqs[k].elevation = elevation
-                        moved = True
+                    moved |= _lift(eqs[k], elevation)
         if not moved:
             return
 
@@ -812,19 +832,13 @@ def _settle_tees(net: Expanded, links: list[Link]) -> None:
         return
     index = {e.id: i for i, e in enumerate(net.equipment)}
     for _ in range(4):
-        items = _items(net)
-        gap = [MIN_GAP] * _band_count(net.equipment)
-        ys = place_y(items, gap, links)
-        _, base = _bands(items, gap)
+        items, ys, base = _heights(net, links)
         moved = False
         for t in net.pending:
             o = index[t.owner]
             port_y = ys[o] + (net.geos[t.owner].height if t.side == "N" else 0)
-            tee = net.equipment[index[t.tee]]
             floor = base[items[index[t.tee]].level]
             want = max(port_y - floor + (0 if t.side == "N" else -2), 0)
-            if tee.elevation != want:
-                tee.elevation = want
-                moved = True
+            moved |= _lift(net.equipment[index[t.tee]], want)
         if not moved:
             return

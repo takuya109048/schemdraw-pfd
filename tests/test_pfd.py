@@ -270,12 +270,14 @@ def test_fewest_bends_first():
     assert [r.bends for _, r in d.routes] == [0, 1]  # I shape, L shape
 
 
-def test_unavoidable_uturn_is_reported():
+def test_uturn_around_equipment_is_counted_but_not_reported():
     fs = Flowsheet()
     fs.add("header", "H", level=1)
     fs.add("pump", "P", level=0)
     fs.connect("H.b0", "P.in")  # branch points up, pump is below
-    assert fs.build().warnings
+    d = fs.build()
+    assert d.uturns == 1  # the line comes back down past the header itself
+    assert not d.warnings
 
 
 def test_shared_port_limits():
@@ -341,3 +343,14 @@ def test_reference_pid_reproduction_routes_strictly():
     # valve train in front of the column sits on one straight line
     assert by["GV1"].y == by["FV-201"].y == by["GV2"].y
     assert by["E-202"].geo.height > by["E-202"].geo.width  # stands vertically
+
+
+def test_vertical_drum_has_nozzles_across_both_heads():
+    geo = get_element("vertical_drum").build({"width": 6})
+    tops = [geo.ports[f"n{i}"] for i in range(5)]
+    assert [p.offset for p in tops] == [1, 2, 3, 4, 5]
+    assert all(p.side == "N" for p in tops)
+    assert geo.ports["n2"] == geo.ports["top"]  # the centre one is the apex
+    assert geo.ports["s2"] == geo.ports["bottom"]
+    d = _placed("vertical_drum")
+    assert resolve_port(d, "n0").point[1] < resolve_port(d, "top").point[1]

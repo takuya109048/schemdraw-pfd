@@ -55,7 +55,7 @@ JP_FONTS = ("Yu Gothic", "Meiryo", "MS Gothic", "Noto Sans CJK JP", "IPAexGothic
 class Theme:
     """Sheet-wide look (everything except the per-kind line styles)."""
 
-    fontsize: float = 16
+    fontsize: float = 20
     fonts: tuple[str, ...] = JP_FONTS  # first installed one is used
     equipment_lw: float = 1.3
     crossing_gap: float = 0.3  # half-width of the break at a crossing (grid cells)

@@ -209,9 +209,7 @@ def min_gap_x(items: Sequence[Item], ys: Sequence[int]) -> list[int]:
         if it.edge:
             continue
         if prev is not None:
-            lo, hi = sorted((prev, j), key=ys.__getitem__)
-            apart = ys[hi] - (ys[lo] + items[lo].geo.height)
-            gaps[j] = 0 if apart >= 1 else 1
+            gaps[j] = 0 if _apart(ys, items, prev, j) >= 1 else 1
         prev = j
     return gaps
 

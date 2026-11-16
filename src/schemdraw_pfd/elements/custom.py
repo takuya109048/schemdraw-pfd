@@ -31,16 +31,7 @@ class CustomSpec(ElementSpec):
     nozzles: bool = False
     texts: list = field(default_factory=list)
 
-    KEYS = (
-        "name",
-        "width",
-        "height",
-        "shapes",
-        "ports",
-        "label_pos",
-        "nozzles",
-        "texts",
-    )
+    KEYS = tuple("name width height shapes ports label_pos nozzles texts".split())
 
     @classmethod
     def from_dict(cls, d: dict) -> CustomSpec:

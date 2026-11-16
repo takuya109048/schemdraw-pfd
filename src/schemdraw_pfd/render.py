@@ -33,7 +33,7 @@ from schemdraw.segments import (
 )
 
 from .expand import GENERATED_PREFIX
-from .geometry import Polyline
+from .geometry import Polyline, find_crossings  # noqa: F401 (re-exported)
 from .layout import Placed
 from .model import Diagram
 from .style import DEFAULT_THEME, LineStyle, Theme
@@ -54,28 +54,6 @@ def _font(candidates: tuple[str, ...]) -> str | None:
     """The first installed font of ``candidates`` (e.g. one for Japanese)."""
     available = {f.name for f in font_manager.fontManager.ttflist}
     return next((f for f in candidates if f in available), None)
-
-
-def find_crossings(
-    paths: Sequence[Sequence[Point]],
-) -> list[tuple[int, int, int, int, Point]]:
-    """All line crossings as ``(h_route, h_seg, v_route, v_seg, point)``.
-
-    ``h_*`` identify the horizontal segment, ``v_*`` the vertical one.
-    """
-    horiz, vert = [], []
-    for ri, pts in enumerate(paths):
-        for si, (p, q) in enumerate(zip(pts, pts[1:])):
-            if p[1] == q[1]:
-                horiz.append((ri, si, p[1], min(p[0], q[0]), max(p[0], q[0])))
-            else:
-                vert.append((ri, si, p[0], min(p[1], q[1]), max(p[1], q[1])))
-    out = []
-    for hr, hs, y, x0, x1 in horiz:
-        for vr, vs, x, y0, y1 in vert:
-            if x0 < x < x1 and y0 < y < y1:
-                out.append((hr, hs, vr, vs, (x, y)))
-    return out
 
 
 def _line_segments(
@@ -129,11 +107,19 @@ def _shape_segments(p: Placed) -> list:
     return segs
 
 
-def _tag_segments(p: Placed, theme: Theme, busy: list[float]) -> list:
+Pipe = tuple[tuple[float, float], tuple[float, float]]  # one straight piece
+
+
+def _tag_segments(
+    p: Placed, theme: Theme, busy: list[float], pipes: Sequence[Pipe] = ()
+) -> list:
     """Equipment tag (underlined by default) placed according to ``label_pos``.
 
     ``busy``: heights at which lines meet the west face; a tag placed on the left
-    is moved up or down until it is clear of them.
+    is moved up or down until it is clear of them.  ``pipes``: straight pieces
+    of the routed lines; when one runs through the tag at its usual place, the
+    tag moves to the left, above, below or right of the element, wherever it
+    is clear -- above or below slid half a cell or a cell sideways if need be.
     """
     pos = p.geo.label_pos
     if pos == "none":
@@ -142,18 +128,43 @@ def _tag_segments(p: Placed, theme: Theme, busy: list[float]) -> list:
     cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
     em = theme.fontsize / PT_PER_UNIT  # font size in drawing units
     width = 0.62 * em * len(p.id)
-    if pos == "above":
-        x, y = cx, y1 + 0.5 + em / 2
-    elif pos == "below":
-        x, y = cx, y0 - 0.5 - em / 2
-    elif pos == "left":
-        offsets = sorted(range(-(y1 - y0) // 2 + 1, (y1 - y0) // 2), key=abs)
-        y = next(
-            (cy + o for o in offsets if all(abs(cy + o - b) >= 1 for b in busy)), cy
+
+    def spot(where: str) -> tuple[float, float]:
+        if where == "above":
+            return cx, y1 + 0.5 + em / 2
+        if where == "below":
+            return cx, y0 - 0.5 - em / 2
+        if where == "left":
+            offsets = sorted(range(-(y1 - y0) // 2 + 1, (y1 - y0) // 2), key=abs)
+            y = next(
+                (cy + o for o in offsets if all(abs(cy + o - b) >= 1 for b in busy)),
+                cy,
+            )
+            return x0 - 0.5 - width / 2, y
+        if where == "right":
+            return x1 + 0.5 + width / 2, cy
+        return cx, cy
+
+    def clear(at: tuple[float, float]) -> bool:
+        tx, ty = at
+        bx0, bx1 = tx - width / 2 - 0.1, tx + width / 2 + 0.1
+        by0, by1 = ty - 0.75 * em, ty + em / 2
+        return not any(
+            min(a[0], b[0]) <= bx1
+            and max(a[0], b[0]) >= bx0
+            and min(a[1], b[1]) <= by1
+            and max(a[1], b[1]) >= by0
+            for a, b in pipes
         )
-        x = x0 - 0.5 - width / 2
-    else:
-        x, y = cx, cy
+
+    x, y = spot(pos)
+    if pos != "center" and not clear((x, y)):
+        # the other sides, then above / below slid sideways off a riser
+        spots = [spot(o) for o in ("left", "above", "below", "right") if o != pos]
+        for where in ("above", "below"):
+            sx, sy = spot(where)
+            spots += [(sx + dx, sy) for dx in (-0.5, 0.5, -1.0, 1.0)]
+        x, y = next((s for s in spots if clear(s)), (x, y))
     segs: list = [
         SegmentText((x, y), p.id, align=("center", "center"), fontsize=theme.fontsize)
     ]
@@ -233,6 +244,9 @@ def draw(
         for (eq, _), pt in zip(c.ends, (r.points[0], r.points[-1])):
             if pt[0] <= by_id[eq].x:
                 west.setdefault(eq, []).append(pt[1])
+    pipes: list[Pipe] = [
+        (a, b) for _, r in diagram.routes for a, b in zip(r.points, r.points[1:])
+    ]
 
     # equipment ---------------------------------------------------------------
     for p in diagram.placed:
@@ -248,7 +262,7 @@ def draw(
                     )
                 )
         if label and not p.id.startswith(GENERATED_PREFIX):
-            segs += _tag_segments(p, theme, west.get(p.id, []))
+            segs += _tag_segments(p, theme, west.get(p.id, []), pipes)
         d.add(_Shapes(segs).at((0, 0)))
 
     # lines -------------------------------------------------------------------
