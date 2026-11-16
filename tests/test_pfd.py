@@ -354,3 +354,15 @@ def test_vertical_drum_has_nozzles_across_both_heads():
     assert geo.ports["s2"] == geo.ports["bottom"]
     d = _placed("vertical_drum")
     assert resolve_port(d, "n0").point[1] < resolve_port(d, "top").point[1]
+
+
+def test_filter_housing_ports_on_shell():
+    geo = get_element("filter_housing").build({})
+    assert {"in", "out", "vent", "drain"} <= set(geo.ports)
+    assert geo.ports["in"].side == "W" and geo.ports["out"].side == "E"
+    assert geo.ports["in"].offset < geo.ports["out"].offset  # in low, out high
+    fs = Flowsheet()
+    fs.add("pump", "P")
+    fs.add("filter_housing", "F", level=1)
+    fs.connect("P.out", "F.in")
+    assert not fs.build().warnings

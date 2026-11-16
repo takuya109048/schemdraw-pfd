@@ -33,6 +33,7 @@ from .base import (
 from .column import ColumnSpec
 from .connector import ConnectorSpec
 from .custom import CustomSpec
+from .filter_housing import FilterHousingSpec
 from .header import HeaderSpec
 from .heat_exchanger import HeatExchangerSpec
 from .horizontal_drum import HorizontalDrumSpec
@@ -49,6 +50,7 @@ STANDARD_ELEMENTS = (
     ColumnSpec,
     HorizontalDrumSpec,
     HeatExchangerSpec,
+    FilterHousingSpec,
     HeaderSpec,
     TeeSpec,
     ConnectorSpec,
@@ -65,6 +67,7 @@ __all__ = [
     "CustomSpec",
     "ElementLibrary",
     "ElementSpec",
+    "FilterHousingSpec",
     "Geometry",
     "HeaderSpec",
     "HeatExchangerSpec",
