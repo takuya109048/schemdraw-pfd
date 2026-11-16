@@ -80,6 +80,8 @@ def _link_min_x(link: Link, ax: int, a_geo: Geometry, ay: int, by: int) -> int |
             return right + 1 - link.b_off
     elif link.a_side in "NS" and link.b_side == "W":
         return ax + link.a_off + 2  # bend, then one straight cell into the face
+    elif link.a_side in "NS" and link.b_side in "NS" and link.a_side != link.b_side:
+        return ax + link.a_off - link.b_off  # facing nozzles: straight above
     return None
 
 

@@ -11,8 +11,9 @@ lines; the order along X is derived from the process lines:
 2. **Recycles**: lines marked ``recycle`` and every arrow that closes a loop
    (found by a depth-first walk from the feeds, in declaration order) run
    against the main flow.  They do not take part in ordering.
-3. **Ranks**: the remaining arrows form a DAG; each item gets its longest
-   distance from a feed.  Items are ordered by rank, ties by declaration.
+3. **Order**: the remaining arrows form a DAG, walked depth first from the
+   feed of the longest path: branch by branch, the main flow last (see
+   :func:`_branch_order`).
 4. **Attachments**: items joined only by non-process lines (instruments,
    controllers) are placed right next to the item they are attached to, on
    the side their line leaves from.
@@ -83,12 +84,12 @@ def plan_flow(
     _close_loops(n, out, indeg, back)
     forward = [(ci, u, v) for ci, u, v in edges if ci not in back]
 
-    rank = _longest_path(n, forward)
     process = {i for _, u, v in edges for i in (u, v)}
-    keys: dict[int, list[int]] = {i: [rank[i], i] for i in process}
+    walk = _branch_order(n, forward, process)
+    keys: dict[int, list[int]] = {i: [k] for k, i in enumerate(walk)}
     _attach(keys, attach, eqs, geos)
-    for i in range(n):  # unconnected items keep their declared neighbourhood
-        keys.setdefault(i, [0, i])
+    for i in range(n):  # unconnected items go last, as declared
+        keys.setdefault(i, [n + i])
     width = max(len(k) for k in keys.values())
     order = sorted(range(n), key=lambda i: keys[i] + [0] * (width - len(keys[i])))
     return FlowPlan(order, back, [by_ci[ci] for ci, _, _ in forward])
@@ -134,33 +135,53 @@ def _close_loops(
         out[u] = [(ci, v) for ci, v in out[u] if ci not in back]
 
 
-def _longest_path(n: int, forward: list[tuple[int, int, int]]) -> list[int]:
-    """Rank = longest distance from a start, then every item is pulled right
-    to just before its first successor (as late as possible).  So a valve on
-    a feed line sits beside the unit it feeds, and a valve on a recycle line
-    beside the item it serves, instead of next to the far-left feed."""
-    rank = [0] * n
-    indeg = [0] * n
+def _branch_order(
+    n: int, forward: list[tuple[int, int, int]], process: set[int]
+) -> list[int]:
+    """Left-to-right order that keeps every branch together.
+
+    A depth-first walk of the forward arrows from the first feed:
+
+    * an item comes after everything that flows into it (pulled in right
+      before it when not placed yet -- so a valve on a second feed or on a
+      recycle line sits beside the unit it serves, not at the far left);
+    * after an item its branches follow one by one, short ones first and the
+      longest (the main flow) last.  A product train (stripper, pump, cooler)
+      thus stays between its column and the next main unit instead of being
+      mixed with other trains.
+    """
     succ: dict[int, list[int]] = {i: [] for i in range(n)}
+    pred: dict[int, list[int]] = {i: [] for i in range(n)}
     for _, u, v in forward:
         succ[u].append(v)
-        indeg[v] += 1
-    starts = [i for i in range(n) if indeg[i] == 0]
-    topo: list[int] = []
-    ready = list(starts)
-    left = list(indeg)
-    while ready:
-        u = ready.pop(0)
-        topo.append(u)
-        for v in succ[u]:
-            rank[v] = max(rank[v], rank[u] + 1)
-            left[v] -= 1
-            if left[v] == 0:
-                ready.append(v)
-    for u in reversed(topo):
-        if succ[u]:
-            rank[u] = max(rank[u], min(rank[v] for v in succ[u]) - 1)
-    return rank
+        pred[v].append(u)
+    tail: dict[int, int] = {}  # longest way on from an item
+
+    def length(u: int) -> int:
+        if u not in tail:
+            tail[u] = 0  # (the arrows are loop-free; this only stops recursion)
+            tail[u] = max((1 + length(v) for v in succ[u]), default=0)
+        return tail[u]
+
+    order: list[int] = []
+    seen: set[int] = set()
+
+    def visit(u: int) -> None:
+        if u in seen:
+            return
+        seen.add(u)
+        for p in pred[u]:
+            visit(p)
+        order.append(u)
+        for v in sorted(succ[u], key=lambda v: (length(v), v)):
+            visit(v)
+
+    feeds = sorted(
+        (i for i in process if not pred[i]), key=lambda i: (-length(i), i)
+    )
+    for i in feeds[:1] + sorted(process):  # main feed first, then leftovers
+        visit(i)
+    return order
 
 
 def _attach(

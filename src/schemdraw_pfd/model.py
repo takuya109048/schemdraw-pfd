@@ -48,7 +48,16 @@ REROUTE_ROUNDS = 3  # rip-up and reroute attempts per placement
 BEND_COST = 6  # flow layout: sheet cells (width + height) one bend is worth
 KINDS = tuple(DEFAULT_LINE_STYLES)  # built-in line kinds (kept for compatibility)
 
-_ELEMENT_KEYS = {"id", "type", "level", "params", "ports", "desc", "elevation", "span"}
+_ELEMENT_KEYS = {
+    "id",
+    "type",
+    "level",
+    "params",
+    "ports",
+    "desc",
+    "elevation",
+    "span",
+}
 _CONNECTION_KEYS = {"from", "to", "type", "inline", "anchor", "recycle"}
 _TOP_KEYS = {
     "version",
@@ -299,9 +308,11 @@ class Flowsheet:
         """
         net, items, links, flow = self._prepare()
         free = self.layout == "flow"
-        levels = max(e.level for e in net.equipment) + 1
+        levels = _band_count(net.equipment)
         # tightest gap each element may ever have (independent of the level gaps)
         floor_x = min_gap_x(items, place_y(items, [MIN_GAP] * levels, links, free))
+        if free:  # dense: the gap is to whatever stands on the same height
+            floor_x = [MIN_GAP] * len(items)
         floor_y = [MIN_GAP] * levels
         overlap = [free and not it.edge for it in items]
         weight = self.bend_cost if free else 0  # order layout: bends only
@@ -700,6 +711,11 @@ def _items(net: Expanded, flags: dict[str, str] | None = None) -> list[Item]:
     return items
 
 
+def _band_count(eqs: list[Equipment]) -> int:
+    """Level bands needed: the highest level, or the top of a tall item."""
+    return max(e.level + max(e.span, 1) for e in eqs)
+
+
 def _validate(net: Expanded) -> None:
     for c in net.connections:
         for eq, port in c.ends:
@@ -737,7 +753,7 @@ def _settle_lifts(net: Expanded, flags: dict[str, str], links: list[Link]) -> No
     eqs = net.equipment
     for _ in range(8):
         items = _items(net, flags)
-        gap = [MIN_GAP] * (max(e.level for e in eqs) + 1)
+        gap = [MIN_GAP] * _band_count(eqs)
         ys = place_y(items, gap, links, anchor_free=True)
         _, base = _bands(items, gap)
         moved = False
@@ -748,9 +764,17 @@ def _settle_lifts(net: Expanded, flags: dict[str, str], links: list[Link]) -> No
                 (lk.a, lk.a_side, lk.b, lk.b_side, lk.b_off),
                 (lk.b, lk.b_side, lk.a, lk.a_side, lk.a_off),
             ):
+                top = ys[q] + items[q].geo.height
+                if (q_side, p_side) == ("N", "S"):
+                    # facing nozzles (a controller over its valve): p goes above
+                    if ys[p] < top + 2 and eqs[p].id not in fixed:
+                        elevation = top + 2 - base[items[p].level]
+                        if eqs[p].elevation != elevation:
+                            eqs[p].elevation = elevation
+                            moved = True
+                    continue
                 if q_side not in "NS" or p_side not in "WE":
                     continue
-                top = ys[q] + items[q].geo.height
                 port = ys[p] + p_off
                 if q_side == "N" and port <= top:
                     j, y = p, top + 1 - p_off
@@ -780,7 +804,7 @@ def _settle_tees(net: Expanded, links: list[Link]) -> None:
     index = {e.id: i for i, e in enumerate(net.equipment)}
     for _ in range(4):
         items = _items(net)
-        gap = [MIN_GAP] * (max(e.level for e in net.equipment) + 1)
+        gap = [MIN_GAP] * _band_count(net.equipment)
         ys = place_y(items, gap, links)
         _, base = _bands(items, gap)
         moved = False
@@ -788,7 +812,8 @@ def _settle_tees(net: Expanded, links: list[Link]) -> None:
             o = index[t.owner]
             port_y = ys[o] + (net.geos[t.owner].height if t.side == "N" else 0)
             tee = net.equipment[index[t.tee]]
-            want = max(port_y - base[tee.level] + (0 if t.side == "N" else -2), 0)
+            floor = base[items[index[t.tee]].level]
+            want = max(port_y - floor + (0 if t.side == "N" else -2), 0)
             if tee.elevation != want:
                 tee.elevation = want
                 moved = True
