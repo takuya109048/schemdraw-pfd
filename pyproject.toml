@@ -1,0 +1,34 @@
+[project]
+name = "schemdraw-pfd"
+version = "0.2.0"
+description = "Grid-based PFD / P&ID generator on top of SchemDraw: auto layout and fewest-bend orthogonal pipe routing"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "matplotlib>=3.11.2",
+    "schemdraw>=0.23",
+]
+
+[build-system]
+requires = ["uv_build>=0.13.8,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pyrefly>=1.4.1",
+    "pytest>=9.2.0",
+    "ruff>=0.17.5",
+]
+
+[project.scripts]
+pfd = "schemdraw_pfd.cli:main"
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]
+
+[tool.pyrefly]
+project-includes = ["src", "tests"]

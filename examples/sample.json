@@ -1,0 +1,30 @@
+{
+  "custom_elements": [
+    {
+      "name": "filter",
+      "width": 4,
+      "height": 4,
+      "shapes": [
+        {"type": "rect", "x0": 0, "y0": 0, "x1": 4, "y1": 4},
+        {"type": "polyline", "points": [[0, 0], [4, 4]], "boundary": false}
+      ],
+      "ports": {"in": {"side": "W", "offset": 2}, "out": {"side": "E", "offset": 2}}
+    }
+  ],
+  "elements": [
+    {"id": "D1", "type": "vertical_drum", "level": 1},
+    {"id": "P1", "type": "pump", "level": 0},
+    {"id": "E1", "type": "heat_exchanger", "level": 1},
+    {"id": "H1", "type": "header", "level": 1,
+     "params": {"branches": 3, "branch_elements": {"1": "valve", "2": ["valve", "valve"]}}},
+    {"id": "F1", "type": "filter", "level": 2},
+    {"id": "P2", "type": "pump", "level": 0}
+  ],
+  "connections": [
+    {"from": "D1.bottom", "to": "P1.in"},
+    {"from": "P1.out", "to": "E1.tube_in"},
+    {"from": "E1.tube_out", "to": "H1.main_w"},
+    {"from": "H1.b0", "to": "F1.in"},
+    {"from": "D1.e_low", "to": "P2.in"}
+  ]
+}

@@ -1,0 +1,194 @@
+# schemdraw-pfd
+
+SchemDraw を描画コアにした PFD（プロセスフロー図）自動生成ツール。仕様は `要件.md` を参照。
+
+## 使い方
+
+```bash
+uv sync
+uv run pfd examples/sample.json -o out.svg     # svg / png / pdf
+uv run pfd --list-elements                     # 標準エレメント一覧（spec を渡すと custom も含む）
+uv run pfd --describe valve                    # パラメータ・ポートの説明
+uv run pytest                                  # 例題のレイアウトはスナップショットで回帰チェック
+uv run ruff check . ; uv run pyrefly check
+```
+
+レイアウト/配線を意図的に変えたときは、スナップショットを更新する: `PFD_UPDATE_SNAPSHOTS=1 uv run pytest tests/test_snapshots.py`
+
+### Python API
+
+```python
+from schemdraw_pfd import Flowsheet
+
+fs = Flowsheet()  # 追加順 = 左→右の配置順
+fs.add("pump", "P1", level=0)
+fs.add("heat_exchanger", "E1", level=1)
+fs.add("header", "H1", level=1, branches=3, branch_elements={1: "valve"})
+fs.connect("P1.out", "E1.tube_in")  # "ID.ポート名"
+fs.connect("E1.tube_out", "H1.main_w")
+fs.render("out.svg")
+fs.to_json("out.json")  # 同じ形式で保存（from_json で読み戻せる）
+```
+
+### 流れからの自動配置（`"layout": "flow"`）
+
+各機器の**高さ（`level`）と接続だけ**を書けば、左右の並びは流れの向きから自動で決まる。並び順の指定も座標も不要（JSON の要素の順番は結果にほぼ影響しない）。
+
+```jsonc
+{ "layout": "flow",
+  "elements": [ {"id": "P-101", "type": "pump", "level": 0}, {"id": "T-101", "type": "column", "level": 1}, ... ],
+  "connections": [ ..., {"from": "P-102.out", "to": "T-101.e16", "recycle": true} ] }
+```
+
+規則:
+- `level` はユーザーが必ず決める（ポンプは段0、架台上の機器は上の段）。段の中の高さは自動（`elevation` を書けば優先）
+- **メインフローは左から右**。ただしポートの向きが優先: 西向きのポートから出る線・東向きのポートに入る線は右から左へ流れる（右端から来るユーティリティ、反転した弁など）
+- **還流・リサイクル**は `"recycle": true`。書かなくてもループは自動で見つけ、上流へ戻る線を戻り扱いにする（書けばどれが戻りかを指定できる）
+- 段が違う機器は**横位置を共有できる**（ドラムの真下にポンプ、塔の真上にコンデンサー）。ただし流れの線が左に戻ることはない
+- 計器・調節計は、つながる機器のすぐ横（線が出る側）に置く
+- 図面端のフラグは、接続ポートの向きで左端/右端が決まる
+- **ユーティリティ**（冷却水・スチームなど）は線種 `"type": "utility"` で書く。メインフローの並びには影響せず、そのフラグ・弁は**使う機器のすぐ横**に置かれる（図面端まで引き回さない）。フラグごとに `"local": true / false` で強制もできる（`order` モードでも `local: true` なら配置順の位置に置く）
+- 上部/下部ノズルへの L 字配管が通るよう、必要な機器を自動で持ち上げる（ユーザーが `elevation` を書いた機器は動かさない）
+
+作例（並び順・座標の指定なし）:
+
+| ファイル | 内容 | 結果 |
+|---|---|---|
+| `examples/hda_benzene.json` | トルエンの水素化脱アルキル (HDA) によるベンゼン製造。Turton ら *Analysis, Synthesis and Design of Chemical Processes* の例題の構成を再構成 | 36機器・警告7 |
+| `examples/tennessee_eastman.json` | Tennessee Eastman プロセス（Downs & Vogel 1993 の制御ベンチマーク）の主要ユニットを再構成 | 30機器・警告5 |
+| `pid_c201_inline.json` を `--layout flow` で | 手で並べた参考図と同じ内容 | 曲がり 30→24、幅 116→63、警告0 |
+
+※ 2つのベンチマークの接続関係は、公開されている図そのものではなく、各文献の機器リスト・物質収支表から組み直したもの（ユーティリティや計装は簡略化）。
+
+```bash
+uv run pfd examples/hda_benzene.json -o hda.png
+uv run pfd examples/pid_c201_inline.json --layout flow -o pid_flow.png
+```
+
+既知の課題: 残る U ターン警告は主にリサイクル線（下流から上流の機器へ戻る線）と、上部ノズルへ横から入る線。複雑な図（HDA）は配線探索に 20 秒前後かかる。自動で入る分岐点（2×2）はすぐ隣のノズルをふさぐので、同じ面のノズルは2グリッド以上離す。
+
+### インライン機器と自動分岐
+
+弁や流量計のように「配管の上に載る」機器は、配置順に並べる代わりに接続に書ける。
+
+```python
+fs.connect(
+    "P1.out",
+    "C1.w8",
+    inline=[
+        "valve",  # id 省略: タグなし
+        {"type": "valve", "id": "FV-1", "params": {"kind": "control"}},
+        "valve",
+    ],
+)
+fs.connect(
+    "FIC-1.e", "FV-1.signal", kind="signal"
+)  # インライン機器の id も接続先にできる
+```
+
+- 配置: 行き先 (`dst`) のすぐ手前（行き先が図面端のフラグなら出発元のすぐ後ろ）に、その機器と同じレベルで一直線に並ぶ。`"anchor": "src" | "dst"` で変更可。個々に `level` / `elevation` も指定可
+- 右から左へ流れる配管では自動で左右反転（`params` に `mirror` を書けば優先）
+- ポート名が `in`/`out` でない機器は `{"type": "instrument", "in": "w", "out": "e"}`
+- **自動分岐**: 1つのポートを最大3本の配管で共有すると、そのポートの横に分岐点 (tee) が自動で入る。腕は各配管の行き先の方向に向く。4本以上は `header` を使う。生成された機器の id は `_` で始まり、タグは描かれない（`_` で始まる id はユーザーは使えない）
+- 作例: `examples/pid_c201_inline.json`（`pid_c201.json` の弁を全部インラインに書き換えたもの。配置順から弁9個が消え、結果の曲がり数・図面サイズは同じ）
+
+### 拡張ポイント
+
+| 何を | どうする |
+|---|---|
+| 機器の向き | 全エレメント共通パラメータ `rotation`（0/90/180/270、反時計回り）と `mirror`（左右反転。回転より先に適用） |
+| 独自エレメント | `fs.library.register(MySpec())`（その Flowsheet だけ）/ `register_element(...)`（全体）/ JSON の `custom_elements`（その Flowsheet だけ。他の図に漏れない） |
+| 線の種類 | `fs.add_line_kind("utility", LineStyle(lw=1, ls="-.", arrow="->", process=True))`。JSON では `"line_kinds": {"utility": {"ls": "-."}}`。`process=True` の線は交差表現（hop/gap）とノズルのフランジ線の対象 |
+| 図面全体の見た目 | `fs.render(path, theme=Theme(fontsize=12, fonts=("Arial",), frame_lw=1, tag_underline=False))` |
+
+### JSON 形式
+
+```jsonc
+{
+  "version": 1,                       // 省略時は 1。未知のバージョンはエラー
+  "custom_elements": [ ... ],         // 任意
+  "line_kinds": { "utility": {"lw": 1.0, "ls": "-.", "arrow": "->", "process": true} },
+  "elements": [ {"id": "FV-201", "type": "valve", "level": 1, "elevation": 3,
+                 "desc": "...", "ports": {"x": ["N", 1]}, "params": {"kind": "control", "rotation": 90}} ],
+  "connections": [ {"from": "A.out", "to": "B.in", "type": "pipe",
+                    "inline": ["valve", {"type": "valve", "id": "FV-1", "params": {"kind": "control"}}],
+                    "anchor": "auto"} ]
+}
+```
+
+未知のキー（例: `params` に入れるべき `kind` を要素の直下に書いた）はエラーになり、`elements[3] (FV-201): ...` のように場所を示す。
+
+## 構成 (`src/schemdraw_pfd/`)
+
+| ファイル | 役割 |
+|---|---|
+| `geometry.py` | 外周形状（折れ線/楕円弧）とレイキャストによる外周上の接点計算 |
+| `elements/` | エレメント定義。**1エレメント＝1ファイル**（`pump.py`, `valve.py`, `vertical_drum.py`, `column.py`, `horizontal_drum.py`, `heat_exchanger.py`, `header.py`, `tee.py`, `connector.py`, `instrument.py`, `custom.py`）。共通部分（`Geometry`・基底クラス・回転/反転・`ElementLibrary`）は `base.py`、標準エレメントの登録は `__init__.py` の `STANDARD_ELEMENTS`。追加するときは `elements/<名前>.py` を作って `STANDARD_ELEMENTS` に足す |
+| `style.py` | `LineStyle`（線の種類ごとの見た目）と `Theme`（フォント・線幅・余白・枠など図面全体の見た目）。描画系に依存しない |
+| `layout.py` | グリッド配置: レベル(Y)、順序どおりの専用列(X)、接続ポートを考慮した最小X制約 |
+| `router.py` | 直交グリッド経路探索: 曲がり回数最優先→距離。接続面に垂直に出入り、U/Iターン禁止（不可避なら警告） |
+| `netlist.py` | ユーザーが記述するデータ: `Equipment` / `Connection` / `InlineItem` |
+| `expand.py` | レイアウト前の展開: インライン機器を配置順に挿入、共有ポートに tee を自動生成 |
+| `flow.py` | `layout="flow"` の並び決定: 流れのグラフ、ループ（リサイクル）検出、順位付け、計器の取り付け位置 |
+| `model.py` | `Flowsheet`（追加・接続・順序変更・JSON 読み書き・バージョン確認）、展開→配置→配線→隙間ごとの圧縮 |
+| `render.py` | SchemDraw への描画（`Theme` と線種スタイルに従う）、配管交差の上下表現 |
+
+## 要件との対応
+
+| 要件 | 実装 |
+|---|---|
+| 2. 標準5種 / ヘッダー | 枝管はすべて+Y、本数 `branches`、基本等間隔 `pitch`。`branch_elements` で枝管上〜分岐先に機器を直列挿入でき、干渉する箇所だけ「占有幅+1」まで間隔と主管長が広がる |
+| 3. グリッド | サイズ・位置・配管の折れ点はすべて整数グリッド |
+| 3. 順序 | 追加順（`set_order` で変更可）に各機器が専用の列を持つ。レベルが違っても上下に重ならず、順序は入れ替わらない。例外は行き先を示す `connector` だけで、左端・右端の共有列に上下に重ねて並ぶ（順序で最初の機器より前なら左端、それ以外は右端。`edge` で指定も可） |
+| 3. レベル | `level=0` が最下段。各段はその段で最も背の高い機器の高さ分の帯 |
+| 3. 高密度 | 隙間の下限まで詰める。高さが揃って向かい合うポートは1グリッドで直結、上下に1グリッド以上離れていて当たり得ない隣同士は隙間0、それ以外は1。配線が通らない場合だけ全体を広げ、その後は隙間を1つずつ「警告と曲がり数が増えない限り」下限まで戻す |
+| 4. 機器追加 / 接続点 | `register_element` / JSON。機器ごとの追加ポートは `ports={"名前": ("N", 3)}`。接続点は辺＋オフセットから内側へレイを飛ばした**実外周との交点** |
+| 5. ルーティング | 曲がり数最小 → 距離。同一軸を逆向きに進む経路（U/Iターン）は禁止。機器面からは必ず垂直に1グリッド以上直進（I字/L字） |
+
+### 配線探索と性能
+
+- 経路探索は A*。推定値は「マンハッタン距離 ＋ 今後どうしても必要な曲がり数 × 曲がりコスト」で、過大評価せず一貫性もある（テストで確認）ので、結果は従来の Dijkstra と同じ最適経路（ランダムな297図面で経路が完全一致）
+- **リップアップ＆リルート**: 配管は1本ずつ順に引くため、先に引いた配管が後の配管の唯一の通り道をふさぐことがある。失敗した／Uターンが必要になった配管があると、全部はがしてその配管を先頭にして引き直す（最大 `REROUTE_ROUNDS = 3` 回）。結果の `Diagram.routes` は常に接続の定義順
+- 厳密モードで配線できないときは、間隔を広げた候補をすべて試し「警告数 → 曲がり数」が最小のものを選ぶ
+- 圧縮: 同じ配置になる隙間変更は再配線しない（キャッシュ）。試行中の配線が現在のベストより悪くなった時点で打ち切る
+- `pid_c201.json`（40機器・44本）のビルド: 8.5秒 → 約1.3秒
+
+## 表示
+
+- サイズ感: ポンプ 2x3 ≒ 弁 2x2 < 熱交換器 12x4 < 縦型ドラム 6x10（`width`/`height`/`length`/`diameter` で変更可）
+- 配管の交差: `--crossing hop`（既定。横配管が半円ブリッジで縦配管をまたぐ）/ `--crossing gap`（縦配管を切って奥を通す）
+
+## P&ID 風の表現
+
+見た目は「化学工学レビュワー」の P&ID 解説記事の記載例を参考にしている
+（https://chemical-engineering-review.com/piping-and-instrumentation-diagram/ ）。
+作例: `uv run pfd examples/distillation.json -o out.png`
+
+| type | 内容 | 主なパラメータ / ポート |
+|---|---|---|
+| `pump` | 円形ケーシング＋台形の台座（2x3、弁と同程度の大きさ） | `in`(水平の吸込), `out`(ケーシング右端から垂直に上へ出る吐出) |
+| `valve` | `kind`: `gate` / `globe`(黒丸) / `control`(ドーム型駆動部) / `check`(Z字) | `in`, `out`, 調節弁のみ `signal` |
+| `vertical_drum` / `column` | 丸鏡板の槽 / 充填層(×印)付きの塔 | `width`, `height`, `beds` / `top`, `bottom`, `w<i>`, `e<i>` |
+| `horizontal_drum` | 横型槽 | `length`, `diameter` / `w`, `e`, `n<i>`, `s<i>` |
+| `heat_exchanger` | 丸い管箱の多管式熱交換器 | `tube_in/out`, `shell_in/out` |
+| `instrument` | 計器。`mount`: `field`(丸=現場計器) / `dcs`(四角の中に丸) | `function`("FIC"等), `number` / `n`,`s`,`e`,`w` |
+| `tee` | 配管の分岐点（計器の取り出しにも使う） | `arms`("wen"等) |
+| `connector` | 図面間接続の五角形フラグ | `text`, `point`(`right`/`left`) / `tip`, `tail` |
+| `header` | 主管＋上向き枝管 | `branches`, `pitch`, `branch_elements` |
+
+- 接続の種類: `"type": "pipe"`(実線＋矢印) / `"signal"`(破線の計装信号) / `"instrument"`(計器への細線)
+- `desc`: 機器仕様。図の上段（回転機は下段）にタグと並べて表示
+- `elevation`: 段の中での高さ。省略時は、接続相手の向かい合うポートと一直線になる高さに自動で揃える
+- タグは下線付き、槽類のノズルにはフランジ線、全体に枠線（`frame=False` で無効）
+
+### 参考図の再現例
+
+`examples/pid_c201.json` は上記記事の記載例（蒸留塔 C-201 まわり）を本ツールで組み直したもの。
+
+```bash
+uv run pfd examples/pid_c201.json -o examples/pid_c201.png
+```
+
+- 還流槽（漏斗形）・スチームトラップ・排水ファンネルは JSON の `custom_elements` で定義
+- リボイラーは `heat_exchanger` の `"orientation": "vertical"`
+- ポンプ A/B の並列は `tee` で分岐・合流。吸込主管をポンプより低い位置に通すことで U ターンなしで配線できる

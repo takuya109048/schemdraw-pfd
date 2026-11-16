@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "layout": "flow",
+  "custom_elements": [
+    {"name": "compressor", "width": 4, "height": 4, "label_pos": "below",
+     "shapes": [{"type": "polyline", "closed": true, "points": [[0, 0], [0, 4], [4, 3], [4, 1]]}],
+     "ports": {"in": {"side": "W", "offset": 2}, "out": {"side": "E", "offset": 2}}}
+  ],
+  "elements": [
+    {"id": "FA", "type": "connector", "level": 0, "params": {"text": "1: A feed"}},
+    {"id": "FD", "type": "connector", "level": 0, "params": {"text": "2: D feed"}},
+    {"id": "FE", "type": "connector", "level": 0, "params": {"text": "3: E feed"}},
+    {"id": "FC", "type": "connector", "level": 0, "params": {"text": "4: A/C feed"}},
+    {"id": "R", "type": "vertical_drum", "level": 0, "desc": "Reactor"},
+    {"id": "TIC-R", "type": "instrument", "level": 0, "params": {"function": "TIC", "number": "1", "mount": "dcs"}},
+    {"id": "CWS1", "type": "connector", "level": 0, "params": {"text": "CWS", "point": "left"}},
+    {"id": "CWR1", "type": "connector", "level": 0, "params": {"text": "CWR"}},
+    {"id": "COND", "type": "heat_exchanger", "level": 1, "params": {"length": 10}, "desc": "Product condenser"},
+    {"id": "CWS2", "type": "connector", "level": 1, "params": {"text": "CWS", "point": "left"}},
+    {"id": "CWR2", "type": "connector", "level": 1, "params": {"text": "CWR"}},
+    {"id": "SEP", "type": "vertical_drum", "level": 0, "desc": "Vapor/liquid\nseparator"},
+    {"id": "COMP", "type": "compressor", "level": 1, "desc": "Recycle compressor"},
+    {"id": "PURGE", "type": "connector", "level": 1, "params": {"text": "9: Purge"}},
+    {"id": "STR", "type": "column", "level": 0, "desc": "Stripper"},
+    {"id": "REB", "type": "heat_exchanger", "level": 0, "params": {"orientation": "vertical", "length": 10}, "desc": "Stripper reboiler"},
+    {"id": "STM", "type": "connector", "level": 0, "params": {"text": "Steam", "point": "left"}},
+    {"id": "CND", "type": "connector", "level": 0, "params": {"text": "Condensate"}},
+    {"id": "PROD", "type": "connector", "level": 0, "params": {"text": "11: Product"}}
+  ],
+  "connections": [
+    {"from": "FA.tip", "to": "R.w0", "inline": [{"type": "valve", "id": "XV-1", "params": {"kind": "control"}}]},
+    {"from": "FD.tip", "to": "R.w2", "inline": [{"type": "valve", "id": "XV-2", "params": {"kind": "control"}}]},
+    {"from": "FE.tip", "to": "R.w4", "inline": [{"type": "valve", "id": "XV-3", "params": {"kind": "control"}}]},
+    {"from": "R.top", "to": "COND.tube_in"},
+    {"from": "CWS1.tip", "to": "R.e2", "type": "utility", "inline": [{"type": "valve", "id": "TV-R", "params": {"kind": "control"}}]},
+    {"from": "R.e6", "to": "CWR1.tail", "type": "utility"},
+    {"from": "TIC-R.w", "to": "TV-R.signal", "type": "signal"},
+    {"from": "CWS2.tip", "to": "COND.shell_in_s", "type": "utility"},
+    {"from": "COND.shell_out_n", "to": "CWR2.tail", "type": "utility"},
+    {"from": "COND.tube_out", "to": "SEP.w6"},
+    {"from": "SEP.top", "to": "COMP.in"},
+    {"from": "SEP.top", "to": "PURGE.tail", "inline": [{"type": "valve", "id": "XV-6", "params": {"kind": "control"}}]},
+    {"from": "COMP.out", "to": "R.w6", "recycle": true},
+    {"from": "SEP.bottom", "to": "STR.w14", "inline": [{"type": "valve", "id": "XV-7", "params": {"kind": "control"}}]},
+    {"from": "FC.tip", "to": "STR.w3", "inline": [{"type": "valve", "id": "XV-4", "params": {"kind": "control"}}]},
+    {"from": "STR.top", "to": "R.w6", "recycle": true},
+    {"from": "STR.e2", "to": "REB.shell_in"},
+    {"from": "REB.tube_out", "to": "STR.e10", "recycle": true},
+    {"from": "STM.tip", "to": "REB.shell_out", "type": "utility", "inline": [{"type": "valve", "id": "XV-9", "params": {"kind": "control"}}]},
+    {"from": "REB.shell_in_s", "to": "CND.tail", "type": "utility"},
+    {"from": "STR.bottom", "to": "PROD.tail", "inline": [{"type": "valve", "id": "XV-8", "params": {"kind": "control"}}]}
+  ]
+}
