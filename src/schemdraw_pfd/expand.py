@@ -5,28 +5,25 @@ Two conveniences are resolved here, before layout:
 * **inline items** (valves, meters ... written on a line instead of in the
   equipment order) become equipment placed next to one end of their line, and
   the line is split into a chain through them;
-* **shared ports**: a port used by several lines gets a generated tee next to
-  it.  The pipe runs from the port into the tee's *trunk* arm (the arm facing
-  the port's element); each line leaves through the free arm that points most
-  towards where it is going.  A tee has room for three branches; use a
-  ``header`` for more.
+* **shared ports**: a port used by several lines gets a main pipe (header)
+  that runs straight on from the port; the lines cut into it one after
+  another, each at a tap of its own (a generated tee), never all at one point.
+  Any number of lines may share a port.
 
 Generated ids start with ``_`` (``_L<line>_<k>`` for inline items without an
-id, ``_T_<id>_<port>`` for tees); they are never drawn as tags.
+id, ``_T_<id>_<port>``, ``_T_<id>_<port>_2`` ... for the taps); they are never
+drawn as tags.
 """
 
 from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, field, replace
-from itertools import permutations
 
 from .elements import ElementLibrary, Geometry
 from .netlist import Connection, Equipment
 
 GENERATED_PREFIX = "_"
-MAX_BRANCHES = 3
-_ARM_VECTORS = {"e": (1, 0), "w": (-1, 0), "n": (0, 1), "s": (0, -1)}
 
 
 @dataclass
@@ -49,28 +46,11 @@ class Expanded:
     connections: list[Connection]  # flat: no inline items, no shared ports
     geos: dict[str, Geometry]
     pending: list[PendingTee] = field(default_factory=list)
+    headers: list[list[str]] = field(default_factory=list)  # taps of one main pipe
 
 
 def _sign(v: int) -> int:
     return (v > 0) - (v < 0)
-
-
-def _assign_arms(arms: list[str], towards: list[tuple[int, int]]) -> list[str]:
-    """Give each branch its own arm so the arms point where the branches go.
-
-    ``towards``: rough direction of each branch (sign of the order and level
-    difference).  The assignment with the best total alignment wins; ties go to
-    the one that uses the arms in the listed preference order.
-    """
-
-    def score(choice: tuple[str, ...]) -> tuple[int, list[int]]:
-        fit = sum(
-            _ARM_VECTORS[a][0] * dx + _ARM_VECTORS[a][1] * dy
-            for a, (dx, dy) in zip(choice, towards)
-        )
-        return fit, [-arms.index(a) for a in choice]
-
-    return list(max(permutations(arms, len(towards)), key=score))
 
 
 def expand(
@@ -91,8 +71,9 @@ def expand(
 
     flat = _inline(eqs, connections, geo)
     pending: list[PendingTee] = []
-    flat = _auto_tees(eqs, flat, geo, pending)
-    return Expanded(eqs, flat, {e.id: geo(e) for e in eqs}, pending)
+    headers: list[list[str]] = []
+    flat = _auto_tees(eqs, flat, geo, pending, headers)
+    return Expanded(eqs, flat, {e.id: geo(e) for e in eqs}, pending, headers)
 
 
 # -- inline items ----------------------------------------------------------------
@@ -178,13 +159,24 @@ def _expand_line(
     ]
 
 
-# -- shared ports -> tees ----------------------------------------------------------
+# -- shared ports -> main pipe (header) with taps ----------------------------------
 def _auto_tees(
     eqs: list[Equipment],
     conns: list[Connection],
     geo: Callable[[Equipment], Geometry],
     pending: list[PendingTee],
+    headers: list[list[str]],
 ) -> list[Connection]:
+    """Every port used by several lines gets a main pipe (header).
+
+    The main pipe leaves the port and runs straight on; the lines cut into it
+    one after another, each at a tap of its own (a generated tee with three
+    arms: from the port, on along the main pipe, out to the line).  The line
+    that best continues straight on ends the main pipe; the others tap in
+    ordered by how far along the flow their other end lies, the nearest
+    closest to the port, so lines do not cross.  There is no limit on the
+    number of lines.
+    """
     uses: dict[tuple[str, str], list[tuple[int, int]]] = {}
     for ci, c in enumerate(conns):
         for end, ref in enumerate(c.ends):
@@ -202,63 +194,89 @@ def _auto_tees(
         if pname not in ports:
             continue
         where = f"port {owner_id}.{pname}"
-        if len(us) > MAX_BRANCHES:
-            raise ValueError(
-                f"{where} has {len(us)} lines; an automatic tee takes at most "
-                f"{MAX_BRANCHES} (use a header)"
-            )
         roles = {end for _, end in us}
         if len(roles) > 1:
             raise ValueError(f"{where} is both the start and the end of lines")
-        others = [by_id.get(conns[ci].ends[1 - end][0]) for ci, end in us]
         order = {e.id: i for i, e in enumerate(eqs)}
-        tee_id = f"{GENERATED_PREFIX}T_{owner_id}_{pname}"
-        if tee_id in by_id:
-            raise ValueError(f"duplicate id {tee_id!r}")
+        base_id = f"{GENERATED_PREFIX}T_{owner_id}_{pname}"
+        tee_ids = [base_id] + [f"{base_id}_{k}" for k in range(2, len(us))]
+        for t in tee_ids:
+            if t in by_id:
+                raise ValueError(f"duplicate id {t!r}")
 
         side = ports[pname].side
         level = owner.level
+        settle = False
         if side in "EW":
             after = side == "E"
         else:
+            others = [by_id.get(conns[ci].ends[1 - end][0]) for ci, end in us]
             right = sum(o is not None and order[o.id] > order[owner_id] for o in others)
             after = 2 * right >= len(others)
             if side == "S" and owner.level > 0:
-                level -= 1  # hang the tee in the band below
+                level -= 1  # hang the main pipe in the band below
             elif side == "N" and owner.level < top:
                 level += 1  # or stand it in the band above
             else:
-                pending.append(PendingTee(tee_id, owner_id, pname, side))
+                settle = True
         trunk = "w" if after else "e"
         straight = "e" if after else "w"
-        # on a tie, a tee lifted above an N port turns down, below an S port up
+        # on a tie, a main pipe lifted above an N port turns down, below an S up
         across = "sn" if side == "N" else "ns"
-        arms = _assign_arms(
-            [straight, *across],
-            [
-                (_sign(order[o.id] - order[owner_id]), _sign(o.level - level))
-                if o
-                else (0, 0)
-                for o in others
-            ],
-        )
 
-        tee = Equipment(tee_id, "tee", level, {"arms": trunk + "".join(arms)})
-        eqs.insert(order[owner_id] + (1 if after else 0), tee)
-        by_id[tee_id] = tee
+        def along(u: tuple[int, int]) -> int:
+            """How far the line's other end lies along the main pipe."""
+            o = by_id.get(conns[u[0]].ends[1 - u[1]][0])
+            if o is None:
+                return 0
+            return (order[o.id] - order[owner_id]) * (1 if after else -1)
+
+        def dy(u: tuple[int, int]) -> int:
+            o = by_id.get(conns[u[0]].ends[1 - u[1]][0])
+            return 0 if o is None else _sign(o.level - level)
+
+        # the line that carries on straight ends the main pipe
+        last = max(
+            us, key=lambda u: (along(u) > 0 and dy(u) == 0, along(u) > 0, along(u))
+        )
+        taps = sorted((u for u in us if u is not last), key=along)
+
+        at = order[owner_id] + (1 if after else 0)
+        chain = [
+            Equipment(
+                t,
+                "tee",
+                level,
+                {
+                    "arms": trunk
+                    + straight
+                    + ({1: "n", -1: "s"}.get(dy(u)) or across[0])
+                },
+            )
+            for t, u in zip(tee_ids, taps)
+        ]
+        eqs[at:at] = chain if after else chain[::-1]
+        headers.append([t.id for t in chain])
+        for tee in chain:
+            by_id[tee.id] = tee
+            if settle:
+                pending.append(PendingTee(tee.id, owner_id, pname, side))
 
         first = us[0][0]
-        port_ref, trunk_ref = f"{owner_id}.{pname}", f"{tee_id}.{trunk}"
+        kind = conns[first].kind
         split = roles == {0}
-        trunk_conn = Connection(
-            port_ref if split else trunk_ref,
-            trunk_ref if split else port_ref,
-            conns[first].kind,
-        )
-        trunks.setdefault(first, []).append(trunk_conn)
-        for (ci, end), arm in zip(us, arms):
-            ref = f"{tee_id}.{arm}"
+        prev = f"{owner_id}.{pname}"
+        for tee in chain:
+            here = f"{tee.id}.{trunk}"
+            trunks.setdefault(first, []).append(
+                Connection(prev, here, kind) if split else Connection(here, prev, kind)
+            )
+            prev = f"{tee.id}.{straight}"
+        refs = {u: f"{t.id}.{t.params['arms'][2]}" for t, u in zip(chain, taps)}
+        refs[last] = prev
+        for ci, end in us:
             c = conns[ci]
+            ref = refs[(ci, end)]
             conns[ci] = replace(c, src=ref) if end == 0 else replace(c, dst=ref)
 
     out: list[Connection] = []

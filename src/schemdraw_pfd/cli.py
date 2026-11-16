@@ -7,7 +7,6 @@ import inspect
 import sys
 
 from .model import Flowsheet
-from .render import CROSSINGS
 
 
 def _summary(obj: object) -> str:
@@ -23,12 +22,6 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("-o", "--output", default="pfd.svg", help="svg/png/pdf output path")
     ap.add_argument("--no-labels", action="store_true")
     ap.add_argument("--no-frame", action="store_true", help="omit the sheet border")
-    ap.add_argument(
-        "--crossing",
-        choices=CROSSINGS,
-        default="hop",
-        help="line crossings: horizontal line bridges over (hop) or vertical breaks (gap)",
-    )
     ap.add_argument("--fontsize", type=float, help="tag/spec font size (points)")
     ap.add_argument(
         "--layout",
@@ -64,7 +57,6 @@ def main(argv: list[str] | None = None) -> int:
     diagram = fs.render(
         args.output,
         label=not args.no_labels,
-        crossing=args.crossing,
         frame=not args.no_frame,
         fontsize=args.fontsize,
     )

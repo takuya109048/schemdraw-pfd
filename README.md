@@ -89,7 +89,8 @@ fs.connect(
 - 配置: 行き先 (`dst`) のすぐ手前（行き先が図面端のフラグなら出発元のすぐ後ろ）に、その機器と同じレベルで一直線に並ぶ。`"anchor": "src" | "dst"` で変更可。個々に `level` / `elevation` も指定可
 - 右から左へ流れる配管では自動で左右反転（`params` に `mirror` を書けば優先）
 - ポート名が `in`/`out` でない機器は `{"type": "instrument", "in": "w", "out": "e"}`
-- **自動分岐**: 1つのポートを最大3本の配管で共有すると、そのポートの横に分岐点 (tee) が自動で入る。腕は各配管の行き先の方向に向く。4本以上は `header` を使う。生成された機器の id は `_` で始まり、タグは描かれない（`_` で始まる id はユーザーは使えない）
+- **自動主管（合流・分岐）**: 1つのポートを複数の配管で共有すると、設定しなくてもそのポートから主管が一直線に延び、各配管は主管に**順番に切り込む**（1点にまとめて集めない）。本数の上限はない。まっすぐ続く配管が主管の端に入り、ほかの配管は相手の機器が近い順にポート側から切り込むので配管が交差しにくい。切り込み点は1本ごとに生成される tee（id は `_T_<機器>_<ポート>`, `_T_<機器>_<ポート>_2` …）で、主管の高さはそろえて動かす。生成された機器の id は `_` で始まり、タグは描かれない（`_` で始まる id はユーザーは使えない）
+- 配管の合流・分岐点に黒丸は描かない
 - 作例: `examples/pid_c201_inline.json`（`pid_c201.json` の弁を全部インラインに書き換えたもの。配置順から弁9個が消え、結果の曲がり数・図面サイズは同じ）
 
 ### 拡張ポイント
@@ -98,7 +99,7 @@ fs.connect(
 |---|---|
 | 機器の向き | 全エレメント共通パラメータ `rotation`（0/90/180/270、反時計回り）と `mirror`（左右反転。回転より先に適用） |
 | 独自エレメント | `fs.library.register(MySpec())`（その Flowsheet だけ）/ `register_element(...)`（全体）/ JSON の `custom_elements`（その Flowsheet だけ。他の図に漏れない） |
-| 線の種類 | `fs.add_line_kind("utility", LineStyle(lw=1, ls="-.", arrow="->", process=True))`。JSON では `"line_kinds": {"utility": {"ls": "-."}}`。`process=True` の線は交差表現（hop/gap）とノズルのフランジ線の対象 |
+| 線の種類 | `fs.add_line_kind("utility", LineStyle(lw=1, ls="-.", arrow="->", process=True))`。JSON では `"line_kinds": {"utility": {"ls": "-."}}`。`process=True` の線は交差表現（途切れ）とノズルのフランジ線の対象 |
 | 図面全体の見た目 | `fs.render(path, theme=Theme(fontsize=12, fonts=("Arial",), frame_lw=1, tag_underline=False))` |
 
 ### JSON 形式
@@ -156,7 +157,7 @@ fs.connect(
 ## 表示
 
 - サイズ感: ポンプ 2x3 ≒ 弁 2x2 < 熱交換器 12x4 < 縦型ドラム 6x10（`width`/`height`/`length`/`diameter` で変更可）
-- 配管の交差: `--crossing hop`（既定。横配管が半円ブリッジで縦配管をまたぐ）/ `--crossing gap`（縦配管を切って奥を通す）
+- 配管の交差: 縦配管を交点の前後で途切れさせ、奥を通っているように描く（半円のループは使わない）。切れ目の幅は `Theme.crossing_gap`
 
 ## P&ID 風の表現
 
@@ -172,7 +173,7 @@ fs.connect(
 | `horizontal_drum` | 横型槽 | `length`, `diameter` / `w`, `e`, `n<i>`, `s<i>` |
 | `heat_exchanger` | 丸い管箱の多管式熱交換器 | `tube_in/out`, `shell_in/out` |
 | `instrument` | 計器。`mount`: `field`(丸=現場計器) / `dcs`(四角の中に丸) | `function`("FIC"等), `number` / `n`,`s`,`e`,`w` |
-| `tee` | 配管の分岐点（計器の取り出しにも使う） | `arms`("wen"等) |
+| `tee` | 配管の分岐点（計器の取り出しにも使う。黒丸なし） | `arms`("wen"等) |
 | `connector` | 図面間接続の五角形フラグ | `text`, `point`(`right`/`left`) / `tip`, `tail` |
 | `header` | 主管＋上向き枝管 | `branches`, `pitch`, `branch_elements` |
 

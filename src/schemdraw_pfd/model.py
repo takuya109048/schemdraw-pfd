@@ -222,8 +222,8 @@ class Flowsheet:
         ``dst`` end (``anchor="auto"``: next to ``src`` when ``dst`` is an
         off-sheet flag) on its level.
 
-        A port may be used by up to three lines; a tee is then inserted for them
-        automatically.
+        A port may be used by any number of lines: a main pipe (header) then
+        runs on from the port and the lines cut into it one after another.
 
         ``recycle``: the line runs back against the main flow (reflux,
         recycle).  Only matters for ``layout="flow"``, which also finds loops on
@@ -751,6 +751,9 @@ def _settle_lifts(net: Expanded, flags: dict[str, str], links: list[Link]) -> No
     """
     fixed = {e.id for e in net.equipment if e.elevation is not None}
     eqs = net.equipment
+    index = {e.id: i for i, e in enumerate(eqs)}
+    # the taps of one main pipe are lifted together: the main pipe stays straight
+    group = {t: [index[u] for u in h] for h in net.headers for t in h}
     for _ in range(8):
         items = _items(net, flags)
         gap = [MIN_GAP] * _band_count(eqs)
@@ -785,9 +788,15 @@ def _settle_lifts(net: Expanded, flags: dict[str, str], links: list[Link]) -> No
                 if eqs[j].id in fixed or y < base[items[j].level]:
                     continue
                 elevation = y - base[items[j].level]
-                if eqs[j].elevation != elevation:
-                    eqs[j].elevation = elevation
-                    moved = True
+                members = group.get(eqs[j].id, [j])
+                if len(members) > 1:
+                    elevation = max(
+                        [elevation] + [eqs[k].elevation or 0 for k in members]
+                    )
+                for k in members:
+                    if eqs[k].elevation != elevation:
+                        eqs[k].elevation = elevation
+                        moved = True
         if not moved:
             return
 

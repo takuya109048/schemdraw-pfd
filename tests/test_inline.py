@@ -190,3 +190,23 @@ def test_split_with_inline_items_on_a_branch():
     net = fs.expand()
     assert [e.id for e in net.equipment] == ["D", "_T_D_e2", "_L0_0", "C", "V"]
     assert not fs.build().warnings
+
+
+def test_merging_lines_cut_into_a_main_pipe_one_after_another():
+    fs = Flowsheet(layout="flow")
+    for i in "ABC":
+        fs.add("valve", i, level=1)
+    fs.add("pump", "F")
+    fs.add("vertical_drum", "D")
+    for i in "ABCF":
+        fs.connect(f"{i}.out", "D.w1")
+    net = fs.expand()
+    taps = [e for e in net.equipment if e.type == "tee"]
+    assert len(taps) == 3  # three taps on the main pipe, F runs straight in
+    assert all(len(t.params["arms"]) == 3 for t in taps)
+    assert all(t.params["arms"][2] == "n" for t in taps)  # A, B, C come from above
+    assert ("_T_D_w1.e", "D.w1") in [(c.src, c.dst) for c in net.connections]
+    d = fs.build()
+    assert not d.warnings
+    ys = {p.y for p in d.placed if p.id.startswith("_T_")}
+    assert len(ys) == 1  # one straight main pipe

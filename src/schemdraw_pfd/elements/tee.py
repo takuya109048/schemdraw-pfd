@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from ..geometry import Ellipse, Polyline, Port, Shape
+from ..geometry import Polyline, Port, Shape
 from .base import ElementSpec, Geometry
 
 
@@ -20,7 +20,7 @@ class TeeSpec(ElementSpec):
         ends = {"w": (0, 1), "e": (2, 1), "n": (1, 2), "s": (1, 0)}
         if not arms or set(arms) - set(ends):
             raise ValueError("tee arms must be a combination of n, s, e, w")
+        # plain lines meeting: no junction dot (dots are not used on this sheet)
         shapes: list[Shape] = [Polyline(((1, 1), ends[a])) for a in arms]
-        shapes.append(Ellipse(1, 1, 0.14, 0.14, boundary=False, fill="black"))
         ports = {a: Port(a.upper(), 1) for a in arms}
         return Geometry(2, 2, shapes, ports, label_pos="none")

@@ -176,9 +176,7 @@ def _branch_order(
         for v in sorted(succ[u], key=lambda v: (length(v), v)):
             visit(v)
 
-    feeds = sorted(
-        (i for i in process if not pred[i]), key=lambda i: (-length(i), i)
-    )
+    feeds = sorted((i for i in process if not pred[i]), key=lambda i: (-length(i), i))
     for i in feeds[:1] + sorted(process):  # main feed first, then leftovers
         visit(i)
     return order

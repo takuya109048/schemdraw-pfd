@@ -14,8 +14,9 @@ from typing import Any
 class LineStyle:
     """How one kind of line (``pipe``, ``signal`` ...) is drawn.
 
-    ``process``: a process line.  Crossings are drawn explicitly on it (hop or
-    gap) and vessels with nozzles get a flange tick where it meets them.
+    ``process``: a process line.  Crossings are drawn explicitly on it (a
+    gap in the vertical line) and vessels with nozzles get a flange tick where
+    it meets them.
     ``main``: the line belongs to the main flow, so ``layout="flow"`` orders
     the equipment by it.  Utility lines (cooling water, steam ...) are process
     lines that are not ``main``: their equipment (valves, flags) is placed
@@ -57,7 +58,7 @@ class Theme:
     fontsize: float = 16
     fonts: tuple[str, ...] = JP_FONTS  # first installed one is used
     equipment_lw: float = 1.3
-    hop_radius: float = 0.3  # crossing bridge / gap half-width (grid cells)
+    crossing_gap: float = 0.3  # half-width of the break at a crossing (grid cells)
     background: str = "white"
     margin: float = 2.0  # cells between the drawing and the frame
     frame_lw: float = 2.0

@@ -280,12 +280,17 @@ def test_unavoidable_uturn_is_reported():
 
 def test_shared_port_limits():
     fs = Flowsheet()
-    for i in "ABCDE":
-        fs.add("valve", i)
+    fs.add("valve", "A")
+    for i in "BCD":
+        fs.add("valve", i, level=1)
+    fs.add("valve", "E")
     for i in "BCDE":
         fs.connect("A.out", f"{i}.in")
-    with pytest.raises(ValueError, match="at most 3"):
-        fs.build()  # more than a tee can take: use a header
+    net = fs.expand()  # four lines: a main pipe with a tap per line
+    taps = [e for e in net.equipment if e.type == "tee"]
+    assert [t.id for t in taps] == ["_T_A_out", "_T_A_out_2", "_T_A_out_3"]
+    assert all(len(t.params["arms"]) == 3 for t in taps)  # one line per tap
+    assert not fs.build().warnings
     fs = Flowsheet()
     for i in "ABC":
         fs.add("valve", i)
@@ -301,13 +306,24 @@ def test_crossings_are_detected():
     assert find_crossings(paths) == [(0, 0, 1, 0, (2, 1))]  # touching end != crossing
 
 
-@pytest.mark.parametrize("crossing", ["hop", "gap"])
-def test_render(tmp_path, crossing):
+def test_render(tmp_path):
     fs = Flowsheet.from_json("examples/sample.json")
     out = tmp_path / "x.svg"
-    d = fs.render(out, crossing=crossing)
+    d = fs.render(out)
     assert find_crossings([r.points for _, r in d.routes])  # sample has a crossing
     assert out.stat().st_size > 1000
+
+
+def test_crossing_breaks_the_line_without_a_loop():
+    from schemdraw.segments import Segment, SegmentArc
+
+    from schemdraw_pfd.render import _line_segments
+    from schemdraw_pfd.style import LineStyle
+
+    segs = _line_segments([(2, 0), (2, 3)], {0: [1.0]}, LineStyle(arrow=None), 0.3)
+    assert not any(isinstance(s, SegmentArc) for s in segs)  # no loop
+    assert [type(s) for s in segs] == [Segment, Segment]  # broken in two
+    assert segs[0].path[-1] == (2, 0.7) and segs[1].path[0] == (2, 1.3)
 
 
 def test_reference_pid_reproduction_routes_strictly():

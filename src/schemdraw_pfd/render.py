@@ -6,9 +6,8 @@
   tapping lines are thin and plain);
 * equipment specifications are listed above the diagram (below it for rotating
   machinery) and the sheet gets a border frame;
-* where two lines cross, which one is on top is explicit: ``crossing="hop"``
-  (default) bridges the horizontal process line over the vertical one,
-  ``crossing="gap"`` breaks the vertical process line as if it passed behind.
+* where two lines cross, the vertical process line is broken (a gap) as if it
+  passed behind the horizontal one; lines never loop over each other.
 
 Everything sheet-wide (font, line widths, margins ...) comes from a
 :class:`~.style.Theme`.
@@ -41,7 +40,6 @@ from .style import DEFAULT_THEME, LineStyle, Theme
 
 Point = tuple[float, float]
 PT_PER_UNIT = 36.0  # schemdraw default: 0.5 inch per drawing unit
-CROSSINGS = ("hop", "gap")
 
 
 class _Shapes(elm.Element):
@@ -83,11 +81,10 @@ def find_crossings(
 def _line_segments(
     pts: list[Point],
     marks: dict[int, list[float]],
-    hop: bool,
     style: LineStyle,
     r: float,
 ) -> list:
-    """Split a route at its crossing marks into line pieces (and bridge arcs)."""
+    """Split a route at its crossing marks into line pieces (a gap at each)."""
     lw = style.lw
     ls: Any = style.ls  # schemdraw types it as a Literal of the matplotlib styles
     segs: list = []
@@ -101,11 +98,6 @@ def _line_segments(
             after = (m + sign * r, p[1]) if horizontal else (p[0], m + sign * r)
             run.append(before)
             segs.append(Segment(run, lw=lw, ls=ls))
-            if hop:
-                centre = (m, p[1]) if horizontal else (p[0], m)
-                segs.append(
-                    SegmentArc(centre, 2 * r, 2 * r, theta1=0, theta2=180, lw=lw)
-                )
             run = [after]
         run.append(q)
     arrow: dict[str, Any] = (
@@ -208,7 +200,6 @@ def draw(
     path: str | Path,
     label: bool = True,
     fontsize: float | None = None,
-    crossing: str = "hop",
     frame: bool = True,
     theme: Theme | None = None,
 ) -> None:
@@ -216,8 +207,6 @@ def draw(
 
     ``fontsize`` overrides ``theme.fontsize``.
     """
-    if crossing not in CROSSINGS:
-        raise ValueError(f"crossing must be one of {CROSSINGS}")
     theme = theme or DEFAULT_THEME
     if fontsize is not None:
         theme = replace(theme, fontsize=fontsize)
@@ -266,15 +255,12 @@ def draw(
     conns = [c for c, _ in diagram.routes]
     paths = [r.points for _, r in diagram.routes]
     marks: list[dict[int, list[float]]] = [{} for _ in paths]
-    hop = crossing == "hop"
-    for hr, hs, vr, vs, (x, y) in find_crossings(paths):
-        if hop and styles[conns[hr].kind].process:
-            marks[hr].setdefault(hs, []).append(x)
-        elif not hop and styles[conns[vr].kind].process:
+    for _, _, vr, vs, (_, y) in find_crossings(paths):
+        if styles[conns[vr].kind].process:  # the vertical line passes behind
             marks[vr].setdefault(vs, []).append(y)
     for c, pts, m in zip(conns, paths, marks):
         style = styles[c.kind]
-        segs = _line_segments(pts, m, hop, style, theme.hop_radius)
+        segs = _line_segments(pts, m, style, theme.crossing_gap)
         if style.process and theme.nozzle_ticks:
             (src, _), (dst, _) = c.ends
             if by_id[src].geo.nozzles:
