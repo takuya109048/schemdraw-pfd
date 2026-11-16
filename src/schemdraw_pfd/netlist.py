@@ -41,6 +41,7 @@ class Equipment:
     ports: dict[str, Any] = field(default_factory=dict)  # extra user ports
     desc: str = ""  # spec text shown in the top (bottom for pumps) row
     elevation: int | None = None  # cells above the level floor (None = automatic)
+    span: int = 1  # levels a tall item (a tower) stands through
 
     def geometry(self, library: ElementLibrary | None = None) -> Geometry:
         geo = (library or DEFAULT_LIBRARY).build(self.type, self.params)
@@ -52,6 +53,8 @@ class Equipment:
         d: dict[str, Any] = {"id": self.id, "type": self.type, "level": self.level}
         if self.elevation is not None:
             d["elevation"] = self.elevation
+        if self.span != 1:
+            d["span"] = self.span
         if self.desc:
             d["desc"] = self.desc
         if self.ports:

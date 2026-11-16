@@ -45,9 +45,10 @@ __all__ = [
 FORMAT_VERSION = 1  # version of the JSON flowsheet format written by to_dict
 MIN_GAP = 1  # cells always left between neighbouring elements / level bands
 REROUTE_ROUNDS = 3  # rip-up and reroute attempts per placement
+BEND_COST = 6  # flow layout: sheet cells (width + height) one bend is worth
 KINDS = tuple(DEFAULT_LINE_STYLES)  # built-in line kinds (kept for compatibility)
 
-_ELEMENT_KEYS = {"id", "type", "level", "params", "ports", "desc", "elevation"}
+_ELEMENT_KEYS = {"id", "type", "level", "params", "ports", "desc", "elevation", "span"}
 _CONNECTION_KEYS = {"from", "to", "type", "inline", "anchor", "recycle"}
 _TOP_KEYS = {
     "version",
@@ -88,6 +89,16 @@ def _score(d: Diagram) -> tuple[int, int]:
     return len(d.warnings), d.bends
 
 
+def _extent(placed: list[Placed]) -> int:
+    """Width + height of the equipment area (cells), as in ``Diagram.size``."""
+    return (
+        max(p.bbox[2] for p in placed)
+        - min(p.bbox[0] for p in placed)
+        + max(p.bbox[3] for p in placed)
+        - min(p.bbox[1] for p in placed)
+    )
+
+
 def _context(where: str, fn: Callable[[], Any]) -> Any:
     """Run ``fn`` and prefix any input error with where it happened."""
     try:
@@ -121,6 +132,8 @@ class Flowsheet:
         if layout not in LAYOUTS:
             raise ValueError(f"layout must be one of {LAYOUTS}, got {layout!r}")
         self.layout = layout
+        # flow layout: how many cells of sheet size one extra bend may cost
+        self.bend_cost = BEND_COST
         self.library = ElementLibrary(parent=library or DEFAULT_LIBRARY)
         self.line_styles: dict[str, LineStyle] = dict(DEFAULT_LINE_STYLES)
         self.equipment: list[Equipment] = []
@@ -141,9 +154,14 @@ class Flowsheet:
         ports: dict[str, Any] | None = None,
         desc: str = "",
         elevation: int | None = None,
+        span: int = 1,
         **params: Any,
     ) -> Equipment:
         """Add equipment to the right of everything added so far.
+
+        ``span``: a tall item (a tower) stands through this many levels,
+        starting at ``level``: it does not stretch those bands, the items on
+        them stand beside it, and the first level above clears its top.
 
         ``level``: 0 is the bottom tier.  ``ports``: extra connection points for
         this item, ``{"name": ("N|S|E|W", grid_offset)}``; they are projected onto
@@ -159,13 +177,17 @@ class Flowsheet:
             raise ValueError("level must be >= 0")
         if elevation is not None and elevation < 0:
             raise ValueError("elevation must be >= 0")
+        if span < 1:
+            raise ValueError("span must be >= 1")
         id = id or f"{type}{len(self.equipment) + 1}"
         check_id(id)
         if id.startswith(GENERATED_PREFIX):
             raise ValueError(f"id {id!r}: ids starting with '_' are reserved")
         if id in self.ids():
             raise ValueError(f"duplicate id {id!r}")
-        eq = Equipment(id, type, level, params, dict(ports or {}), desc, elevation)
+        eq = Equipment(
+            id, type, level, params, dict(ports or {}), desc, elevation, span
+        )
         self.equipment.append(eq)
         return eq
 
@@ -268,10 +290,12 @@ class Flowsheet:
         2. Compaction: every individual gap (between neighbouring elements and
            between level bands) is squeezed cell by cell as long as all pipes still
            route with no more warnings and no more bends than before.
-        3. ``layout="flow"`` only: from left to right, each item is allowed to
-           share X with items above / below it (it slides left under or over
-           them) when that keeps the routing as good; then the gaps are
-           squeezed once more.
+        ``layout="flow"`` packs densely: an item only keeps clear of the items
+        it could touch (those on its own height), so items on different levels
+        share X from the start.  A squeeze is then kept when it has no more
+        U-turns and its *cost* -- ``bend_cost`` per bend plus the sheet's width
+        and height in cells -- does not grow: pipes stay simple (fewest bends
+        first), and an extra bend is only paid for by a clearly smaller sheet.
         """
         net, items, links, flow = self._prepare()
         free = self.layout == "flow"
@@ -279,7 +303,13 @@ class Flowsheet:
         # tightest gap each element may ever have (independent of the level gaps)
         floor_x = min_gap_x(items, place_y(items, [MIN_GAP] * levels, links, free))
         floor_y = [MIN_GAP] * levels
-        overlap = [False] * len(items)
+        overlap = [free and not it.edge for it in items]
+        weight = self.bend_cost if free else 0  # order layout: bends only
+
+        def cost(d: Diagram) -> tuple[int, int]:
+            if not weight:
+                return _score(d)
+            return len(d.warnings), d.bends * weight + sum(d.size)
 
         # many gap changes do not move anything (a pipe corridor or the
         # neighbour's height decides); route each distinct placement only once
@@ -289,11 +319,16 @@ class Flowsheet:
             gx: list[int],
             gy: list[int],
             relaxed: bool,
-            bound: tuple[int, int] | None = None,
+            best: Diagram | None = None,
         ) -> tuple[Diagram | None, list[str]]:
             placed = place(items, gx, gy, links, overlap, flow, free)
             key = (relaxed, tuple((p.x, p.y) for p in placed))
             if key not in seen:
+                bound = None
+                if best is not None:  # most bends this placement can afford
+                    warnings, total = cost(best)
+                    size = _extent(placed) if weight else 0
+                    bound = (warnings, (total - size) // max(weight, 1))
                 seen[key] = self._route_all(net, placed, relaxed, bound)
             return seen[key]
 
@@ -313,7 +348,7 @@ class Flowsheet:
             relaxed = True
             for k in range(max_expand):
                 trial, fails = attempt(*spread(k), True)
-                if trial and (best is None or _score(trial) < _score(best)):
+                if trial and (best is None or cost(trial) < cost(best)):
                     best, (gx, gy) = trial, spread(k)
                 failures = failures or fails
         if best is None:
@@ -321,32 +356,17 @@ class Flowsheet:
         if not compact:
             return best
 
-        def squeeze(best: Diagram) -> Diagram:
-            for gaps, floor in ((gx, floor_x), (gy, floor_y)):
-                for i in range(len(gaps)):
-                    while gaps[i] > floor[i]:
-                        gaps[i] -= 1
-                        trial, _ = attempt(gx, gy, relaxed, _score(best))
-                        if trial and _score(trial) <= _score(best):
-                            best = trial
-                        else:
-                            gaps[i] += 1
-                            break
-            return best
-
-        best = squeeze(best)
-        if self.layout != "flow":
-            return best
-        for j, it in enumerate(items):
-            if it.edge:
-                continue
-            overlap[j] = True
-            trial, _ = attempt(gx, gy, relaxed, _score(best))
-            if trial and _score(trial) <= _score(best):
-                best = trial
-            else:
-                overlap[j] = False
-        return squeeze(best)
+        for gaps, floor in ((gx, floor_x), (gy, floor_y)):
+            for i in range(len(gaps)):
+                while gaps[i] > floor[i]:
+                    gaps[i] -= 1
+                    trial, _ = attempt(gx, gy, relaxed, best)
+                    if trial and cost(trial) <= cost(best):
+                        best = trial
+                    else:
+                        gaps[i] += 1
+                        break
+        return best
 
     def _prepare(self) -> tuple[Expanded, list[Item], list[Link], list[FlowLink]]:
         """Layout input: the expanded netlist in left-to-right order, the
@@ -587,6 +607,7 @@ class Flowsheet:
             e.get("ports"),
             e.get("desc", ""),
             e.get("elevation"),
+            int(e.get("span", 1)),
             **e.get("params", {}),
         )
 
@@ -675,7 +696,7 @@ def _items(net: Expanded, flags: dict[str, str] | None = None) -> list[Item]:
             edge = e.params.get("edge") or (flags or {}).get(e.id, auto)
             if edge not in ("left", "right"):
                 raise ValueError(f"{e.id}: edge must be 'left' or 'right'")
-        items.append(Item(e.id, e.type, e.level, g, e.elevation, edge))
+        items.append(Item(e.id, e.type, e.level, g, e.elevation, edge, e.span))
     return items
 
 

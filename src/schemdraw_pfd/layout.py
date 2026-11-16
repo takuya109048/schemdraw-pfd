@@ -33,6 +33,7 @@ class Item:
     geo: Geometry
     elevation: int | None = None  # cells above the band floor; None = automatic
     edge: str | None = None  # "left" / "right" for off-sheet connector flags
+    span: int = 1  # levels a tall item stands through (it sets no band height)
 
 
 @dataclass
@@ -85,13 +86,26 @@ def _link_min_x(link: Link, ax: int, a_geo: Geometry, ay: int, by: int) -> int |
 def _bands(items: Sequence[Item], gap_y: Sequence[int]) -> tuple[list[int], list[int]]:
     top = max(it.level for it in items)
     height = [0] * (top + 1)
+    tall: list[Item] = []
     for it in items:
         if it.level < 0 or (it.elevation or 0) < 0:
             raise ValueError("level and elevation must be >= 0")
-        height[it.level] = max(height[it.level], it.geo.height + (it.elevation or 0))
+        if it.span > 1:
+            tall.append(it)  # stands through several bands, stretches none
+        else:
+            height[it.level] = max(
+                height[it.level], it.geo.height + (it.elevation or 0)
+            )
+    for it in tall:  # a band with nothing but tall items still needs a height
+        if not height[it.level]:
+            height[it.level] = 1
     base = [0] * (top + 1)
     for lv in range(1, top + 1):
         base[lv] = base[lv - 1] + height[lv - 1] + gap_y[lv]
+        for it in tall:  # the first level above a tall item clears its top
+            if it.level + it.span == lv:
+                head = base[it.level] + (it.elevation or 0) + it.geo.height
+                base[lv] = max(base[lv], head + gap_y[lv])
     return height, base
 
 
@@ -119,7 +133,7 @@ def place_y(
     """
     height, base = _bands(items, gap_y)
     ys = [base[it.level] + (it.elevation or 0) for it in items]
-    slack = [height[it.level] - it.geo.height for it in items]
+    slack = [max(height[it.level] - it.geo.height, 0) for it in items]
     settled = {
         j for j, it in enumerate(items) if it.elevation is not None or not slack[j]
     }
@@ -139,10 +153,18 @@ def place_y(
                         continue
                     if items[o].edge and not from_flags:
                         continue
-                    if items[j].level != items[o].level:
-                        continue
-                    dy = ys[o] + theirs - (base[items[j].level] + mine)
-                    if 0 <= dy <= slack[j]:
+                    lj, lo = items[j].level, items[o].level
+                    if lj != lo and items[o].span < 2:
+                        continue  # only a tall item reaches into other bands
+                    dy = ys[o] + theirs - (base[lj] + mine)
+                    limit = slack[j]
+                    if lj == lo or lj == lo + items[o].span - 1:
+                        # beside a partner on its own level, or in the top
+                        # band a tall partner stands through: free up to the
+                        # partner's top (nothing else is that high there)
+                        head = ys[o] + items[o].geo.height
+                        limit = max(limit, head - items[j].geo.height - base[lj])
+                    if 0 <= dy <= limit:
                         ys[j] = base[items[j].level] + dy
                         settled.add(j)
                         changed = True
@@ -155,7 +177,7 @@ def place_y(
             if (lk.a_side, lk.b_side) == ("E", "W")
             and items[lk.a].level == items[lk.b].level
             for j in (lk.a, lk.b)
-            if j not in settled and not items[j].edge
+            if j not in settled and not items[j].edge and slack[j]
         }
         if not linked:
             break
@@ -216,6 +238,65 @@ def _apart(ys: Sequence[int], items: Sequence[Item], i: int, j: int) -> int:
     return ys[hi] - (ys[lo] + items[lo].geo.height)
 
 
+Riser = tuple[int, int, int, int]  # port dx, y from, y to, partner item
+
+
+def _risers(
+    items: Sequence[Item], ys: Sequence[int], links: Sequence[Link]
+) -> dict[int, list[Riser]]:
+    """Vertical pipe runs that must stay free, per item.
+
+    A line leaving a top (bottom) nozzle runs straight up (down) at the
+    nozzle's x: as far as its partner when that lies in this direction,
+    otherwise two cells (room to turn).  Items on other heights may share X
+    with the item, but not stand in this run.
+    """
+    out: dict[int, list[Riser]] = {}
+    for lk in links:
+        for i, side, off, o in (
+            (lk.a, lk.a_side, lk.a_off, lk.b),
+            (lk.b, lk.b_side, lk.b_off, lk.a),
+        ):
+            if side not in "NS":
+                continue
+            top = ys[i] + items[i].geo.height
+            o_lo, o_hi = ys[o], ys[o] + items[o].geo.height
+            if side == "N":
+                span = (top, max(top + 2, o_hi if o_lo >= top else 0))
+            else:
+                span = (min(ys[i] - 2, o_lo if o_hi <= ys[i] else ys[i]), ys[i])
+            out.setdefault(i, []).append((off, span[0], span[1], o))
+    return out
+
+
+def _clear_risers(
+    x: int,
+    j: int,
+    items: Sequence[Item],
+    xs: dict[int, int],
+    ys: Sequence[int],
+    done: Sequence[int],
+    risers: dict[int, list[Riser]],
+) -> int:
+    """Smallest x' >= x at which item ``j`` neither stands in the vertical pipe
+    run of a placed item nor has one of its own runs through a placed item."""
+    w, y0, y1 = items[j].geo.width, ys[j], ys[j] + items[j].geo.height
+    moved = True
+    while moved:
+        moved = False
+        for i in done:
+            for dx, lo, hi, partner in risers.get(i, ()):  # j in i's run?
+                c = xs[i] + dx
+                if partner != j and lo <= y1 and y0 <= hi and x <= c <= x + w:
+                    x, moved = c + 1, True
+            i0, i1 = ys[i], ys[i] + items[i].geo.height
+            for dx, lo, hi, partner in risers.get(j, ()):  # i in j's run?
+                right = xs[i] + items[i].geo.width
+                if partner != i and lo <= i1 and i0 <= hi and xs[i] <= x + dx <= right:
+                    x, moved = right + 1 - dx, True
+    return x
+
+
 def place(
     items: Sequence[Item],
     gap_x: Sequence[int],
@@ -258,6 +339,7 @@ def place(
         xs[j] = edge_w - items[j].geo.width
     cursor = edge_w if left else None  # right edge of the previous column
     done: list[int] = []
+    risers = _risers(items, ys, links) if overlap and any(overlap) else {}
     for j in main:
         if overlap and overlap[j]:
             ends = [
@@ -266,6 +348,7 @@ def place(
             if left:
                 ends.append(edge_w)
             x = max(ends) + max(gap_x[j], 1) if ends else 0  # they could touch
+            x = _clear_risers(max(x, link_floor(j)), j, items, xs, ys, done, risers)
         else:
             x = 0 if cursor is None else cursor + gap_x[j]
         xs[j] = max(x, link_floor(j))
