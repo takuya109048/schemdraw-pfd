@@ -203,7 +203,7 @@ def _auto_tees(
             raise ValueError(f"{where} is both the start and the end of lines")
         order = {e.id: i for i, e in enumerate(eqs)}
         base_id = f"{GENERATED_PREFIX}T_{owner_id}_{pname}"
-        ids = [base_id] + [f"{base_id}_{k}" for k in range(2, len(us))]
+        ids = [base_id] + [f"{base_id}_{k}" for k in range(2, len(us) + 1)]
         for t in ids:
             if t in by_id:
                 raise ValueError(f"duplicate id {t!r}")
@@ -235,6 +235,13 @@ def _auto_tees(
             return 0 if o is None else _sign(o.level - level)
 
         kind = conns[us[0][0]].kind
+
+        def far_end(u: Use) -> tuple:
+            o = other(u)
+            port = conns[u[0]].ends[1 - u[1]][1]
+            return (None,) if o is None else (o.type, port, o.level, o.elevation)
+
+        alike = len({far_end(u) for u in us}) == 1
         split = roles == {0}
         refs: dict[Use, str] = {}
         made = len(trunks.get(us[0][0], []))  # main-pipe pieces made before
@@ -257,19 +264,27 @@ def _auto_tees(
                     sign * rel(u),
                 ),
             )
+            # alike lines (repeated units) that do not run straight on all tap
+            # in the same way -- the last tap is an elbow -- instead of one of
+            # them entering the end of the main pipe from the side
+            straight = not (alike and not (sign * rel(last) > 0 and dy(last) == 0))
             taps = sorted(
-                (u for u in lines if u is not last), key=lambda u: sign * rel(u)
+                (u for u in lines if u is not last or not straight),
+                key=lambda u: sign * rel(u),
             )
             chain: list[Equipment] = []
             prev = start
-            for u in taps:
+            for k, u in enumerate(taps):
                 arm = {1: "n", -1: "s"}.get(dy(u)) or across
-                tee = Equipment(next(tee_ids), "tee", level, {"arms": back + way + arm})
+                end = k == len(taps) - 1 and not straight
+                arms = back + arm if end else back + way + arm
+                tee = Equipment(next(tee_ids), "tee", level, {"arms": arms})
                 join(prev, f"{tee.id}.{back}")
                 refs[u] = f"{tee.id}.{arm}"
                 prev = f"{tee.id}.{way}"
                 chain.append(tee)
-            refs[last] = prev
+            if straight:
+                refs[last] = prev
             return chain
 
         port_ref = f"{owner_id}.{pname}"

@@ -33,6 +33,7 @@ from .netlist import (
 )
 from .router import Route, Router, RoutingError, needless_uturn, resolve_port
 from .style import DEFAULT_LINE_STYLES, LineStyle
+from .symmetry import Symmetry, find_units, gap_groups
 
 __all__ = [
     "FORMAT_VERSION",
@@ -102,6 +103,10 @@ def _size(placed: list[Placed]) -> tuple[int, int]:
 def _score(d: Diagram) -> tuple[int, int]:
     """Lower is better: U-turns first, then bends."""
     return d.uturns, d.bends
+
+
+def _offset(p: Placed, q: Placed) -> tuple[int, int]:
+    return p.x - q.x, p.y - q.y
 
 
 def _check_new_id(id: str, known: set[str]) -> None:
@@ -308,6 +313,7 @@ class Flowsheet:
         """
         net, items, links, flow = self._prepare()
         free = self.layout == "flow"
+        sym = find_units(net)
         levels = _band_count(net.equipment)
         # tightest gap each element may ever have (independent of the level gaps)
         floor_x = min_gap_x(items, place_y(items, [MIN_GAP] * levels, links, free))
@@ -341,7 +347,7 @@ class Flowsheet:
                     turns, total = cost(best)
                     size = sum(_size(placed)) if weight else 0
                     bound = (turns, (total - size) // max(weight, 1))
-                seen[key] = self._route_all(net, placed, relaxed, bound)
+                seen[key] = self._route_all(net, placed, relaxed, bound, sym)
             return seen[key]
 
         def spread(k: int) -> tuple[list[int], list[int]]:
@@ -370,15 +376,23 @@ class Flowsheet:
         if not compact:
             return best
 
-        for gaps, floor in ((gx, floor_x), (gy, floor_y)):
-            for i in range(len(gaps)):
-                while gaps[i] > floor[i]:
-                    gaps[i] -= 1
+        # gaps of corresponding items of repeated units move together, so the
+        # copies stay alike (see :mod:`.symmetry`)
+        steps = (
+            (gx, floor_x, gap_groups(sym)),
+            (gy, floor_y, [[i] for i in range(len(gy))]),
+        )
+        for gaps, floor, groups in steps:
+            for group in groups:
+                while all(gaps[i] > floor[i] for i in group):
+                    for i in group:
+                        gaps[i] -= 1
                     trial, _ = attempt(gx, gy, relaxed, best)
                     if trial and cost(trial) <= cost(best):
                         best = trial
                     else:
-                        gaps[i] += 1
+                        for i in group:
+                            gaps[i] += 1
                         break
         return best
 
@@ -469,6 +483,7 @@ class Flowsheet:
         placed: list[Placed],
         relaxed: bool,
         bound: tuple[int, int] | None = None,
+        sym: Symmetry | None = None,
     ) -> tuple[Diagram | None, list[str]]:
         """Route every line on one placement, with rip-up and reroute.
 
@@ -486,7 +501,7 @@ class Flowsheet:
         rounds = REROUTE_ROUNDS if bound is None else 1
         for _ in range(rounds + 1):
             d, failures, problems = self._route_order(
-                net, placed, relaxed, order, bound
+                net, placed, relaxed, order, bound, sym
             )
             if d is not None and (best is None or _score(d) < _score(best)):
                 best = d
@@ -511,16 +526,28 @@ class Flowsheet:
         relaxed: bool,
         order: list[int],
         bound: tuple[int, int] | None,
+        sym: Symmetry | None = None,
     ) -> tuple[Diagram | None, list[str], list[int]]:
         """Route the lines in ``order``; also returns the problem lines.
 
         ``bound``: (U-turns, bends) of the best diagram so far.  Both only grow
         line by line, so routing stops -- returning no diagram -- as soon as
         this placement can no longer beat it, and at its first failure.
+
+        ``sym``: lines of repeated units (see :mod:`.symmetry`).  The first line
+        of a class routed sets the shape; a corresponding line whose ends are
+        moved by the same offset first tries that shape, moved along, and is
+        searched for only if the copy does not fit.
         """
         by_id = {p.id: p for p in placed}
         router = Router(placed)
         routes: dict[int, Route] = {}
+        shapes: dict[int, tuple[int, Route]] = {}  # line class -> first routed
+        ready: dict[int, Route] = {}  # copies laid down with their class
+        members: dict[int, list[int]] = {}
+        if sym and sym.repeated:
+            for cj, k in enumerate(sym.line_class):
+                members.setdefault(k, []).append(cj)
         turned: list[int] = []  # lines that turn back, in routing order
         failures: list[str] = []
         failed: list[int] = []  # problem lines: failures first, then U-turns
@@ -528,9 +555,44 @@ class Flowsheet:
         for ci in order:
             c = net.connections[ci]
             (si, sp), (di, dp) = c.ends
-            r = router.route(
-                resolve_port(by_id[si], sp), resolve_port(by_id[di], dp), relaxed
-            )
+            src, dst = resolve_port(by_id[si], sp), resolve_port(by_id[di], dp)
+            cls = sym.line_class[ci] if sym else ci
+            r = ready.pop(ci, None)
+            if r is None and cls not in shapes:
+                # first of its class: one shape that fits every copy
+                copies = [ci]
+                for cj in members.get(cls, []):
+                    if cj == ci or cj in routes:
+                        continue
+                    (sj, _), (dj, _) = net.connections[cj].ends
+                    shift = _offset(by_id[sj], by_id[si])
+                    if shift == _offset(by_id[dj], by_id[di]):
+                        copies.append(cj)
+                if len(copies) > 1:
+                    ends = []
+                    for cj in copies:
+                        (sj, spj), (dj, dpj) = net.connections[cj].ends
+                        ends.append(
+                            (
+                                resolve_port(by_id[sj], spj),
+                                resolve_port(by_id[dj], dpj),
+                                _offset(by_id[sj], by_id[si]),
+                            )
+                        )
+                    together = router.route_together(ends, relaxed)
+                    if together:
+                        r = together[0]
+                        ready.update(zip(copies[1:], together[1:]))
+            elif r is None:  # its class's shape did not fit all: try it here
+                cm, model = shapes[cls]
+                (msi, _), (mdi, _) = net.connections[cm].ends
+                shift = _offset(by_id[si], by_id[msi])
+                if shift == _offset(by_id[di], by_id[mdi]):
+                    r = router.replay(src, dst, model, shift)
+            if r is None:
+                r = router.route(src, dst, relaxed)
+            if r is not None and cls not in shapes:
+                shapes[cls] = (ci, r)
             if r is None:
                 failures.append(f"{c.src} -> {c.dst}")
                 failed.append(ci)
