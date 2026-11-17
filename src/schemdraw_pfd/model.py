@@ -1269,8 +1269,13 @@ def _settle_lifts(net: Expanded, flags: dict[str, str], links: list[Link]) -> No
                 port = ys[p] + p_off
                 if q_side == "N" and port <= top + 1:
                     # the pipe turns down one cell above the nozzle: the port
-                    # must be two cells up for an L
-                    j, y = p, top + 2 - p_off
+                    # must be two cells up for an L -- a tall item (a column
+                    # taking back a side stripper's vapour) is not lifted for
+                    # it: the vessel stands lower instead
+                    if items[p].span > 1 and eqs[q].id not in fixed:
+                        j, y = q, port - 2 - items[q].geo.height
+                    else:
+                        j, y = p, top + 2 - p_off
                 elif q_side == "S" and port >= ys[q]:
                     j, y = (q, port + 1) if eqs[q].id not in fixed else (p, -1)
                 else:

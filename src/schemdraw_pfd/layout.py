@@ -77,7 +77,9 @@ def _link_min_x(link: Link, ax: int, a_geo: Geometry, ay: int, by: int) -> int |
             # otherwise the pipe jogs: out one cell, up/down, then one cell in
             return right + (1 if ay + link.a_off == by + link.b_off else 3)
         if link.b_side in "NS":
-            return right + 1 - link.b_off
+            # out of the face one cell, then the turn: the nozzle stands at
+            # least two cells clear of the face
+            return right + 2 - link.b_off
     elif link.a_side in "NS" and link.b_side == "W":
         return ax + link.a_off + 2  # bend, then one straight cell into the face
     elif link.a_side in "NS" and link.b_side in "NS" and link.a_side != link.b_side:
@@ -422,8 +424,10 @@ def place(
             if left:
                 ends.append(edge_w)
             x = max(ends) + max(gap_x[j], 1) if ends else 0  # they could touch
-            if in_order and done:
-                x = max(x, xs[done[-1]])  # never left of the item before
+            if in_order and done and not items[j].id.startswith("_T_"):
+                # never left of the item before (a main pipe's tap stands
+                # where its main pipe needs it)
+                x = max(x, xs[done[-1]])
             x = _clear_risers(max(x, link_floor(j)), j, items, xs, ys, done, risers)
         else:
             x = 0 if cursor is None else cursor + gap_x[j]
