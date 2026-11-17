@@ -215,7 +215,8 @@ def _auto_tees(
             raise ValueError(f"{where} is both the start and the end of lines")
         order = {e.id: i for i, e in enumerate(eqs)}
         base_id = f"{TAP_PREFIX}{owner_id}_{pname}"
-        ids = [base_id] + [f"{base_id}_{k}" for k in range(2, len(us) + 1)]
+        # one tap per line, plus the riser of a main pipe running both ways
+        ids = [base_id] + [f"{base_id}_{k}" for k in range(2, len(us) + 2)]
         for t in ids:
             if t in by_id:
                 raise ValueError(f"duplicate id {t!r}")

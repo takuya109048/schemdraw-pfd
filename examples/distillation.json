@@ -1,4 +1,5 @@
 ﻿{
+  "layout": "order",
   "elements": [
     {"id": "IN1", "type": "connector", "level": 1,
      "params": {"text": "PID-001\nfrom P-103"}},

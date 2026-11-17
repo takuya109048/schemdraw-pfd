@@ -8,6 +8,7 @@ from schemdraw_pfd.router import DIRS, _estimate, _min_bends, needless_uturn
 # found by fuzzing: routed in the given order, an early line takes the only
 # corridor of a later one; routing the failing line first solves it
 CORRIDOR_CLASH = {
+    "layout": "order",  # written in the order the items stand
     "elements": [
         {"id": "E0", "type": "vertical_drum", "level": 0},
         {"id": "E1", "type": "valve", "level": 1},

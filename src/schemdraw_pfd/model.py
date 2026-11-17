@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field, replace
 from pathlib import Path
@@ -90,6 +91,15 @@ class Diagram:
     def size(self) -> tuple[int, int]:
         """Overall (width, height) of the equipment area in grid cells."""
         return _size(self.placed)
+
+
+def _natural(text: str) -> tuple:
+    """Sort key putting numbers in order: ``P-2`` before ``P-10``."""
+    return tuple(
+        (0, int(part), "") if part.isdigit() else (1, 0, part)
+        for part in re.split(r"(\d+)", text)
+        if part
+    )
 
 
 def _size(placed: list[Placed]) -> tuple[int, int]:
@@ -310,7 +320,28 @@ class Flowsheet:
         outermost nozzle and lines do not cross in front of it; the sheet is
         built again and kept if it costs no more.  The flowsheet itself is
         not changed: the diagram's connections name the ports used.
+
+        ``layout="flow"`` ignores the order the equipment and lines were
+        written in: they are taken in the natural order of their ids
+        (``P-2`` before ``P-10``), so the sheet follows from the lines, their
+        direction and the levels alone -- the same whatever the order of the
+        JSON lists.
         """
+        if self.layout != "flow":
+            return self._build_swapped(max_expand, compact)
+        user = self.equipment, self.connections
+        self.equipment = sorted(self.equipment, key=lambda e: _natural(e.id))
+        self.connections = sorted(
+            self.connections,
+            key=lambda c: (_natural(c.src), _natural(c.dst), c.kind),
+        )
+        try:
+            return self._build_swapped(max_expand, compact)
+        finally:
+            self.equipment, self.connections = user
+
+    def _build_swapped(self, max_expand: int, compact: bool) -> Diagram:
+        """:meth:`_build`, then the swappable ports re-sorted (see build)."""
         best = self._build(max_expand, compact)
         user = self.connections
         try:
@@ -613,6 +644,18 @@ class Flowsheet:
         the routes in connection order whatever order they were routed in.
         """
         order = list(range(len(net.connections)))
+        if self.layout == "flow":
+            # by the flow, not by the order the lines were written: from the
+            # downstream end back (lines whose ends stand furthest right
+            # first), so the lines out of a unit are laid before the supply
+            # lines that have to find their way in around them
+            pos = {e.id: i for i, e in enumerate(net.equipment)}
+
+            def upstream(ci: int) -> tuple[int, int, int]:
+                a, b = (pos[eq] for eq, _ in net.connections[ci].ends)
+                return -min(a, b), -max(a, b), ci
+
+            order.sort(key=upstream)
         best: Diagram | None = None
         first_failures: list[str] | None = None
         # compaction trials (bound given) get one reroute round: enough to
@@ -760,7 +803,7 @@ class Flowsheet:
         unknown = set(d) - _TOP_KEYS
         if unknown:
             raise ValueError(f"unknown top-level keys {sorted(unknown)}")
-        fs = cls(library, d.get("layout", "order"))
+        fs = cls(library, d.get("layout", "flow"))  # JSON: from the flow
         for i, spec in enumerate(d.get("custom_elements", [])):
             where = f"custom_elements[{i}] ({spec.get('name', '?')})"
             _context(where, lambda: fs.library.register(CustomSpec.from_dict(spec)))
@@ -824,9 +867,7 @@ class Flowsheet:
         Element types defined in Python (not as :class:`CustomSpec`) cannot be
         written out; they must be registered again before reading the file.
         """
-        d: dict[str, Any] = {"version": FORMAT_VERSION}
-        if self.layout != "order":
-            d["layout"] = self.layout
+        d: dict[str, Any] = {"version": FORMAT_VERSION, "layout": self.layout}
         customs = [
             s.to_dict()
             for s in self.library.local().values()
