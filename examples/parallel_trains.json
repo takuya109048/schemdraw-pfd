@@ -2,6 +2,15 @@
   "layout": "flow",
   "elements": [
     {
+      "id": "SUPPLY",
+      "type": "connector",
+      "level": 3,
+      "params": {
+        "text": "FEED SUPPLY\nfrom Upstream",
+        "point": "right"
+      }
+    },
+    {
       "id": "T-101",
       "type": "vertical_drum",
       "level": 1
@@ -149,6 +158,18 @@
     {
       "from": "H-301.b2",
       "to": "MAIN.tail"
+    },
+    {
+      "from": "SUPPLY.tip",
+      "to": "T-101.n1"
+    },
+    {
+      "from": "SUPPLY.tip",
+      "to": "T-201.n1"
+    },
+    {
+      "from": "SUPPLY.tip",
+      "to": "T-301.n1"
     }
   ]
 }

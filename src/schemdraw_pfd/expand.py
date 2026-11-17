@@ -24,6 +24,7 @@ from .elements import ElementLibrary, Geometry
 from .netlist import Connection, Equipment
 
 GENERATED_PREFIX = "_"
+TAP_PREFIX = f"{GENERATED_PREFIX}T_"  # taps (tees) of generated main pipes
 
 
 @dataclass
@@ -47,6 +48,9 @@ class Expanded:
     geos: dict[str, Geometry]
     pending: list[PendingTee] = field(default_factory=list)
     headers: list[list[str]] = field(default_factory=list)  # taps of one main pipe
+    # taps of main pipes whose lines are alike (parallel trains) -> the item
+    # whose shared port the main pipe leaves
+    owners: dict[str, str] = field(default_factory=dict)
 
 
 def _sign(v: int) -> int:
@@ -72,8 +76,9 @@ def expand(
     flat = _inline(eqs, connections, geo)
     pending: list[PendingTee] = []
     headers: list[list[str]] = []
-    flat = _auto_tees(eqs, flat, geo, pending, headers)
-    return Expanded(eqs, flat, {e.id: geo(e) for e in eqs}, pending, headers)
+    owners: dict[str, str] = {}
+    flat = _auto_tees(eqs, flat, geo, pending, headers, owners)
+    return Expanded(eqs, flat, {e.id: geo(e) for e in eqs}, pending, headers, owners)
 
 
 # -- inline items ----------------------------------------------------------------
@@ -169,6 +174,7 @@ def _auto_tees(
     geo: Callable[[Equipment], Geometry],
     pending: list[PendingTee],
     headers: list[list[str]],
+    owners: dict[str, str],
 ) -> list[Connection]:
     """Every port used by several lines gets a main pipe (header).
 
@@ -202,7 +208,7 @@ def _auto_tees(
         if len(roles) > 1:
             raise ValueError(f"{where} is both the start and the end of lines")
         order = {e.id: i for i, e in enumerate(eqs)}
-        base_id = f"{GENERATED_PREFIX}T_{owner_id}_{pname}"
+        base_id = f"{TAP_PREFIX}{owner_id}_{pname}"
         ids = [base_id] + [f"{base_id}_{k}" for k in range(2, len(us) + 1)]
         for t in ids:
             if t in by_id:
@@ -310,6 +316,8 @@ def _auto_tees(
                 at -= 1  # in front of the port's element
         eqs[at:at] = placed
         headers.append([t.id for t in placed])
+        if alike:
+            owners.update((t.id, owner_id) for t in placed)
         for tee in placed:
             by_id[tee.id] = tee
             if settle:

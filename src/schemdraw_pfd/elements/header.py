@@ -22,7 +22,8 @@ class HeaderSpec(ElementSpec):
     occupy plus one cell of clearance.
 
     Ports: ``main_w`` / ``main_e`` (ends of the main pipe), ``b<i>`` (top of branch
-    ``i``) and ``m<i>`` (underside of the main pipe below branch ``i``).
+    ``i``) and ``m<i>`` (underside of the main pipe below branch ``i``).  Lines
+    on plain branches (no inserted elements) may be swapped to avoid crossings.
     """
 
     name = "header"
@@ -62,7 +63,10 @@ class HeaderSpec(ElementSpec):
                 y = y_hi
                 base += g.height + 1
             shapes.append(Polyline(((x, y), (x, top))))
-        return Geometry(width, top, shapes, ports, label_pos="none")
+        # plain branches (no inserted elements) serve alike
+        plain = [i for i in range(n) if not stacks.get(i)]
+        groups = [[f"b{i}" for i in plain], [f"m{i}" for i in range(n)]]
+        return Geometry(width, top, shapes, ports, label_pos="none", swappable=groups)
 
     @staticmethod
     def _stacks(raw: dict, n: int) -> dict[int, list[Geometry]]:

@@ -19,9 +19,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 
-from .expand import GENERATED_PREFIX, Expanded
-
-TAP_PREFIX = f"{GENERATED_PREFIX}T_"  # taps of generated main pipes
+from .expand import TAP_PREFIX, Expanded
 
 
 @dataclass
