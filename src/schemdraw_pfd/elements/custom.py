@@ -16,8 +16,9 @@ class CustomSpec(ElementSpec):
     ``{"type": "polyline", "points": [[x,y],..], "closed": false}``,
     ``{"type": "ellipse", "cx","cy","rx","ry"}``,
     ``{"type": "arc", "cx","cy","rx","ry","theta1","theta2"}``.
-    Add ``"boundary": false`` for decoration that must not receive ports and
-    ``"fill": "black"`` for solid shapes.
+    Add ``"boundary": false`` for decoration that must not receive ports,
+    ``"fill": "black"`` for solid shapes and ``"pipe": true`` for a polyline
+    that is a piece of piping (drawn as a line, not a picture, in xlsx).
     ``ports``: ``{"name": {"side": "N|S|E|W", "offset": int}}``.
     ``texts``: ``[[x, y, "text", scale], ...]`` fixed text inside the symbol.
     """
@@ -72,7 +73,10 @@ class CustomSpec(ElementSpec):
                 )
             elif t == "polyline":
                 pts = tuple((float(x), float(y)) for x, y in s["points"])
-                shapes.append(Polyline(pts, bool(s.get("closed", False)), b, fill))
+                pipe = bool(s.get("pipe", False))
+                shapes.append(
+                    Polyline(pts, bool(s.get("closed", False)), b, fill, pipe)
+                )
             elif t in ("ellipse", "arc"):
                 th1, th2 = s.get("theta1", 0.0), s.get("theta2", 360.0)
                 shapes.append(

@@ -24,12 +24,16 @@ NORMALS: dict[str, tuple[int, int]] = {
 
 @dataclass(frozen=True)
 class Polyline:
-    """Open or closed polyline. ``boundary=False`` makes it a pure decoration."""
+    """Open or closed polyline. ``boundary=False`` makes it a pure decoration;
+    ``pipe=True`` marks a piece of piping drawn as part of an element (a
+    header's pipes, a tee's arms), which outputs that keep lines editable
+    (:mod:`.xlsx`) draw as a line rather than as part of the symbol."""
 
     points: tuple[Point, ...]
     closed: bool = False
     boundary: bool = True
     fill: str | None = None
+    pipe: bool = False
 
     def segments(self) -> list[tuple[Point, Point]]:
         pts = list(self.points)

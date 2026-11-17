@@ -21,6 +21,6 @@ class TeeSpec(ElementSpec):
         if not arms or set(arms) - set(ends):
             raise ValueError("tee arms must be a combination of n, s, e, w")
         # plain lines meeting: no junction dot (dots are not used on this sheet)
-        shapes: list[Shape] = [Polyline(((1, 1), ends[a])) for a in arms]
+        shapes: list[Shape] = [Polyline(((1, 1), ends[a]), pipe=True) for a in arms]
         ports = {a: Port(a.upper(), 1) for a in arms}
         return Geometry(2, 2, shapes, ports, label_pos="none")

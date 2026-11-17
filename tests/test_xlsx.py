@@ -9,6 +9,7 @@ import pytest
 from PIL import Image
 
 from schemdraw_pfd import Flowsheet
+from schemdraw_pfd.geometry import Polyline
 from schemdraw_pfd.render import Stroke, Text, scene
 from schemdraw_pfd.xlsx import MARGIN, PAD, UNIT
 
@@ -39,6 +40,10 @@ def _attr(el, name: str) -> str:
     value = el.get(name)
     assert value is not None, name
     return value
+
+
+def _is_pipe(item) -> bool:
+    return isinstance(item, Polyline) and item.pipe
 
 
 def _units(sc, x: float, y: float) -> tuple[float, float]:
@@ -85,12 +90,14 @@ def test_lines_are_arrow_shapes_exactly_on_the_routes(book):
             pts.append(_units(sc, px, py))
         ln = _find(sp, "xdr:spPr/a:ln")
         drawn.append((pts, ln.find("a:tailEnd", NS) is not None))
-    expected = [
-        (list(i.points), "arrow" in i.style)
-        for g in sc.groups
-        for i in g.items
-        if isinstance(i, Stroke)
-    ]
+    expected = []
+    for g in sc.groups:  # an element's own piping first, then its strokes
+        expected += [(list(i.points), False) for i in g.items if _is_pipe(i)]
+        expected += [
+            (list(i.points), "arrow" in i.style)
+            for i in g.items
+            if isinstance(i, Stroke)
+        ]
     assert len(drawn) == len(expected)
     for (pts, arrow), (want, want_arrow) in zip(drawn, expected):
         assert arrow == want_arrow
@@ -104,7 +111,12 @@ def test_equipment_pictures_cover_their_place_with_their_own_aspect(book):
     root = ET.fromstring(z.read("xl/drawings/drawing1.xml"))
     rels = ET.fromstring(z.read("xl/drawings/_rels/drawing1.xml.rels"))
     target = {_attr(r, "Id"): _attr(r, "Target") for r in rels}
-    placed = {g.id: g.placed for g in sc.groups if g.kind == "equipment"}
+    placed = {
+        g.id: g.placed
+        for g in sc.groups
+        if g.kind == "equipment"
+        and not any(_is_pipe(i) for i in g.items)  # pictures cut to the symbol
+    }
     pics = list(root.iter(f"{{{NS['xdr']}}}pic"))
     assert len(pics) == len(placed)
     for pic in pics:
@@ -141,3 +153,34 @@ def test_texts_are_text_boxes(book):
         if isinstance(i, Text)
     ]
     assert boxes == texts and "T-101" in boxes
+
+
+def test_piping_drawn_by_elements_is_lines_not_pictures(tmp_path):
+    """Headers and tees (main pipes, taps) are piping: line shapes in the
+    equipment line width; a header's inserted valve stays a picture."""
+    fs = Flowsheet()
+    fs.add("pump", "P1")
+    fs.add("header", "H1", branches=2, branch_elements={1: "valve"})
+    fs.add("vertical_drum", "D1")
+    fs.connect("P1.out", "H1.main_w")
+    fs.connect("H1.b0", "D1.w_low")
+    fs.render(tmp_path / "h.xlsx")
+    root = ET.fromstring(
+        zipfile.ZipFile(tmp_path / "h.xlsx").read("xl/drawings/drawing1.xml")
+    )
+    names = [
+        _attr(_find(sp, "xdr:nvSpPr/xdr:cNvPr"), "name")
+        for sp in root.iter(f"{{{NS['xdr']}}}sp")
+    ]
+    pics = {
+        _attr(_find(pic, ".//xdr:cNvPr"), "name")
+        for pic in root.iter(f"{{{NS['xdr']}}}pic")
+    }
+    # main pipe + one plain branch + the valve branch's two pieces
+    assert sum(n.startswith("H1 pipe") for n in names) == 4
+    assert pics == {"P1", "H1", "D1"}  # H1's picture: just its valve
+    for sp in root.iter(f"{{{NS['xdr']}}}sp"):
+        if _attr(_find(sp, "xdr:nvSpPr/xdr:cNvPr"), "name").startswith("H1 pipe"):
+            ln = _find(sp, "xdr:spPr/a:ln")
+            assert ln.get("w") == str(round(1.3 * 12700))  # equipment width
+            assert ln.find("a:tailEnd", NS) is None  # no arrow on piping
