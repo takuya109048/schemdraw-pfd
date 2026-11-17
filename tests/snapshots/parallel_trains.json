@@ -143,40 +143,95 @@
  ],
  "routes": [
   [
-   "T-101.bottom",
-   "P-101.in",
+   "F-101.drain",
+   "T-101.n1",
    "pipe",
    [
     [
-     10.0,
-     4.0
+     25.0,
+     6.0
     ],
     [
-     10,
-     2
+     25,
+     -1
     ],
     [
-     12,
-     2
+     6,
+     -1
+    ],
+    [
+     6,
+     16
+    ],
+    [
+     9,
+     16
+    ],
+    [
+     9.0,
+     13.885618
     ]
    ]
   ],
   [
-   "P-101.out",
-   "H-101.main_w",
+   "F-201.drain",
+   "T-201.n1",
    "pipe",
    [
     [
-     14,
-     3
+     47.0,
+     6.0
     ],
     [
-     14,
-     4
+     47,
+     -1
     ],
     [
-     16,
-     4
+     28,
+     -1
+    ],
+    [
+     28,
+     16
+    ],
+    [
+     31,
+     16
+    ],
+    [
+     31.0,
+     13.885618
+    ]
+   ]
+  ],
+  [
+   "F-301.drain",
+   "T-301.n1",
+   "pipe",
+   [
+    [
+     69.0,
+     6.0
+    ],
+    [
+     69,
+     -1
+    ],
+    [
+     50,
+     -1
+    ],
+    [
+     50,
+     16
+    ],
+    [
+     53,
+     16
+    ],
+    [
+     53.0,
+     13.885618
     ]
    ]
   ],
@@ -219,37 +274,6 @@
     [
      23,
      8
-    ]
-   ]
-  ],
-  [
-   "F-101.drain",
-   "T-101.n1",
-   "pipe",
-   [
-    [
-     25.0,
-     6.0
-    ],
-    [
-     25,
-     -1
-    ],
-    [
-     6,
-     -1
-    ],
-    [
-     6,
-     16
-    ],
-    [
-     9,
-     16
-    ],
-    [
-     9.0,
-     13.885618
     ]
    ]
   ],
@@ -314,44 +338,6 @@
    ]
   ],
   [
-   "T-201.bottom",
-   "P-201.in",
-   "pipe",
-   [
-    [
-     32.0,
-     4.0
-    ],
-    [
-     32,
-     2
-    ],
-    [
-     34,
-     2
-    ]
-   ]
-  ],
-  [
-   "P-201.out",
-   "H-201.main_w",
-   "pipe",
-   [
-    [
-     36,
-     3
-    ],
-    [
-     36,
-     4
-    ],
-    [
-     38,
-     4
-    ]
-   ]
-  ],
-  [
    "H-201.b0",
    "T-201.n3",
    "pipe",
@@ -394,37 +380,6 @@
    ]
   ],
   [
-   "F-201.drain",
-   "T-201.n1",
-   "pipe",
-   [
-    [
-     47.0,
-     6.0
-    ],
-    [
-     47,
-     -1
-    ],
-    [
-     28,
-     -1
-    ],
-    [
-     28,
-     16
-    ],
-    [
-     31,
-     16
-    ],
-    [
-     31.0,
-     13.885618
-    ]
-   ]
-  ],
-  [
    "H-201.b1",
    "_T_MAIN_tail_2.s",
    "pipe",
@@ -436,44 +391,6 @@
     [
      41,
      16
-    ]
-   ]
-  ],
-  [
-   "T-301.bottom",
-   "P-301.in",
-   "pipe",
-   [
-    [
-     54.0,
-     4.0
-    ],
-    [
-     54,
-     2
-    ],
-    [
-     56,
-     2
-    ]
-   ]
-  ],
-  [
-   "P-301.out",
-   "H-301.main_w",
-   "pipe",
-   [
-    [
-     58,
-     3
-    ],
-    [
-     58,
-     4
-    ],
-    [
-     60,
-     4
     ]
    ]
   ],
@@ -520,37 +437,6 @@
    ]
   ],
   [
-   "F-301.drain",
-   "T-301.n1",
-   "pipe",
-   [
-    [
-     69.0,
-     6.0
-    ],
-    [
-     69,
-     -1
-    ],
-    [
-     50,
-     -1
-    ],
-    [
-     50,
-     16
-    ],
-    [
-     53,
-     16
-    ],
-    [
-     53.0,
-     13.885618
-    ]
-   ]
-  ],
-  [
    "H-301.b1",
    "_T_MAIN_tail.s",
    "pipe",
@@ -562,6 +448,63 @@
     [
      63,
      16
+    ]
+   ]
+  ],
+  [
+   "P-101.out",
+   "H-101.main_w",
+   "pipe",
+   [
+    [
+     14,
+     3
+    ],
+    [
+     14,
+     4
+    ],
+    [
+     16,
+     4
+    ]
+   ]
+  ],
+  [
+   "P-201.out",
+   "H-201.main_w",
+   "pipe",
+   [
+    [
+     36,
+     3
+    ],
+    [
+     36,
+     4
+    ],
+    [
+     38,
+     4
+    ]
+   ]
+  ],
+  [
+   "P-301.out",
+   "H-301.main_w",
+   "pipe",
+   [
+    [
+     58,
+     3
+    ],
+    [
+     58,
+     4
+    ],
+    [
+     60,
+     4
     ]
    ]
   ],
@@ -652,6 +595,63 @@
     [
      54,
      14
+    ]
+   ]
+  ],
+  [
+   "T-101.bottom",
+   "P-101.in",
+   "pipe",
+   [
+    [
+     10.0,
+     4.0
+    ],
+    [
+     10,
+     2
+    ],
+    [
+     12,
+     2
+    ]
+   ]
+  ],
+  [
+   "T-201.bottom",
+   "P-201.in",
+   "pipe",
+   [
+    [
+     32.0,
+     4.0
+    ],
+    [
+     32,
+     2
+    ],
+    [
+     34,
+     2
+    ]
+   ]
+  ],
+  [
+   "T-301.bottom",
+   "P-301.in",
+   "pipe",
+   [
+    [
+     54.0,
+     4.0
+    ],
+    [
+     54,
+     2
+    ],
+    [
+     56,
+     2
     ]
    ]
   ]
@@ -3584,16 +3584,28 @@
      "lw": 1.1,
      "path": [
       [
-       10.0,
-       4.0
+       25.0,
+       6.0
       ],
       [
-       10,
-       2
+       25,
+       -1
       ],
       [
-       12,
-       2
+       6,
+       -1
+      ],
+      [
+       6,
+       16
+      ],
+      [
+       9,
+       16
+      ],
+      [
+       9.0,
+       13.885618
       ]
      ],
      "visible": true,
@@ -3615,12 +3627,39 @@
      "lw": null,
      "path": [
       [
-       10.3,
-       3.55
+       25.3,
+       5.55
       ],
       [
-       9.7,
-       3.55
+       24.7,
+       5.55
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       8.7,
+       14.335618
+      ],
+      [
+       9.3,
+       14.335618
       ]
      ],
      "visible": true,
@@ -3644,16 +3683,181 @@
      "lw": 1.1,
      "path": [
       [
-       14,
-       3
+       47.0,
+       6.0
       ],
       [
-       14,
-       4
+       47,
+       -1
       ],
       [
-       16,
-       4
+       28,
+       -1
+      ],
+      [
+       28,
+       16
+      ],
+      [
+       31,
+       16
+      ],
+      [
+       31.0,
+       13.885618
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       47.3,
+       5.55
+      ],
+      [
+       46.7,
+       5.55
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       30.7,
+       14.335618
+      ],
+      [
+       31.3,
+       14.335618
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       69.0,
+       6.0
+      ],
+      [
+       69,
+       -1
+      ],
+      [
+       50,
+       -1
+      ],
+      [
+       50,
+       16
+      ],
+      [
+       53,
+       16
+      ],
+      [
+       53.0,
+       13.885618
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       69.3,
+       5.55
+      ],
+      [
+       68.7,
+       5.55
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       52.7,
+       14.335618
+      ],
+      [
+       53.3,
+       14.335618
       ]
      ],
      "visible": true,
@@ -3801,105 +4005,6 @@
      "lw": 1.1,
      "path": [
       [
-       25.0,
-       6.0
-      ],
-      [
-       25,
-       -1
-      ],
-      [
-       6,
-       -1
-      ],
-      [
-       6,
-       16
-      ],
-      [
-       9,
-       16
-      ],
-      [
-       9.0,
-       13.885618
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       25.3,
-       5.55
-      ],
-      [
-       24.7,
-       5.55
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       8.7,
-       14.335618
-      ],
-      [
-       9.3,
-       14.335618
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": "->",
-     "arrowlength": 0.3,
-     "arrowwidth": 0.2,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": "-",
-     "lw": 1.1,
-     "path": [
-      [
        64,
        17
       ],
@@ -3993,99 +4098,6 @@
       [
        19,
        16
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": "->",
-     "arrowlength": 0.3,
-     "arrowwidth": 0.2,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": "-",
-     "lw": 1.1,
-     "path": [
-      [
-       32.0,
-       4.0
-      ],
-      [
-       32,
-       2
-      ],
-      [
-       34,
-       2
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       32.3,
-       3.55
-      ],
-      [
-       31.7,
-       3.55
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": "->",
-     "arrowlength": 0.3,
-     "arrowwidth": 0.2,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": "-",
-     "lw": 1.1,
-     "path": [
-      [
-       36,
-       3
-      ],
-      [
-       36,
-       4
-      ],
-      [
-       38,
-       4
       ]
      ],
      "visible": true,
@@ -4233,204 +4245,12 @@
      "lw": 1.1,
      "path": [
       [
-       47.0,
-       6.0
-      ],
-      [
-       47,
-       -1
-      ],
-      [
-       28,
-       -1
-      ],
-      [
-       28,
-       16
-      ],
-      [
-       31,
-       16
-      ],
-      [
-       31.0,
-       13.885618
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       47.3,
-       5.55
-      ],
-      [
-       46.7,
-       5.55
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       30.7,
-       14.335618
-      ],
-      [
-       31.3,
-       14.335618
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": "->",
-     "arrowlength": 0.3,
-     "arrowwidth": 0.2,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": "-",
-     "lw": 1.1,
-     "path": [
-      [
        41,
        6
       ],
       [
        41,
        16
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": "->",
-     "arrowlength": 0.3,
-     "arrowwidth": 0.2,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": "-",
-     "lw": 1.1,
-     "path": [
-      [
-       54.0,
-       4.0
-      ],
-      [
-       54,
-       2
-      ],
-      [
-       56,
-       2
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       54.3,
-       3.55
-      ],
-      [
-       53.7,
-       3.55
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": "->",
-     "arrowlength": 0.3,
-     "arrowwidth": 0.2,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": "-",
-     "lw": 1.1,
-     "path": [
-      [
-       58,
-       3
-      ],
-      [
-       58,
-       4
-      ],
-      [
-       60,
-       4
       ]
      ],
      "visible": true,
@@ -4578,82 +4398,12 @@
      "lw": 1.1,
      "path": [
       [
-       69.0,
-       6.0
+       63,
+       6
       ],
       [
-       69,
-       -1
-      ],
-      [
-       50,
-       -1
-      ],
-      [
-       50,
+       63,
        16
-      ],
-      [
-       53,
-       16
-      ],
-      [
-       53.0,
-       13.885618
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       69.3,
-       5.55
-      ],
-      [
-       68.7,
-       5.55
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       52.7,
-       14.335618
-      ],
-      [
-       53.3,
-       14.335618
       ]
      ],
      "visible": true,
@@ -4677,12 +4427,82 @@
      "lw": 1.1,
      "path": [
       [
-       63,
-       6
+       14,
+       3
       ],
       [
-       63,
-       16
+       14,
+       4
+      ],
+      [
+       16,
+       4
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       36,
+       3
+      ],
+      [
+       36,
+       4
+      ],
+      [
+       38,
+       4
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       58,
+       3
+      ],
+      [
+       58,
+       4
+      ],
+      [
+       60,
+       4
       ]
      ],
      "visible": true,
@@ -4992,6 +4812,186 @@
       [
        54.3,
        14.45
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       10.0,
+       4.0
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       12,
+       2
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       10.3,
+       3.55
+      ],
+      [
+       9.7,
+       3.55
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       32.0,
+       4.0
+      ],
+      [
+       32,
+       2
+      ],
+      [
+       34,
+       2
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       32.3,
+       3.55
+      ],
+      [
+       31.7,
+       3.55
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       54.0,
+       4.0
+      ],
+      [
+       54,
+       2
+      ],
+      [
+       56,
+       2
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       54.3,
+       3.55
+      ],
+      [
+       53.7,
+       3.55
       ]
      ],
      "visible": true,

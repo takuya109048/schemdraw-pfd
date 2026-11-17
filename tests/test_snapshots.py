@@ -17,11 +17,7 @@ import schemdraw_pfd.render as render
 from schemdraw_pfd import Flowsheet
 
 SNAPSHOTS = Path(__file__).parent / "snapshots"
-EXAMPLES = sorted(
-    p.stem
-    for p in Path("examples").glob("*.json")
-    if p.stem != "crude_distillation"  # does not load: unknown key 'row'
-)
+EXAMPLES = sorted(p.stem for p in Path("examples").glob("*.json"))
 
 
 def _plain(v):

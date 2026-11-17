@@ -1,4 +1,5 @@
 {
+  "layout": "order",
   "version": 1,
   "custom_elements": [
     {"name": "hopper_drum", "width": 4, "height": 4, "nozzles": true, "shapes": [{"type": "polyline", "closed": true, "points": [[0, 2], [0, 4], [4, 4], [4, 2], [2, 0]]}], "ports": {"in1": {"side": "N", "offset": 1}, "in2": {"side": "N", "offset": 3}, "bottom": {"side": "S", "offset": 2}, "w": {"side": "W", "offset": 3}, "e": {"side": "E", "offset": 3}}},
