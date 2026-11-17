@@ -62,8 +62,13 @@ def expand(
     connections: list[Connection],
     library: ElementLibrary,
     describe: Callable[[Equipment, Callable[[], Geometry]], Geometry] | None = None,
+    edges: dict[str, str] | None = None,
 ) -> Expanded:
-    """``describe(eq, build)`` may wrap geometry building (e.g. error context)."""
+    """``describe(eq, build)`` may wrap geometry building (e.g. error context).
+
+    ``edges``: off-sheet flags that will stand on a sheet edge (``"left"`` /
+    ``"right"``, flow layout) -- for the order of taps on a main pipe they
+    lie beyond everything on that side, wherever they were declared."""
     eqs = list(equipment)
     cache: dict[str, Geometry] = {}
 
@@ -77,7 +82,7 @@ def expand(
     pending: list[PendingTee] = []
     headers: list[list[str]] = []
     owners: dict[str, str] = {}
-    flat = _auto_tees(eqs, flat, geo, pending, headers, owners)
+    flat = _auto_tees(eqs, flat, geo, pending, headers, owners, edges or {})
     return Expanded(eqs, flat, {e.id: geo(e) for e in eqs}, pending, headers, owners)
 
 
@@ -175,6 +180,7 @@ def _auto_tees(
     pending: list[PendingTee],
     headers: list[list[str]],
     owners: dict[str, str],
+    edges: dict[str, str],
 ) -> list[Connection]:
     """Every port used by several lines gets a main pipe (header).
 
@@ -221,16 +227,32 @@ def _auto_tees(
         def rel(u: Use) -> int:
             """Where the line's other end lies in the order (+: right)."""
             o = other(u)
-            return 0 if o is None else order[o.id] - order[owner_id]
+            if o is None:
+                return 0
+            edge = {"left": -1, "right": 1}.get(edges.get(o.id, ""))
+            if edge and not edges.get(owner_id):
+                return edge * len(eqs)  # beyond everything on that side
+            return order[o.id] - order[owner_id]
 
         side = ports[pname].side
         level = owner.level
         settle = False
         if side in "NS":
-            if side == "S" and owner.level > 0:
-                level -= 1  # hang the main pipe in the band below
-            elif side == "N" and owner.level < top:
-                level += 1  # or stand it in the band above
+            # hang the main pipe in the band below an S port, or stand it in
+            # the band above an N port -- unless every line leads the other
+            # way (edge flags aside, their height is free): a pump's outlet
+            # sending reflux back down to its column and product on to a
+            # flag keeps the main pipe on its own band, just above the port
+            ends = [by_id.get(conns[ci].ends[1 - e][0]) for ci, e in us]
+            levels = [o.level for o in ends if o and not geo(o).off_sheet]
+            if side == "S":
+                back = bool(levels) and min(levels) > owner.level
+            else:
+                back = bool(levels) and max(levels) < owner.level
+            if side == "S" and owner.level > 0 and not back:
+                level -= 1
+            elif side == "N" and owner.level < top and not back:
+                level += 1
             else:
                 settle = True
         # on a tie, a main pipe lifted above an N port turns down, below an S up
@@ -239,6 +261,56 @@ def _auto_tees(
         def dy(u: Use) -> int:
             o = other(u)
             return 0 if o is None else _sign(o.level - level)
+
+        def faces(u: Use) -> str:
+            """The side the line's other port faces ("" if unknown)."""
+            o = other(u)
+            if o is None:
+                return ""
+            port = geo(o).ports.get(conns[u[0]].ends[1 - u[1]][1])
+            return "" if port is None else port.side
+
+        def height(e: Equipment, side: str, offset: int) -> int:
+            """Rough height of a port above its band floor (before layout)."""
+            g = geo(e)
+            at = {"N": g.height, "S": 0}.get(side, offset)
+            return (e.elevation or 0) + at
+
+        # the main pipe's rough height on its band; None: free to follow
+        # the lines (it leaves an off-sheet flag, whose height is free)
+        pipe_h: int | None = None
+        if level == owner.level and not geo(owner).off_sheet:
+            pipe_h = height(owner, side, ports[pname].offset)
+            pipe_h += {"N": 2, "S": -2}.get(side, 0)
+
+        def arm_of(u: Use) -> str:
+            """The tap's arm the line enters by: from the band above or
+            below; on the same band from the side its port faces when the
+            port lies beyond the main pipe that way (a pump's outlet rises
+            into the tap from below, a vessel's bottom drops in from above),
+            else across from the shared port."""
+            if dy(u):
+                return "n" if dy(u) > 0 else "s"
+            f = faces(u)
+            o = other(u)
+            if f not in ("N", "S") or o is None:
+                return across
+            if pipe_h is not None:
+                port = geo(o).ports[conns[u[0]].ends[1 - u[1]][1]]
+                h = height(o, f, port.offset)
+                if (h < pipe_h) if f == "N" else (h > pipe_h):
+                    return "s" if f == "N" else "n"
+                return across
+            return "s" if f == "N" else "n"
+
+        def ahead(u: Use, sign: int) -> bool:
+            """The line's other end lies ahead on the main pipe's own band."""
+            return sign * rel(u) > 0 and dy(u) == 0
+
+        def level_run(u: Use, sign: int) -> bool:
+            """The line runs straight on from the end of the main pipe (its
+            port faces along it, not up or down)."""
+            return ahead(u, sign) and faces(u) not in ("N", "S")
 
         kind = conns[us[0][0]].kind
 
@@ -264,16 +336,12 @@ def _auto_tees(
             back = "w" if way == "e" else "e"
             last = max(
                 lines,
-                key=lambda u: (
-                    sign * rel(u) > 0 and dy(u) == 0,
-                    sign * rel(u) > 0,
-                    sign * rel(u),
-                ),
+                key=lambda u: (ahead(u, sign), sign * rel(u) > 0, sign * rel(u)),
             )
             # alike lines (repeated units) that do not run straight on all tap
             # in the same way -- the last tap is an elbow -- instead of one of
             # them entering the end of the main pipe from the side
-            straight = not (alike and not (sign * rel(last) > 0 and dy(last) == 0))
+            straight = not (alike and not level_run(last, sign))
             taps = sorted(
                 (u for u in lines if u is not last or not straight),
                 key=lambda u: sign * rel(u),
@@ -281,7 +349,7 @@ def _auto_tees(
             chain: list[Equipment] = []
             prev = start
             for k, u in enumerate(taps):
-                arm = {1: "n", -1: "s"}.get(dy(u)) or across
+                arm = arm_of(u)
                 end = k == len(taps) - 1 and not straight
                 arms = back + arm if end else back + way + arm
                 tee = Equipment(next(tee_ids), "tee", level, {"arms": arms})
