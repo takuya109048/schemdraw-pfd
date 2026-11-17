@@ -16,7 +16,7 @@ FLOW_EXAMPLES = sorted(
     p.stem
     for p in Path("examples").glob("*.json")
     if json.loads(p.read_text("utf-8-sig")).get("layout", "flow") == "flow"
-    and p.stem != "crude_distillation"  # too slow to build here (~3 min)
+    and p.stem != "crude_distillation"  # too slow to build here (~2 min)
 )
 
 

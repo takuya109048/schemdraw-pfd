@@ -274,14 +274,19 @@ def _branch_order(
         order.append(u)
         # on a tie a merge point (fed by other items too) waits for the
         # item's own branches
-        longest = max((length(v) for v in succ[u]), default=0)
+        # the main flow: the longest way on (between equals the one from
+        # the lowest nozzle -- a column's bottoms)
+        # (none when several are alike: parallel trains keep their order)
+        ranks = sorted(((length(v), -height[(u, v)]), v) for v in succ[u])
+        main = -1
+        if len(ranks) > 1 and ranks[-1][0] != ranks[-2][0]:
+            main = ranks[-1][1]
 
         def branch(v: int) -> tuple:
-            # the main flow (longest way on) last; the others from the
-            # highest nozzle down (a column's overhead beside it, then its
-            # side draws top to bottom), then short ones first
-            main = len(succ[u]) > 1 and length(v) == longest
-            return main, -height[(u, v)], length(v), len(pred[v]) > 1, v
+            # the main flow last; the others from the highest nozzle down (a
+            # column's overhead beside it, then its side draws top to
+            # bottom), then short ones first
+            return v == main, height[(u, v)], length(v), len(pred[v]) > 1, v
 
         for v in sorted(succ[u], key=branch):
             if not waits(v):

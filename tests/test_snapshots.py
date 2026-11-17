@@ -20,7 +20,7 @@ SNAPSHOTS = Path(__file__).parent / "snapshots"
 EXAMPLES = sorted(
     p.stem
     for p in Path("examples").glob("*.json")
-    if p.stem != "crude_distillation"  # too slow to build here (~3 min)
+    if p.stem != "crude_distillation"  # too slow to build here (~2 min)
 )
 
 

@@ -132,10 +132,24 @@ class Router:
                 blocked[i + y0 : i + y1 + 1] = b"\1" * (y1 - y0 + 1)
         self.blocked = blocked
         self.axes = bytearray(w * h)
+        # per cell: the axis bit of the port whose doorstep it is (or 0)
+        self.door = bytearray(w * h)
         self.steps = (1, h, -1, -h)  # index offset of each of DIRS
 
     def _index(self, p: Node) -> int:
         return (p[0] - self.x0) * self.h + p[1] - self.y0
+
+    def reserve(self, terminals: list[Terminal]) -> None:
+        """Keep the first cell outside every port (its doorstep) for that
+        port's own line: another line may cross it straight, but neither
+        turn on it nor run through it along the port's axis.
+
+        Without it a line routed early may turn on the cell right in front
+        of a nozzle it does not serve, and the nozzle's own line can then no
+        longer leave or arrive there.
+        """
+        for t in terminals:
+            self.door[self._index(t.first)] = 1 << (t.out_dir % 2)
 
     # -- search ---------------------------------------------------------------
     def _search(self, s: Node, sd: int, t: Node, td: int, strict: bool):
@@ -149,10 +163,11 @@ class Router:
 
         A state is packed into one int: ``(node index * 4 + dir) * 16 + mask``.
         """
-        blocked, axes, h = self.blocked, self.axes, self.h
+        blocked, axes, door, h = self.blocked, self.axes, self.door, self.h
         x0, y0 = self.x0, self.y0
         tx, ty = t
         ti = self._index(t)
+        si = self._index(s)
         tdx, tdy = DIRS[td]
         back = (td + 2) % 4
         # out one way, in the opposite way: the arrival reversal is no U-turn
@@ -206,13 +221,15 @@ class Router:
             x += x0
             y += y0
             for nd, turn, step, dx, dy, rev, axis, bit, reverse_ok, bends in moves[d]:
-                if turn and here:
-                    continue  # never turn on top of an existing pipe
+                if turn and (here or (door[i] and i != si)):
+                    continue  # never turn on a pipe, or at another's doorstep
                 if strict and mask & rev and not reverse_ok:
                     continue
                 n = i + step
                 if blocked[n]:
                     continue
+                if door[n] == axis and n != ti:
+                    continue  # along the axis of another port, at its doorstep
                 used = axes[n]
                 if used & axis:
                     continue  # runs along an existing pipe
@@ -278,12 +295,12 @@ class Router:
         src, dst, _ = ends[0]
         if src.first == dst.edge and dst.first == src.edge:
             return None
-        saved = self.blocked, self.axes
-        self.blocked, self.axes = self._merged([sh for _, _, sh in ends])
+        saved = self.blocked, self.axes, self.door
+        self.blocked, self.axes, self.door = self._merged([sh for _, _, sh in ends])
         try:
             model = self.route(src, dst, allow_relaxed, commit=False)
         finally:
-            self.blocked, self.axes = saved
+            self.blocked, self.axes, self.door = saved
         if model is None:
             return None
         before = bytes(self.axes)
@@ -296,22 +313,28 @@ class Router:
             routes.append(r)
         return routes
 
-    def _merged(self, shifts: list[Node]) -> tuple[bytearray, bytearray]:
+    def _merged(self, shifts: list[Node]) -> tuple[bytearray, bytearray, bytearray]:
         """The grid as seen through every shift at once (cells OR-ed)."""
         h, n = self.h, len(self.blocked)
         w = n // h
         blocked = int.from_bytes(self.blocked, "big")
         axes = int.from_bytes(self.axes, "big")
+        door = int.from_bytes(self.door, "big")
         for dx, dy in shifts:
             if (dx, dy) == (0, 0):
                 continue
             off = dx * h + dy
             b, a = self._shifted(self.blocked, off, 1), self._shifted(self.axes, off, 0)
+            door |= int.from_bytes(self._shifted(self.door, off, 0), "big")
             # a cell whose shifted row falls off the column is off the grid
             col = bytes(1 if not 0 <= y + dy < h else 0 for y in range(h))
             blocked |= int.from_bytes(b, "big") | int.from_bytes(col * w, "big")
             axes |= int.from_bytes(a, "big")
-        return bytearray(blocked.to_bytes(n, "big")), bytearray(axes.to_bytes(n, "big"))
+        return (
+            bytearray(blocked.to_bytes(n, "big")),
+            bytearray(axes.to_bytes(n, "big")),
+            bytearray(door.to_bytes(n, "big")),
+        )
 
     @staticmethod
     def _shifted(arr: bytearray, off: int, pad: int) -> bytes:
@@ -340,15 +363,18 @@ class Router:
             if not (0 < x - self.x0 < w - 1 and 0 < y - self.y0 < h - 1):
                 return None
         idx = [self._index(p) for p in nodes]
-        blocked, axes = self.blocked, self.axes
+        blocked, axes, door = self.blocked, self.axes, self.door
         if blocked[idx[0]]:
             return None
+        first, last = idx[0], idx[-1]
         d = src.out_dir
         for (a, b), i, j in zip(zip(nodes, nodes[1:]), idx, idx[1:]):
             nd = DIRS.index((b[0] - a[0], b[1] - a[1]))
             if nd == (d + 2) % 4 or blocked[j] or axes[j] & (1 << (nd % 2)):
                 return None
-            if nd != d and axes[i]:
+            if door[j] == 1 << (nd % 2) and j != last:
+                return None
+            if nd != d and (axes[i] or (door[i] and i != first)):
                 return None
             d = nd
         if d != (dst.out_dir + 2) % 4 or axes[idx[-1]]:

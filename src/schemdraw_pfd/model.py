@@ -525,18 +525,27 @@ class Flowsheet:
             (gx, floor_x, gap_groups(sym)),
             (gy, floor_y, [[i] for i in range(len(gy))]),
         )
+        # each gap: straight to its floor if that holds, else the smallest
+        # squeeze that holds, found by bisection (a wide sheet would
+        # otherwise be squeezed one cell per routing pass)
         for gaps, floor, groups in steps:
             for group in groups:
-                while all(gaps[i] > floor[i] for i in group):
-                    for i in group:
-                        gaps[i] -= 1
+                ok, bad = 0, min(gaps[i] - floor[i] for i in group) + 1
+                if bad <= 1:
+                    continue
+                start = [gaps[i] for i in group]
+                step = bad - 1
+                while bad - ok > 1:
+                    for i, g in zip(group, start):
+                        gaps[i] = g - step
                     trial, _ = attempt(gx, gy, relaxed, best)
                     if trial and cost(trial) <= cost(best):
-                        best = trial
+                        best, ok = trial, step
                     else:
-                        for i in group:
-                            gaps[i] += 1
-                        break
+                        bad = step
+                    step = (ok + bad) // 2
+                for i, g in zip(group, start):
+                    gaps[i] = g - ok
         return best
 
     def _prepare(self) -> tuple[Expanded, list[Item], list[Link], list[FlowLink]]:
@@ -711,6 +720,13 @@ class Flowsheet:
         """
         by_id = {p.id: p for p in placed}
         router = Router(placed)
+        router.reserve(
+            [
+                resolve_port(by_id[eq], port)
+                for c in net.connections
+                for eq, port in c.ends
+            ]
+        )
         routes: dict[int, Route] = {}
         shapes: dict[int, tuple[int, Route]] = {}  # line class -> first routed
         ready: dict[int, Route] = {}  # copies laid down with their class
