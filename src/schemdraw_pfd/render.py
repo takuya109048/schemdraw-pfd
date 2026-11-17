@@ -11,12 +11,16 @@
 
 Everything sheet-wide (font, line widths, margins ...) comes from a
 :class:`~.style.Theme`.
+
+What is drawn is first collected as a :class:`Scene` -- equipment outlines,
+texts and strokes in drawing units -- which :func:`draw` hands to SchemDraw
+and :mod:`.xlsx` turns into a workbook, so both outputs share every coordinate.
 """
 
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import replace
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
@@ -31,15 +35,61 @@ from schemdraw.segments import (
     SegmentPoly,
     SegmentText,
 )
+from schemdraw.types import Halign, Valign
 
 from .expand import GENERATED_PREFIX
-from .geometry import Polyline, find_crossings  # noqa: F401 (re-exported)
+from .geometry import Polyline, Shape, find_crossings  # noqa: F401 (re-exported)
 from .layout import Placed
 from .model import Diagram
 from .style import DEFAULT_THEME, LineStyle, Theme
 
 Point = tuple[float, float]
 PT_PER_UNIT = 36.0  # schemdraw default: 0.5 inch per drawing unit
+
+
+# -- scene ---------------------------------------------------------------------
+@dataclass(frozen=True)
+class Text:
+    """A text block at ``(x, y)``; ``ha`` / ``va`` say which point of it."""
+
+    x: float
+    y: float
+    text: str
+    fontsize: float
+    ha: Halign = "center"
+    va: Valign = "center"
+
+
+@dataclass(frozen=True)
+class Stroke:
+    """A polyline drawn with ``style`` (SchemDraw keyword arguments: ``lw``,
+    ``ls``, ``arrow`` ...; no ``lw`` means the equipment line width)."""
+
+    points: tuple[Point, ...]
+    style: dict[str, Any] = field(default_factory=dict)
+
+
+Item = Shape | Text | Stroke  # a Shape: equipment outline in sheet coordinates
+
+
+@dataclass
+class Group:
+    """What belongs together: one piece of equipment (outline, texts, tag),
+    one line (its pieces between crossing gaps and its nozzle ticks), or the
+    sheet (specification rows and frame)."""
+
+    kind: str  # "equipment" | "line" | "sheet"
+    id: str
+    items: list[Item]
+    placed: Placed | None = None  # equipment only
+
+
+@dataclass
+class Scene:
+    groups: list[Group]
+    theme: Theme
+    font: str | None  # the installed font the texts are drawn with
+    bounds: tuple[float, float, float, float]  # sheet (frame) x0, y0, x1, y1
 
 
 class _Shapes(elm.Element):
@@ -56,16 +106,16 @@ def _font(candidates: tuple[str, ...]) -> str | None:
     return next((f for f in candidates if f in available), None)
 
 
-def _line_segments(
+def _line_strokes(
     pts: list[Point],
     marks: dict[int, list[float]],
     style: LineStyle,
     r: float,
-) -> list:
-    """Split a route at its crossing marks into line pieces (a gap at each)."""
-    lw = style.lw
-    ls: Any = style.ls  # schemdraw types it as a Literal of the matplotlib styles
-    segs: list = []
+) -> list[Stroke]:
+    """Split a route at its crossing marks into line pieces (a gap at each);
+    the last piece carries the arrow."""
+    plain: dict[str, Any] = {"lw": style.lw, "ls": style.ls}
+    strokes: list[Stroke] = []
     run: list[Point] = [pts[0]]
     for si, (p, q) in enumerate(zip(pts, pts[1:])):
         horizontal = p[1] == q[1]
@@ -75,7 +125,7 @@ def _line_segments(
             before = (m - sign * r, p[1]) if horizontal else (p[0], m - sign * r)
             after = (m + sign * r, p[1]) if horizontal else (p[0], m + sign * r)
             run.append(before)
-            segs.append(Segment(run, lw=lw, ls=ls))
+            strokes.append(Stroke(tuple(run), plain))
             run = [after]
         run.append(q)
     arrow: dict[str, Any] = (
@@ -83,36 +133,26 @@ def _line_segments(
         if style.arrow
         else {}
     )
-    segs.append(Segment(run, lw=lw, ls=ls, **arrow))
-    return segs
+    strokes.append(Stroke(tuple(run), {**plain, **arrow}))
+    return strokes
 
 
-def _shape_segments(p: Placed) -> list:
-    segs: list = []
-    for s in p.geo.translated(p.x, p.y):
-        if isinstance(s, Polyline):
-            if s.fill:
-                segs.append(SegmentPoly(list(s.points), closed=s.closed, fill=s.fill))
-            else:
-                pts = list(s.points) + ([s.points[0]] if s.closed else [])
-                segs.append(Segment(pts))
-        elif s.fill and s.full and s.rx == s.ry:
-            segs.append(SegmentCircle((s.cx, s.cy), s.rx, fill=s.fill))
-        else:
-            segs.append(
-                SegmentArc(
-                    (s.cx, s.cy), 2 * s.rx, 2 * s.ry, theta1=s.theta1, theta2=s.theta2
-                )
-            )
-    return segs
+def _line_segments(
+    pts: list[Point],
+    marks: dict[int, list[float]],
+    style: LineStyle,
+    r: float,
+) -> list:
+    """:func:`_line_strokes` as SchemDraw segments."""
+    return [_segment(s) for s in _line_strokes(pts, marks, style, r)]
 
 
 Pipe = tuple[tuple[float, float], tuple[float, float]]  # one straight piece
 
 
-def _tag_segments(
+def _tag_items(
     p: Placed, theme: Theme, busy: list[float], pipes: Sequence[Pipe] = ()
-) -> list:
+) -> list[Item]:
     """Equipment tag (underlined by default) placed according to ``label_pos``.
 
     ``busy``: heights at which lines meet the west face; a tag placed on the left
@@ -165,13 +205,13 @@ def _tag_segments(
             sx, sy = spot(where)
             spots += [(sx + dx, sy) for dx in (-0.5, 0.5, -1.0, 1.0)]
         x, y = next((s for s in spots if clear(s)), (x, y))
-    segs: list = [
-        SegmentText((x, y), p.id, align=("center", "center"), fontsize=theme.fontsize)
-    ]
+    items: list[Item] = [Text(x, y, p.id, theme.fontsize)]
     if theme.tag_underline:
         under = y - 0.62 * em
-        segs.append(Segment([(x - width / 2, under), (x + width / 2, under)], lw=0.8))
-    return segs
+        items.append(
+            Stroke(((x - width / 2, under), (x + width / 2, under)), {"lw": 0.8})
+        )
+    return items
 
 
 def _text_width(text: str, em: float) -> float:
@@ -198,26 +238,22 @@ def _spread(entries: list[tuple[float, str]], em: float) -> list[tuple[float, st
     return out
 
 
-def _nozzle_tick(a: Point, b: Point) -> Segment:
+def _nozzle_tick(a: Point, b: Point) -> Stroke:
     """Short flange line across a pipe, just outside the equipment outline."""
     dx = (b[0] > a[0]) - (b[0] < a[0])
     dy = (b[1] > a[1]) - (b[1] < a[1])
     cx, cy = a[0] + 0.45 * dx, a[1] + 0.45 * dy
-    return Segment([(cx - 0.3 * dy, cy - 0.3 * dx), (cx + 0.3 * dy, cy + 0.3 * dx)])
+    return Stroke(((cx - 0.3 * dy, cy - 0.3 * dx), (cx + 0.3 * dy, cy + 0.3 * dx)))
 
 
-def draw(
+def scene(
     diagram: Diagram,
-    path: str | Path,
     label: bool = True,
     fontsize: float | None = None,
     frame: bool = True,
     theme: Theme | None = None,
-) -> None:
-    """Draw ``diagram`` to ``path`` (format from the suffix: svg / png / pdf ...).
-
-    ``fontsize`` overrides ``theme.fontsize``.
-    """
+) -> Scene:
+    """Everything :func:`draw` puts on the sheet, in drawing order."""
     theme = theme or DEFAULT_THEME
     if fontsize is not None:
         theme = replace(theme, fontsize=fontsize)
@@ -225,19 +261,7 @@ def draw(
     missing = {c.kind for c, _ in diagram.routes} - set(styles)
     if missing:
         raise ValueError(f"no line style for kinds {sorted(missing)}")
-
-    matplotlib.use("Agg")  # file output only; never open a GUI window
-    schemdraw.use("matplotlib")
-    d = schemdraw.Drawing(show=False)
-    font = _font(theme.fonts)
-    extra: dict[str, Any] = {"font": font} if font else {}
-    d.config(
-        unit=1,
-        fontsize=theme.fontsize,
-        lw=theme.equipment_lw,
-        bgcolor=theme.background,  # opaque sheet, not a transparent background
-        **extra,
-    )
+    groups: list[Group] = []
     by_id = {p.id: p for p in diagram.placed}
     west: dict[str, list[float]] = {}  # id -> heights of lines on the west face
     for c, r in diagram.routes:
@@ -250,20 +274,13 @@ def draw(
 
     # equipment ---------------------------------------------------------------
     for p in diagram.placed:
-        segs = _shape_segments(p)
+        items: list[Item] = list(p.geo.translated(p.x, p.y))
         for x, y, text, scale in p.geo.texts:
             if text:
-                segs.append(
-                    SegmentText(
-                        (p.x + x, p.y + y),
-                        text,
-                        align=("center", "center"),
-                        fontsize=theme.fontsize * scale,
-                    )
-                )
+                items.append(Text(p.x + x, p.y + y, text, theme.fontsize * scale))
         if label and not p.id.startswith(GENERATED_PREFIX):
-            segs += _tag_segments(p, theme, west.get(p.id, []), pipes)
-        d.add(_Shapes(segs).at((0, 0)))
+            items += _tag_items(p, theme, west.get(p.id, []), pipes)
+        groups.append(Group("equipment", p.id, items, p))
 
     # lines -------------------------------------------------------------------
     conns = [c for c, _ in diagram.routes]
@@ -274,14 +291,14 @@ def draw(
             marks[vr].setdefault(vs, []).append(y)
     for c, pts, m in zip(conns, paths, marks):
         style = styles[c.kind]
-        segs = _line_segments(pts, m, style, theme.crossing_gap)
+        line: list[Item] = list(_line_strokes(pts, m, style, theme.crossing_gap))
         if style.process and theme.nozzle_ticks:
             (src, _), (dst, _) = c.ends
             if by_id[src].geo.nozzles:
-                segs.append(_nozzle_tick(pts[0], pts[1]))
+                line.append(_nozzle_tick(pts[0], pts[1]))
             if by_id[dst].geo.nozzles:
-                segs.append(_nozzle_tick(pts[-1], pts[-2]))
-        d.add(_Shapes(segs).at((0, 0)))
+                line.append(_nozzle_tick(pts[-1], pts[-2]))
+        groups.append(Group("line", f"{c.src} -> {c.dst}", line))
 
     # sheet: specification rows and border --------------------------------------
     xs = [v for p in diagram.placed for v in (p.bbox[0], p.bbox[2])]
@@ -291,7 +308,7 @@ def draw(
     mg = theme.margin
     x0, x1, y0, y1 = min(xs) - mg, max(xs) + mg, min(ys) - mg, max(ys) + mg
     em = theme.fontsize / PT_PER_UNIT
-    sheet: list = []
+    sheet: list[Item] = []
     rows = {False: 0, True: 0}  # rotating? -> number of text lines needed
     specs: dict[bool, list[tuple[float, str]]] = {False: [], True: []}
     for p in diagram.placed:
@@ -302,27 +319,88 @@ def draw(
         rows[p.geo.rotating] = max(rows[p.geo.rotating], text.count("\n") + 1)
         specs[p.geo.rotating].append(((p.bbox[0] + p.bbox[2]) / 2, text))
     for rotating, entries in specs.items():
-        y, va = (y0, "top") if rotating else (y1, "bottom")
+        va: Valign = "top" if rotating else "bottom"
+        y = y0 if rotating else y1
         for cx, text in _spread(entries, em):
             x0, x1 = (
                 min(x0, cx - _text_width(text, em) / 2 - 1),
                 max(x1, cx + _text_width(text, em) / 2 + 1),
             )
-            sheet.append(
-                SegmentText(
-                    (cx, y), text, align=("center", va), fontsize=theme.fontsize
-                )
-            )
+            sheet.append(Text(cx, y, text, theme.fontsize, "center", va))
     pitch = theme.spec_line_height * em
     y0 -= rows[True] * pitch + (1 if rows[True] else 0)
     y1 += rows[False] * pitch + (1 if rows[False] else 0)
     if frame:
-        sheet.append(
-            Segment(
-                [(x0, y0), (x1, y0), (x1, y1), (x0, y1), (x0, y0)], lw=theme.frame_lw
-            )
-        )
+        corners = ((x0, y0), (x1, y0), (x1, y1), (x0, y1), (x0, y0))
+        sheet.append(Stroke(corners, {"lw": theme.frame_lw}))
     if sheet:
-        d.add(_Shapes(sheet).at((0, 0)))
+        groups.append(Group("sheet", "sheet", sheet))
+    return Scene(groups, theme, _font(theme.fonts), (x0, y0, x1, y1))
 
+
+# -- SchemDraw -----------------------------------------------------------------
+def _segment(item: Item) -> Any:
+    """The SchemDraw segment of one scene item."""
+    if isinstance(item, Text):
+        return SegmentText(
+            (item.x, item.y),
+            item.text,
+            align=(item.ha, item.va),
+            fontsize=item.fontsize,
+        )
+    if isinstance(item, Stroke):
+        return Segment(list(item.points), **item.style)
+    if isinstance(item, Polyline):
+        if item.fill:
+            return SegmentPoly(list(item.points), closed=item.closed, fill=item.fill)
+        pts = list(item.points) + ([item.points[0]] if item.closed else [])
+        return Segment(pts)
+    if item.fill and item.full and item.rx == item.ry:
+        return SegmentCircle((item.cx, item.cy), item.rx, fill=item.fill)
+    return SegmentArc(
+        (item.cx, item.cy),
+        2 * item.rx,
+        2 * item.ry,
+        theta1=item.theta1,
+        theta2=item.theta2,
+    )
+
+
+def configure(d: schemdraw.Drawing, sc: Scene) -> None:
+    """Drawing defaults shared by every output (font, sizes, line width)."""
+    extra: dict[str, Any] = {"font": sc.font} if sc.font else {}
+    d.config(
+        unit=1,
+        fontsize=sc.theme.fontsize,
+        lw=sc.theme.equipment_lw,
+        bgcolor=sc.theme.background,  # opaque sheet, not a transparent background
+        **extra,
+    )
+
+
+def draw(
+    diagram: Diagram,
+    path: str | Path,
+    label: bool = True,
+    fontsize: float | None = None,
+    frame: bool = True,
+    theme: Theme | None = None,
+) -> None:
+    """Draw ``diagram`` to ``path`` (format from the suffix: svg / png / pdf ...,
+    or xlsx -- see :mod:`.xlsx`).
+
+    ``fontsize`` overrides ``theme.fontsize``.
+    """
+    sc = scene(diagram, label, fontsize, frame, theme)
+    if Path(path).suffix.lower() == ".xlsx":
+        from .xlsx import write_xlsx
+
+        write_xlsx(sc, path)
+        return
+    matplotlib.use("Agg")  # file output only; never open a GUI window
+    schemdraw.use("matplotlib")
+    d = schemdraw.Drawing(show=False)
+    configure(d, sc)
+    for g in sc.groups:
+        d.add(_Shapes([_segment(i) for i in g.items]).at((0, 0)))
     d.save(str(path), transparent=False)
