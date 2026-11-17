@@ -354,3 +354,69 @@ def test_vertical_drum_has_nozzles_across_both_heads():
     assert geo.ports["s2"] == geo.ports["bottom"]
     d = _placed("vertical_drum")
     assert resolve_port(d, "n0").point[1] < resolve_port(d, "top").point[1]
+
+
+def test_filter_housing_ports_on_shell():
+    geo = get_element("filter_housing").build({})
+    assert {"in", "out", "vent", "drain"} <= set(geo.ports)
+    assert geo.ports["in"].side == "W" and geo.ports["out"].side == "E"
+    assert geo.ports["in"].offset < geo.ports["out"].offset  # in low, out high
+    fs = Flowsheet()
+    fs.add("pump", "P")
+    fs.add("filter_housing", "F", level=1)
+    fs.connect("P.out", "F.in")
+    assert not fs.build().warnings
+
+
+def _trains(n=3):
+    """``n`` copies of tank -> pump -> header -> filter, joined by one main."""
+    fs = Flowsheet(layout="flow")
+    fs.add("connector", "MAIN", level=2, text="MAIN", point="right")
+    for k in range(1, n + 1):
+        t, p, h, f = (f"{x}-{k}" for x in "TPHF")
+        fs.add("vertical_drum", t, level=1)
+        fs.add("pump", p, level=0)
+        fs.add("header", h, level=1)
+        fs.add("filter_housing", f, level=1)
+        fs.connect(f"{t}.bottom", f"{p}.in")
+        fs.connect(f"{p}.out", f"{h}.main_w")
+        fs.connect(f"{h}.b0", f"{t}.top", recycle=True)
+        fs.connect(f"{h}.b1", f"{f}.in")
+        fs.connect(f"{f}.drain", f"{t}.n3", recycle=True)
+        fs.connect(f"{h}.b2", "MAIN.tail")
+    return fs
+
+
+def test_repeated_units_are_found():
+    from schemdraw_pfd.symmetry import find_units
+
+    net = _trains()._prepare()[0]
+    sym = find_units(net)
+    assert [[[net.equipment[i].id for i in u] for u in g] for g in sym.units] == [
+        [[f"{x}-{k}" for x in "TPHF"] for k in (1, 2, 3)]
+    ]
+
+
+def test_repeated_units_are_drawn_alike():
+    d = _trains().build()
+    assert not d.warnings
+    pos = {p.id: (p.x, p.y) for p in d.placed}
+    shift = [pos[f"T-{k}"][0] - pos["T-1"][0] for k in (1, 2, 3)]
+    for x in "PHF":  # every unit is the first one moved along
+        for k in (1, 2, 3):
+            assert pos[f"{x}-{k}"] == (
+                pos[f"{x}-1"][0] + shift[k - 1],
+                pos[f"{x}-1"][1],
+            )
+    shapes: dict[str, set] = {}
+    for c, r in d.routes:
+        k = int(c.src.split("-")[1][0]) if not c.src.startswith("_") else None
+        if k is None or c.dst.startswith(("_", "MAIN")):
+            continue
+        base = [(x - shift[k - 1], y) for x, y in r.points]
+        key = c.src.replace(f"-{k}", "") + ">" + c.dst.replace(f"-{k}", "")
+        shapes.setdefault(key, set()).add(tuple(base))
+    assert shapes and all(len(s) == 1 for s in shapes.values())  # same shape
+    # every unit meets the main pipe the same way: a straight riser into a tap
+    risers = [r for c, r in d.routes if c.src.startswith("H-") and "b2" in c.src]
+    assert len(risers) == 3 and all(r.bends == 0 for r in risers)

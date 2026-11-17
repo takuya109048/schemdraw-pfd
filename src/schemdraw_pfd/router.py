@@ -12,7 +12,7 @@ reversals in place.
 from __future__ import annotations
 
 import heapq
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from .geometry import NORMALS, ray_hit
 from .layout import Placed
@@ -39,6 +39,7 @@ class Terminal:
 class Route:
     points: list[tuple[float, float]]  # corner points, outline to outline
     strict: bool
+    nodes: list[Node] = field(default_factory=list)  # grid path, first to first
 
     @property
     def bends(self) -> int:
@@ -241,7 +242,9 @@ class Router:
             self.axes[self._index(b)] |= bit
 
     # -- public ---------------------------------------------------------------
-    def route(self, src: Terminal, dst: Terminal, allow_relaxed: bool) -> Route | None:
+    def route(
+        self, src: Terminal, dst: Terminal, allow_relaxed: bool, commit: bool = True
+    ) -> Route | None:
         if src.first == dst.edge and dst.first == src.edge:
             # facing ports one cell apart: join them directly (an I shape)
             return Route(_simplify([src.point, src.edge, dst.edge, dst.point]), True)
@@ -254,9 +257,105 @@ class Router:
             if nodes is None:
                 continue
             full = [src.point, src.edge, *nodes, dst.edge, dst.point]
-            self._commit(nodes)
-            return Route(_simplify(full), strict)
+            if commit:
+                self._commit(nodes)
+            return Route(_simplify(full), strict, nodes)
         return None
+
+    def route_together(
+        self,
+        ends: list[tuple[Terminal, Terminal, Node]],
+        allow_relaxed: bool,
+    ) -> list[Route] | None:
+        """Route corresponding lines of repeated units with one shape.
+
+        ``ends``: (src, dst, shift) per line; each line's terminals are the
+        first line's, moved by its shift.  The shape is searched on a grid
+        where a cell is free only if it is free at every shift, then laid
+        down once per line.  None (nothing laid down) if there is no such
+        shape; the caller then routes the lines one by one.
+        """
+        src, dst, _ = ends[0]
+        if src.first == dst.edge and dst.first == src.edge:
+            return None
+        saved = self.blocked, self.axes
+        self.blocked, self.axes = self._merged([sh for _, _, sh in ends])
+        try:
+            model = self.route(src, dst, allow_relaxed, commit=False)
+        finally:
+            self.blocked, self.axes = saved
+        if model is None:
+            return None
+        before = bytes(self.axes)
+        routes = []
+        for s, d, sh in ends:
+            r = self.replay(s, d, model, sh)
+            if r is None:  # copies run into each other
+                self.axes = bytearray(before)
+                return None
+            routes.append(r)
+        return routes
+
+    def _merged(self, shifts: list[Node]) -> tuple[bytearray, bytearray]:
+        """The grid as seen through every shift at once (cells OR-ed)."""
+        h, n = self.h, len(self.blocked)
+        w = n // h
+        blocked = int.from_bytes(self.blocked, "big")
+        axes = int.from_bytes(self.axes, "big")
+        for dx, dy in shifts:
+            if (dx, dy) == (0, 0):
+                continue
+            off = dx * h + dy
+            b, a = self._shifted(self.blocked, off, 1), self._shifted(self.axes, off, 0)
+            # a cell whose shifted row falls off the column is off the grid
+            col = bytes(1 if not 0 <= y + dy < h else 0 for y in range(h))
+            blocked |= int.from_bytes(b, "big") | int.from_bytes(col * w, "big")
+            axes |= int.from_bytes(a, "big")
+        return bytearray(blocked.to_bytes(n, "big")), bytearray(axes.to_bytes(n, "big"))
+
+    @staticmethod
+    def _shifted(arr: bytearray, off: int, pad: int) -> bytes:
+        """``out[i] = arr[i + off]`` (``pad`` beyond the ends)."""
+        if off >= 0:
+            return bytes(arr[off:]) + bytes([pad]) * off
+        return bytes([pad]) * -off + bytes(arr[:off])
+
+    def replay(
+        self, src: Terminal, dst: Terminal, model: Route, shift: Node
+    ) -> Route | None:
+        """Route like ``model``, moved by ``shift``, if that path is free.
+
+        The copy must obey the rules of the search: it starts at ``src`` and
+        ends at ``dst`` heading in, never enters blocked cells, never runs
+        along a routed pipe, never turns on one and never reverses in place.
+        """
+        if not model.nodes:
+            return None  # facing ports: route() joins them directly anyway
+        dx, dy = shift
+        nodes = [(x + dx, y + dy) for x, y in model.nodes]
+        if nodes[0] != src.first or nodes[-1] != dst.first:
+            return None
+        h, w = self.h, len(self.blocked) // self.h
+        for x, y in nodes:
+            if not (0 < x - self.x0 < w - 1 and 0 < y - self.y0 < h - 1):
+                return None
+        idx = [self._index(p) for p in nodes]
+        blocked, axes = self.blocked, self.axes
+        if blocked[idx[0]]:
+            return None
+        d = src.out_dir
+        for (a, b), i, j in zip(zip(nodes, nodes[1:]), idx, idx[1:]):
+            nd = DIRS.index((b[0] - a[0], b[1] - a[1]))
+            if nd == (d + 2) % 4 or blocked[j] or axes[j] & (1 << (nd % 2)):
+                return None
+            if nd != d and axes[i]:
+                return None
+            d = nd
+        if d != (dst.out_dir + 2) % 4 or axes[idx[-1]]:
+            return None
+        full = [src.point, src.edge, *nodes, dst.edge, dst.point]
+        self._commit(nodes)
+        return Route(_simplify(full), model.strict, nodes)
 
 
 def _simplify(pts: list[tuple[float, float]]) -> list[tuple[float, float]]:
