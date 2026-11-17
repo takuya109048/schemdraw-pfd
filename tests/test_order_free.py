@@ -16,7 +16,7 @@ FLOW_EXAMPLES = sorted(
     p.stem
     for p in Path("examples").glob("*.json")
     if json.loads(p.read_text("utf-8-sig")).get("layout", "flow") == "flow"
-    and p.stem != "crude_distillation"  # does not load: unknown key 'row'
+    and p.stem != "crude_distillation"  # too slow to build here (~3 min)
 )
 
 
@@ -53,3 +53,14 @@ def test_json_lays_out_by_the_flow_unless_told_otherwise():
     fs = Flowsheet()  # the Python API keeps the declared order by default
     assert fs.layout == "order"
     assert fs.to_dict()["layout"] == "order"  # written out explicitly
+
+
+def test_crude_distillation_loads_without_any_order_hints():
+    # the large example carries no row / order hints: levels and lines only
+    data = json.loads(Path("examples/crude_distillation.json").read_text("utf-8"))
+    assert all(
+        set(e) <= {"id", "type", "level", "params", "desc", "span"}
+        for e in data["elements"]
+    )
+    net = Flowsheet.from_dict(data).expand()
+    assert len(net.equipment) > 70

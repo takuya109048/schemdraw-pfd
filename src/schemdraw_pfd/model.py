@@ -506,6 +506,14 @@ class Flowsheet:
                 if trial and (best is None or cost(trial) < cost(best)):
                     best, (gx, gy) = trial, spread(k)
                 failures = failures or fails
+        # a crowded sheet (many side draws on one column) may need more room
+        # than ``max_expand`` steps: keep widening until it routes at all
+        k = max_expand
+        while best is None and k < 4 * max_expand:
+            trial, _ = attempt(*spread(k), True)
+            if trial:
+                best, (gx, gy) = trial, spread(k)
+            k += 1
         if best is None:
             raise RoutingError("could not route: " + "; ".join(failures))
         if not compact:

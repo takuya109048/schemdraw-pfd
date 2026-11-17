@@ -94,7 +94,15 @@ def plan_flow(
     owners = owners or {}
     taps = {index[t] for t in owners if t in index}
     process = {i for _, u, v in edges for i in (u, v)} - taps
-    walk = _branch_order(n, _through_taps(forward, taps), process)
+    # how high on its vessel each line leaves (top nozzle highest)
+    rise: dict[int, int] = {}
+    for a in arrows:
+        g = geos[eqs[a.a].id]
+        if not g.nozzles:
+            continue  # tees, pumps ...: their outlets are no draw heights
+        port = g.ports[a.a_port]
+        rise[a.ci] = {"N": 1 << 20, "S": -(1 << 20)}.get(port.side, port.offset)
+    walk = _branch_order(n, _through_taps(forward, taps), process, rise)
     keys: dict[int, list[int]] = {i: [k] for k, i in enumerate(walk)}
     _place_taps(keys, taps, conns, index, eqs, owners, geos)
     _attach(keys, attach, eqs, geos)
@@ -199,7 +207,10 @@ def _close_loops(
 
 
 def _branch_order(
-    n: int, forward: list[tuple[int, int, int]], process: set[int]
+    n: int,
+    forward: list[tuple[int, int, int]],
+    process: set[int],
+    rise: dict[int, int] | None = None,
 ) -> list[int]:
     """Left-to-right order that keeps every branch together.
 
@@ -220,9 +231,12 @@ def _branch_order(
     """
     succ: dict[int, list[int]] = {i: [] for i in range(n)}
     pred: dict[int, list[int]] = {i: [] for i in range(n)}
-    for _, u, v in forward:
+    height: dict[tuple[int, int], int] = {}  # (u, v) -> how high it leaves u
+    for ci, u, v in forward:
         succ[u].append(v)
         pred[v].append(u)
+        h = (rise or {}).get(ci, 0)
+        height[(u, v)] = max(height.get((u, v), h), h)
     tail: dict[int, int] = {}  # longest way on from an item
 
     def length(u: int) -> int:
@@ -260,7 +274,16 @@ def _branch_order(
         order.append(u)
         # on a tie a merge point (fed by other items too) waits for the
         # item's own branches
-        for v in sorted(succ[u], key=lambda v: (length(v), len(pred[v]) > 1, v)):
+        longest = max((length(v) for v in succ[u]), default=0)
+
+        def branch(v: int) -> tuple:
+            # the main flow (longest way on) last; the others from the
+            # highest nozzle down (a column's overhead beside it, then its
+            # side draws top to bottom), then short ones first
+            main = len(succ[u]) > 1 and length(v) == longest
+            return main, -height[(u, v)], length(v), len(pred[v]) > 1, v
+
+        for v in sorted(succ[u], key=branch):
             if not waits(v):
                 visit(v)
 

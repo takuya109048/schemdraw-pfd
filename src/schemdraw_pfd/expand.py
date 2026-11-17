@@ -320,7 +320,10 @@ def _auto_tees(
             port = conns[u[0]].ends[1 - u[1]][1]
             return (None,) if o is None else (o.type, port, o.level, o.elevation)
 
-        alike = len({far_end(u) for u in us}) == 1
+        # lines from alike items (parallel trains) -- all on one side: lines
+        # sent both ways (reflux back, product on) are no repeated units
+        one_way = len({rel(u) < 0 for u in us}) == 1
+        alike = one_way and len({far_end(u) for u in us}) == 1
         split = roles == {0}
         refs: dict[Use, str] = {}
         made = len(trunks.get(us[0][0], []))  # main-pipe pieces made before

@@ -185,9 +185,18 @@ def place_y(
             break
         settled.add(max(linked, key=lambda j: (items[j].geo.height, -j)))
         spread(from_flags=False)
+    # flags on one height stack so that their lines nest: on each edge the
+    # line from the nearest item takes the lowest flag, lines from further
+    # in go over it to the flags above (flags with no line on top)
+    partner: dict[int, int] = {}
+    for lk in links:
+        partner.setdefault(lk.a, lk.b)
+        partner.setdefault(lk.b, lk.a)
     for edge in ("left", "right"):
+        sign = 1 if edge == "left" else -1
         stack = sorted(
-            (j for j, it in enumerate(items) if it.edge == edge), key=ys.__getitem__
+            (j for j, it in enumerate(items) if it.edge == edge),
+            key=lambda j: (ys[j], j not in partner, sign * partner.get(j, 0), j),
         )
         for below, j in zip(stack, stack[1:]):
             ys[j] = max(ys[j], ys[below] + items[below].geo.height + 1)
@@ -297,6 +306,65 @@ def _clear_risers(
     return x
 
 
+def _pull_sources(
+    items: Sequence[Item],
+    xs: dict[int, int],
+    ys: Sequence[int],
+    links: Sequence[Link],
+    flow: Sequence[FlowLink],
+    overlap: Sequence[bool],
+    gap_x: Sequence[int],
+    risers: dict[int, list[Riser]],
+) -> None:
+    """Move items that only feed items to their right up to them.
+
+    Packed from the left, an item with nothing in front of it on its own
+    height (a steam flag feeding a column, a supply flag above a heat
+    exchanger) would slide far left and its line would cross the sheet.  An
+    item whose lines all run to items on its right is instead placed as far
+    right as it can stand: just in front of what it feeds, still clear of
+    the items on its height and of the vertical pipe runs, and with every
+    line still able to run without doubling back.  Rightmost first, so a
+    chain of such items closes up behind its head.
+    """
+    n = len(items)
+    fed: dict[int, list[Link]] = {}
+    sources = []
+    for j in range(n):
+        if items[j].edge or not overlap[j] or j not in xs:
+            continue
+        if items[j].id.startswith("_T_"):
+            continue  # a main pipe's tap stands where its main pipe needs it
+        mine = [lk for lk in links if j in (lk.a, lk.b)]
+        if mine and all(lk.a == j for lk in mine):
+            fed[j] = mine
+            sources.append(j)
+    for j in sorted(sources, reverse=True):
+        w = items[j].geo.width
+        g = max(gap_x[j], 1)
+        others = [i for i in xs if i != j and not items[i].edge]
+        near = [i for i in others if _apart(ys, items, i, j) < 1]
+
+        def fits(x: int) -> bool:
+            for i in near:
+                if not (x + w + g <= xs[i] or xs[i] + items[i].geo.width + g <= x):
+                    return False
+            for lk in fed[j]:
+                low = _link_min_x(lk, x, items[j].geo, ys[j], ys[lk.b])
+                if low is not None and xs[lk.b] < low:
+                    return False
+            for f in flow:
+                if f.u == j and xs[f.v] + f.v_dx < x + f.u_dx:
+                    return False
+            return _clear_risers(x, j, items, xs, ys, others, risers) == x
+
+        x = min(xs[lk.b] for lk in fed[j]) - w - g
+        while x > xs[j] and not fits(x):
+            x -= 1
+        if x > xs[j]:
+            xs[j] = x
+
+
 def place(
     items: Sequence[Item],
     gap_x: Sequence[int],
@@ -354,6 +422,8 @@ def place(
         xs[j] = max(x, link_floor(j))
         cursor = max(cursor or 0, xs[j] + items[j].geo.width)
         done.append(j)
+    if overlap and any(overlap):
+        _pull_sources(items, xs, ys, links, flow, overlap, gap_x, risers)
     if right:  # west faces of the right flags line up
         x = (cursor or 0) + max(gap_x[j] for j in right)
         x = max([x] + [link_floor(j) for j in right])
