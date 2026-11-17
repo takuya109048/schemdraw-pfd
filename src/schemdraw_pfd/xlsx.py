@@ -187,11 +187,15 @@ class _Writer:
         return rid
 
     # one item --------------------------------------------------------------
-    def picture(self, g: Group, shapes: list[Shape]) -> tuple[str, _Box]:
+    def picture(
+        self, g: Group, shapes: list[Shape], whole: bool = True
+    ) -> tuple[str, _Box]:
+        """The element's symbol as a picture: covering its whole place, or
+        (``whole=False``: its piping is drawn as lines) just ``shapes``."""
         p = g.placed
         assert p is not None
         ex = _extent(shapes)
-        bx0, by0, bx1, by1 = p.bbox
+        bx0, by0, bx1, by1 = p.bbox if whole else ex
         area = (
             min(ex[0], bx0) - PAD,
             min(ex[1], by0) - PAD,
@@ -291,8 +295,14 @@ class _Writer:
         parts: list[tuple[str, _Box]] = []
         if g.kind == "equipment":
             shapes = [i for i in g.items if isinstance(i, (Polyline, Ellipse))]
-            if shapes:
-                parts.append(self.picture(g, shapes))
+            # piping drawn by the element (header, tee) is a line, like pipes
+            pipes = [s for s in shapes if isinstance(s, Polyline) and s.pipe]
+            for k, s in enumerate(pipes):
+                pts = s.points + ((s.points[0],) if s.closed else ())
+                parts.append(self.stroke(Stroke(pts), f"{g.id} pipe {k + 1}"))
+            symbol = [s for s in shapes if not (isinstance(s, Polyline) and s.pipe)]
+            if symbol:
+                parts.append(self.picture(g, symbol, whole=not pipes))
         for i, item in enumerate(i for i in g.items if isinstance(i, (Text, Stroke))):
             name = f"{g.id} {i + 1}"
             if isinstance(item, Text):

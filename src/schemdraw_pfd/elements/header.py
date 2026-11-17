@@ -44,7 +44,7 @@ class HeaderSpec(ElementSpec):
         width = xs[-1] + max(1, half[-1])
         top = max([2] + [1 + sum(g.height + 1 for g in s) for s in stacks.values()])
 
-        shapes: list[Shape] = [Polyline(((0, 0), (width, 0)))]
+        shapes: list[Shape] = [Polyline(((0, 0), (width, 0)), pipe=True)]
         ports = {"main_w": Port("W", 0), "main_e": Port("E", 0)}
         for i, x in enumerate(xs):
             ports[f"b{i}"] = Port("N", x)
@@ -59,10 +59,10 @@ class HeaderSpec(ElementSpec):
                 above = outline_distance(g.shapes, (hi.offset, g.height + 1.0), (0, -1))
                 y_lo = base + below - 1.0
                 y_hi = base + g.height + 1.0 - above
-                shapes.append(Polyline(((x, y), (x, y_lo))))
+                shapes.append(Polyline(((x, y), (x, y_lo)), pipe=True))
                 y = y_hi
                 base += g.height + 1
-            shapes.append(Polyline(((x, y), (x, top))))
+            shapes.append(Polyline(((x, y), (x, top)), pipe=True))
         # plain branches (no inserted elements) serve alike
         plain = [i for i in range(n) if not stacks.get(i)]
         groups = [[f"b{i}" for i in plain], [f"m{i}" for i in range(n)]]
