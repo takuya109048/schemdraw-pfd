@@ -423,7 +423,7 @@ def test_repeated_units_are_drawn_alike():
         shapes.setdefault(key, set()).add(tuple(base))
     assert shapes and all(len(s) == 1 for s in shapes.values())  # same shape
     # every unit meets the main pipe the same way: a straight riser into a tap
-    risers = [r for c, r in d.routes if c.src.startswith("H-") and "b2" in c.src]
+    risers = [r for c, r in d.routes if c.src[0] == "H" and c.dst.startswith("_T_")]
     assert len(risers) == 3 and all(r.bends == 0 for r in risers)
 
 
@@ -432,5 +432,21 @@ def test_supply_main_drops_straight_into_every_train():
     assert not d.warnings
     xs = sorted((p.x, p.id) for p in d.placed if p.id.startswith("T-"))
     assert [i for _, i in xs] == ["T-1", "T-2", "T-3"]  # declared order kept
-    drops = [r for c, r in d.routes if c.dst.endswith(".n1")]
+    drops = [
+        r for c, r in d.routes if c.src.startswith("_T_SUPPLY") and c.dst[0] == "T"
+    ]
     assert len(drops) == 3 and all(r.bends == 0 for r in drops)
+
+
+def test_alike_nozzles_and_branches_are_swapped_to_avoid_crossings():
+    fs = _trains(supply=True)
+    d = fs.build()
+    # as written each header's filter line crosses its riser to the main and
+    # each drain return crosses the supply drop; only the two supply drops
+    # passing the main (unavoidable with the supply on top) remain
+    assert d.crossings == 2
+    used = {c.src for c, _ in d.routes} | {c.dst for c, _ in d.routes}
+    assert "H-1.b1" in {c.src for c, _ in d.routes if c.dst.startswith("_T_MAIN")}
+    assert {"H-2.b2", "H-3.b2"} <= used  # the same choice in every train
+    assert fs.connections[3].src == "H-1.b1"  # the flowsheet itself is unchanged
+    assert fs.connections[3].dst == "F-1.in"

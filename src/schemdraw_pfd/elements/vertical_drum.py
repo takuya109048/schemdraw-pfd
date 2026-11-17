@@ -15,7 +15,9 @@ class VerticalDrumSpec(ElementSpec):
     grid column of the top / bottom head (left to right; the centre one is
     ``top`` / ``bottom``), so several lines can reach a head through nozzles of
     their own, and ``w<i>`` / ``e<i>`` on every grid row of the cylindrical
-    shell (``w_low``, ``w_mid``, ``w_high``, ... aliases).
+    shell (``w_low``, ``w_mid``, ``w_high``, ... aliases).  Lines on the nozzles
+    of one head may be swapped to avoid crossings; the shell rows stay put
+    (their height matters to the process).
     """
 
     name = "vertical_drum"
@@ -63,4 +65,7 @@ class VerticalDrumSpec(ElementSpec):
             ports[f"{side}_low"] = ports[f"{side}0"]
             ports[f"{side}_mid"] = ports[f"{side}{len(rows) // 2}"]
             ports[f"{side}_high"] = ports[f"{side}{len(rows) - 1}"]
-        return Geometry(w, h, shapes, ports, label_pos=self.label_pos, nozzles=True)
+        heads = [[f"n{i}" for i in range(w - 1)], [f"s{i}" for i in range(w - 1)]]
+        return Geometry(
+            w, h, shapes, ports, label_pos=self.label_pos, nozzles=True, swappable=heads
+        )

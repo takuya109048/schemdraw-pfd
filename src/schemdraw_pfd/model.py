@@ -47,6 +47,7 @@ __all__ = [
 FORMAT_VERSION = 1  # version of the JSON flowsheet format written by to_dict
 MIN_GAP = 1  # cells always left between neighbouring elements / level bands
 REROUTE_ROUNDS = 3  # rip-up and reroute attempts per placement
+SWAP_ROUNDS = 2  # rebuilds with swappable ports re-sorted (see Flowsheet.build)
 BEND_COST = 6  # flow layout: sheet cells (width + height) one bend is worth
 KINDS = tuple(DEFAULT_LINE_STYLES)  # built-in line kinds (kept for compatibility)
 
@@ -293,7 +294,107 @@ class Flowsheet:
 
     # -- build ----------------------------------------------------------------
     def build(self, max_expand: int = 4, compact: bool = True) -> Diagram:
-        """Lay out and route.
+        """Lay out and route (:meth:`_build`), then let swappable ports trade
+        lines (:meth:`_reassign`).
+
+        Head nozzles of a vessel and plain header branches serve alike (see
+        ``Geometry.swappable``): the port a line names only says which face
+        it uses.  After a first build the lines on each such group are sorted
+        along the face by where they head, so the outermost line takes the
+        outermost nozzle and lines do not cross in front of it; the sheet is
+        built again and kept if it costs no more.  The flowsheet itself is
+        not changed: the diagram's connections name the ports used.
+        """
+        best = self._build(max_expand, compact)
+        user = self.connections
+        try:
+            for _ in range(SWAP_ROUNDS):
+                conns = self._reassign(best)  # from the current connections
+                if conns is None:
+                    break
+                self.connections = conns
+                try:
+                    trial = self._build(max_expand, compact)
+                except RoutingError:
+                    break
+                if self._cost(trial) > self._cost(best):
+                    break
+                best = trial
+        finally:
+            self.connections = user
+        return best
+
+    def _cost(self, d: Diagram) -> tuple[int, int]:
+        """U-turns, then (flow layout) bends and crossings weighed against the
+        sheet size, or (order layout) bends."""
+        if self.layout != "flow":
+            return _score(d)
+        return d.uturns, (d.bends + d.crossings) * self.bend_cost + sum(d.size)
+
+    def _reassign(self, d: Diagram) -> list[Connection] | None:
+        """The connections with the lines on every swappable port group
+        sorted along their face by where they come from in ``d`` (the way
+        each turns after leaving its nozzle); None if that changes nothing.
+        A port shared by several lines stays put."""
+        placed = {p.id: p for p in d.placed}
+        # where a line comes from, seen from its port: the end of its first
+        # run along the face (after the leg out of the nozzle), or its far end
+        far: dict[tuple[str, str], tuple[float, float]] = {}
+        for c, r in d.routes:
+            (a, pa), (b, pb) = c.ends
+            pts = r.points
+            far.setdefault((a, pa), pts[min(2, len(pts) - 1)])
+            far.setdefault((b, pb), pts[max(len(pts) - 3, 0)])
+        uses: dict[tuple[str, str], list[tuple[int, int]]] = {}
+        for k, c in enumerate(self.connections):
+            for end, ref in enumerate(c.ends):
+                uses.setdefault(ref, []).append((k, end))
+        new = list(self.connections)
+        changed = False
+        for e in self.equipment:
+            p = placed.get(e.id)
+            if p is None or not p.geo.swappable:
+                continue
+            ports = p.geo.ports
+            for group in p.geo.swappable:
+                slot_name: dict[tuple[str, int], str] = {}
+                for name in group:
+                    slot_name.setdefault((ports[name].side, ports[name].offset), name)
+                lines = []  # (key, slot, connection, end)
+                for (eq, name), us in uses.items():
+                    port = ports.get(name) if eq == e.id else None
+                    slot = None if port is None else (port.side, port.offset)
+                    if slot not in slot_name or len(us) != 1 or (eq, name) not in far:
+                        continue
+                    lines.append((far[(eq, name)], slot, *us[0]))
+                if len(lines) < 2:
+                    continue
+                side = lines[0][1][0]
+                along = 0 if side in "NS" else 1  # coordinate along the face
+                face = {"N": p.y + p.geo.height, "S": p.y, "E": p.x + p.geo.width}
+                base = face.get(side, p.x)
+                origin = p.x if along == 0 else p.y
+                mid = origin + sum(s[1] for _, s, _, _ in lines) / len(lines)
+
+                def key(line: tuple) -> tuple[float, float]:
+                    pt = line[0]
+                    dist = abs(pt[1 - along] - base)  # how far out it turns
+                    # beyond the outermost nozzle, the line turning nearest
+                    # the face must be outermost: it would cut the others
+                    return pt[along], -dist if pt[along] > mid else dist
+
+                slots = sorted((s for _, s, _, _ in lines), key=lambda s: s[1])
+                for (_, slot, k, end), target in zip(sorted(lines, key=key), slots):
+                    if target == slot:
+                        continue
+                    ref = f"{e.id}.{slot_name[target]}"
+                    c = new[k]
+                    new[k] = replace(c, src=ref) if end == 0 else replace(c, dst=ref)
+                    changed = True
+        return new if changed else None
+
+    def _build(self, max_expand: int = 4, compact: bool = True) -> Diagram:
+        """Lay out and route with the ports as named.
 
         0. Expand inline items and shared ports (:meth:`expand`).
         1. Find the smallest uniform spacing that routes every pipe in strict mode
@@ -323,11 +424,8 @@ class Flowsheet:
         overlap = [free and not it.edge for it in items]
         weight = self.bend_cost if free else 0  # order layout: bends only
 
-        def cost(d: Diagram) -> tuple[int, int]:
-            if not weight:
-                return _score(d)
-            # a crossing weighs like a bend: a squeeze may not buy a crossing
-            return d.uturns, (d.bends + d.crossings) * weight + sum(d.size)
+        # a crossing weighs like a bend: a squeeze may not buy a crossing
+        cost = self._cost
 
         # many gap changes do not move anything (a pipe corridor or the
         # neighbour's height decides); route each distinct placement only once

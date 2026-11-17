@@ -11,7 +11,8 @@ class HorizontalDrumSpec(ElementSpec):
 
     params: ``length`` (even, default 8), ``diameter`` (even, default 4).
     Ports: ``w``, ``e`` (head apexes), ``n<i>`` / ``s<i>`` on every grid column of
-    the shell (``n_mid`` / ``s_mid`` aliases).
+    the shell (``n_mid`` / ``s_mid`` aliases); lines on one side may be swapped
+    to avoid crossings.
     """
 
     name = "horizontal_drum"
@@ -35,4 +36,8 @@ class HorizontalDrumSpec(ElementSpec):
             ports[f"s{i}"] = Port("S", x)
         ports["n_mid"] = ports[f"n{len(cols) // 2}"]
         ports["s_mid"] = ports[f"s{len(cols) // 2}"]
-        return Geometry(n, d, shapes, ports, nozzles=True)
+        groups = [
+            [f"n{i}" for i in range(len(cols))],
+            [f"s{i}" for i in range(len(cols))],
+        ]
+        return Geometry(n, d, shapes, ports, nozzles=True, swappable=groups)
