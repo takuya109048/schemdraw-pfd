@@ -54,7 +54,14 @@ def plan_flow(
     conns: list[Connection],
     geos: dict[str, Geometry],
     process_kinds: set[str],
+    owners: dict[str, str] | None = None,
 ) -> FlowPlan:
+    """``owners``: the taps of generated main pipes (tee id -> the item whose
+    shared port the main pipe leaves).  Taps are no equipment: the order is
+    found as if each main pipe were plain lines from its port to the items
+    tapped off it, then every tap goes right after the item it serves -- so a
+    tap can stand straight above (or beside) that item's nozzle, and parallel
+    trains taken off one main pipe keep their declared order."""
     n = len(eqs)
     index = {e.id: i for i, e in enumerate(eqs)}
     arrows: list[Arrow] = []
@@ -84,15 +91,68 @@ def plan_flow(
     _close_loops(n, out, indeg, back)
     forward = [(ci, u, v) for ci, u, v in edges if ci not in back]
 
-    process = {i for _, u, v in edges for i in (u, v)}
-    walk = _branch_order(n, forward, process)
+    owners = owners or {}
+    taps = {index[t] for t in owners if t in index}
+    process = {i for _, u, v in edges for i in (u, v)} - taps
+    walk = _branch_order(n, _through_taps(forward, taps), process)
     keys: dict[int, list[int]] = {i: [k] for k, i in enumerate(walk)}
+    _place_taps(keys, taps, conns, index, eqs, owners)
     _attach(keys, attach, eqs, geos)
     for i in range(n):  # unconnected items go last, as declared
         keys.setdefault(i, [n + i])
     width = max(len(k) for k in keys.values())
     order = sorted(range(n), key=lambda i: keys[i] + [0] * (width - len(keys[i])))
     return FlowPlan(order, back, [by_ci[ci] for ci, _, _ in forward])
+
+
+def _through_taps(
+    forward: list[tuple[int, int, int]], taps: set[int]
+) -> list[tuple[int, int, int]]:
+    """The arrows with every run of taps taken out: ``u -> tap -> ... -> w``
+    becomes ``u -> w`` for each item ``w`` the run reaches."""
+    if not taps:
+        return forward
+    succ: dict[int, list[int]] = {}
+    for _, u, v in forward:
+        succ.setdefault(u, []).append(v)
+    out = []
+    for ci, u, v in forward:
+        if u in taps:
+            continue
+        stack, seen = [v], set()
+        while stack:
+            w = stack.pop()
+            if w in seen:
+                continue
+            seen.add(w)
+            if w in taps:
+                stack += succ.get(w, [])
+            else:
+                out.append((ci, u, w))
+    return out
+
+
+def _place_taps(
+    keys: dict[int, list[int]],
+    taps: set[int],
+    conns: list[Connection],
+    index: dict[str, int],
+    eqs: list[Equipment],
+    owners: dict[str, str],
+) -> None:
+    """Order each tap right after the item on its branch (the item it is
+    joined to other than the main pipe's own port); a tap with no such item
+    (the riser of a main pipe running both ways) goes after the owner."""
+    partner: dict[int, int] = {}
+    for c in conns:
+        (a, _), (b, _) = c.ends
+        for t, o in ((a, b), (b, a)):
+            if t in owners and o not in owners and o in index and o != owners[t]:
+                partner[index[t]] = index[o]
+    for t in sorted(taps):
+        p = partner.get(t, index.get(owners[eqs[t].id], -1))
+        if p in keys:
+            keys[t] = keys[p] + [1, t]
 
 
 def _runs_left(out_side: str, in_side: str) -> bool:
@@ -148,7 +208,9 @@ def _branch_order(
     * after an item its branches follow one by one, short ones first and the
       longest (the main flow) last.  A product train (stripper, pump, cooler)
       thus stays between its column and the next main unit instead of being
-      mixed with other trains.
+      mixed with other trains.  Between branches of equal length, one that
+      leads to a merge point (an item other lines flow into as well) comes
+      last, so an item's own branch stays beside it.
     """
     succ: dict[int, list[int]] = {i: [] for i in range(n)}
     pred: dict[int, list[int]] = {i: [] for i in range(n)}
@@ -173,7 +235,9 @@ def _branch_order(
         for p in pred[u]:
             visit(p)
         order.append(u)
-        for v in sorted(succ[u], key=lambda v: (length(v), v)):
+        # on a tie a merge point (fed by other items too) waits for the
+        # item's own branches
+        for v in sorted(succ[u], key=lambda v: (length(v), len(pred[v]) > 1, v)):
             visit(v)
 
     feeds = sorted((i for i in process if not pred[i]), key=lambda i: (-length(i), i))

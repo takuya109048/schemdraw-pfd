@@ -368,9 +368,12 @@ def test_filter_housing_ports_on_shell():
     assert not fs.build().warnings
 
 
-def _trains(n=3):
-    """``n`` copies of tank -> pump -> header -> filter, joined by one main."""
+def _trains(n=3, supply=False):
+    """``n`` copies of tank -> pump -> header -> filter, joined by one main
+    (and fed by a second one from ``SUPPLY`` into every tank top)."""
     fs = Flowsheet(layout="flow")
+    if supply:
+        fs.add("connector", "SUPPLY", level=3, text="SUPPLY", point="right")
     fs.add("connector", "MAIN", level=2, text="MAIN", point="right")
     for k in range(1, n + 1):
         t, p, h, f = (f"{x}-{k}" for x in "TPHF")
@@ -384,6 +387,8 @@ def _trains(n=3):
         fs.connect(f"{h}.b1", f"{f}.in")
         fs.connect(f"{f}.drain", f"{t}.n3", recycle=True)
         fs.connect(f"{h}.b2", "MAIN.tail")
+        if supply:
+            fs.connect("SUPPLY.tip", f"{t}.n1")
     return fs
 
 
@@ -420,3 +425,12 @@ def test_repeated_units_are_drawn_alike():
     # every unit meets the main pipe the same way: a straight riser into a tap
     risers = [r for c, r in d.routes if c.src.startswith("H-") and "b2" in c.src]
     assert len(risers) == 3 and all(r.bends == 0 for r in risers)
+
+
+def test_supply_main_drops_straight_into_every_train():
+    d = _trains(supply=True).build()
+    assert not d.warnings
+    xs = sorted((p.x, p.id) for p in d.placed if p.id.startswith("T-"))
+    assert [i for _, i in xs] == ["T-1", "T-2", "T-3"]  # declared order kept
+    drops = [r for c, r in d.routes if c.dst.endswith(".n1")]
+    assert len(drops) == 3 and all(r.bends == 0 for r in drops)

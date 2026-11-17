@@ -436,7 +436,11 @@ class Flowsheet:
         the sheet edge: left for a flag the flow starts from, right otherwise.
         """
         plan = plan_flow(
-            net.equipment, net.connections, net.geos, self._process_kinds()
+            net.equipment,
+            net.connections,
+            net.geos,
+            self._process_kinds(),
+            net.owners,
         )
         old = net.equipment
         net.equipment = [old[i] for i in plan.order]
