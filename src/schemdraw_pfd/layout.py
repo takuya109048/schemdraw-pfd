@@ -373,8 +373,14 @@ def place(
     overlap: Sequence[bool] | None = None,
     flow: Sequence[FlowLink] = (),
     anchor_free: bool = False,
+    in_order: bool = False,
 ) -> list[Placed]:
     """Place ``items`` (given in left-to-right order); see the module docstring.
+
+    ``in_order`` (with ``overlap``): an item's left edge is never left of the
+    item before it -- items still stack across levels, but a branch's upper
+    items (a side stripper, a reflux drum) cannot run ahead of the pumps and
+    coolers below them that the lane on their level has pushed right.
 
     ``gap_x[i]``: cells in front of item ``i``; ``gap_y[level]``: cells below the
     band of ``level``.
@@ -416,6 +422,8 @@ def place(
             if left:
                 ends.append(edge_w)
             x = max(ends) + max(gap_x[j], 1) if ends else 0  # they could touch
+            if in_order and done:
+                x = max(x, xs[done[-1]])  # never left of the item before
             x = _clear_risers(max(x, link_floor(j)), j, items, xs, ys, done, risers)
         else:
             x = 0 if cursor is None else cursor + gap_x[j]

@@ -235,6 +235,7 @@ class Flowsheet:
         # flow layout: "auto" folds a main flow through several columns into
         # rows (see :meth:`_row_split`); "single" keeps one row
         self.rows = "auto"
+        self._in_order = False  # placement mode of the build in progress
         # flow layout: how many cells of sheet size one extra bend may cost
         self.bend_cost = BEND_COST
         self.library = ElementLibrary(parent=library or DEFAULT_LIBRARY)
@@ -418,6 +419,16 @@ class Flowsheet:
         finally:
             self.equipment, self.connections = user
 
+    def _branchy(self) -> bool:
+        """Does any item send process lines to three or more items?"""
+        kinds = self._process_kinds()
+        out: dict[str, set[str]] = {}
+        for c in self.connections:
+            if c.kind in kinds:
+                (s, _), (d, _) = c.ends
+                out.setdefault(s, set()).add(d)
+        return any(len(v) >= 3 for v in out.values())
+
     # -- rows -------------------------------------------------------------------
     def _row_split(self) -> list[set[str]]:
         """The ids of each row (top first) when the flow is folded.
@@ -520,8 +531,28 @@ class Flowsheet:
         return _stack(diagrams, self.line_styles)
 
     def _build_swapped(self, max_expand: int, compact: bool) -> Diagram:
-        """:meth:`_build`, then the swappable ports re-sorted (see build)."""
-        best = self._build(max_expand, compact)
+        """:meth:`_build`, then the swappable ports re-sorted (see build).
+
+        Flow layout with branching units (an item with three or more branches
+        -- a column's side draws): the sheet is built both packed freely and
+        with every item kept in order (see :func:`.layout.place`), and the
+        cheaper one is kept."""
+        modes = [False]
+        if self.layout == "flow" and self._branchy():
+            modes.append(True)
+        best = None
+        for mode in modes:
+            self._in_order = mode
+            try:
+                trial = self._build(max_expand, compact)
+            except RoutingError:
+                if mode == modes[-1] and best is None:
+                    raise
+                continue
+            if best is None or self._cost(trial) < self._cost(best):
+                best, chosen = trial, mode
+        assert best is not None
+        self._in_order = chosen
         user = self.connections
         try:
             for _ in range(SWAP_ROUNDS):
@@ -653,7 +684,7 @@ class Flowsheet:
             relaxed: bool,
             best: Diagram | None = None,
         ) -> tuple[Diagram | None, list[str]]:
-            placed = place(items, gx, gy, links, overlap, flow, free)
+            placed = place(items, gx, gy, links, overlap, flow, free, self._in_order)
             key = (relaxed, tuple((p.x, p.y) for p in placed))
             if key not in seen:
                 bound = None

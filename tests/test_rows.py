@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 
 import pytest
+from conftest import built
 
 from schemdraw_pfd import Flowsheet
 
@@ -18,7 +19,7 @@ CRUDE = Path("examples/crude_distillation.json")
 
 @pytest.fixture(scope="module")
 def crude():
-    return Flowsheet.from_json(CRUDE).build()
+    return built("crude_distillation")
 
 
 def _row_of(d):
