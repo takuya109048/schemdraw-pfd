@@ -309,18 +309,35 @@ def scene(
     x0, x1, y0, y1 = min(xs) - mg, max(xs) + mg, min(ys) - mg, max(ys) + mg
     em = theme.fontsize / PT_PER_UNIT
     sheet: list[Item] = []
-    rows = {False: 0, True: 0}  # rotating? -> number of text lines needed
-    specs: dict[bool, list[tuple[float, str]]] = {False: [], True: []}
+    rows = {False: 0, True: 0}  # rotating? -> text lines beyond the frame
+    # a folded sheet lists the specs above (below) each row; one row: the
+    # whole drawing is that row
+    bands = diagram.rows or [(y0 + mg, y1 - mg)]
+    last = len(bands) - 1
+    specs: dict[tuple[int, bool], list[tuple[float, str]]] = {}
     for p in diagram.placed:
         desc = diagram.descs.get(p.id)
         if not (label and desc):
             continue
         text = f"{p.id}\n{desc}"
-        rows[p.geo.rotating] = max(rows[p.geo.rotating], text.count("\n") + 1)
-        specs[p.geo.rotating].append(((p.bbox[0] + p.bbox[2]) / 2, text))
-    for rotating, entries in specs.items():
+        band = min(
+            range(len(bands)),
+            key=lambda k: abs(
+                (bands[k][0] + bands[k][1]) / 2 - (p.y + p.geo.height / 2)
+            ),
+        )
+        if (band, p.geo.rotating) in ((0, False), (last, True)):
+            rows[p.geo.rotating] = max(rows[p.geo.rotating], text.count("\n") + 1)
+        specs.setdefault((band, p.geo.rotating), []).append(
+            ((p.bbox[0] + p.bbox[2]) / 2, text)
+        )
+    for (band, rotating), entries in sorted(specs.items(), key=lambda e: e[0][::-1]):
         va: Valign = "top" if rotating else "bottom"
-        y = y0 if rotating else y1
+        lo, hi = bands[band]
+        if rotating:
+            y = y0 if band == last else lo - mg
+        else:
+            y = y1 if band == 0 else hi + mg
         for cx, text in _spread(entries, em):
             x0, x1 = (
                 min(x0, cx - _text_width(text, em) / 2 - 1),

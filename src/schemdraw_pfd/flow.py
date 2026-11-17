@@ -47,6 +47,7 @@ class FlowPlan:
     order: list[int]  # equipment indices, left to right
     back: set[int] = field(default_factory=set)  # recycle connection indices
     forward: list[Arrow] = field(default_factory=list)
+    main: list[int] = field(default_factory=list)  # the main flow, feed first
 
 
 def plan_flow(
@@ -102,7 +103,8 @@ def plan_flow(
             continue  # tees, pumps ...: their outlets are no draw heights
         port = g.ports[a.a_port]
         rise[a.ci] = {"N": 1 << 20, "S": -(1 << 20)}.get(port.side, port.offset)
-    walk = _branch_order(n, _through_taps(forward, taps), process, rise)
+    through = _through_taps(forward, taps)
+    walk = _branch_order(n, through, process, rise)
     keys: dict[int, list[int]] = {i: [k] for k, i in enumerate(walk)}
     _place_taps(keys, taps, conns, index, eqs, owners, geos)
     _attach(keys, attach, eqs, geos)
@@ -110,7 +112,74 @@ def plan_flow(
         keys.setdefault(i, [n + i])
     width = max(len(k) for k in keys.values())
     order = sorted(range(n), key=lambda i: keys[i] + [0] * (width - len(keys[i])))
-    return FlowPlan(order, back, [by_ci[ci] for ci, _, _ in forward])
+    main = _main_path(n, through, process, rise)
+    return FlowPlan(order, back, [by_ci[ci] for ci, _, _ in forward], main)
+
+
+def _main_path(
+    n: int,
+    forward: list[tuple[int, int, int]],
+    process: set[int],
+    rise: dict[int, int],
+) -> list[int]:
+    """The main flow: from the feed with the longest way on, always on to
+    the item with the longest way on (between equals the one leaving the
+    lowest nozzle -- a column's bottoms), as :func:`_branch_order` puts last."""
+    succ: dict[int, list[tuple[int, int]]] = {i: [] for i in range(n)}
+    pred = [0] * n
+    for ci, u, v in forward:
+        succ[u].append((v, rise.get(ci, 0)))
+        pred[v] += 1
+    tail: dict[int, int] = {}
+
+    def length(u: int) -> int:
+        if u not in tail:
+            tail[u] = 0
+            tail[u] = max((1 + length(v) for v, _ in succ[u]), default=0)
+        return tail[u]
+
+    feeds = sorted((i for i in process if not pred[i]), key=lambda i: (-length(i), i))
+    path: list[int] = []
+    u = feeds[0] if feeds else -1
+    while u >= 0 and u not in path:
+        path.append(u)
+        nxt = max(succ[u], key=lambda e: (length(e[0]), -e[1], -e[0]), default=None)
+        u = nxt[0] if nxt else -1
+    return path
+
+
+def split_rows(
+    plan: FlowPlan,
+    majors: set[int],
+    edge: set[int],
+    min_head: int = 3,
+) -> list[list[int]]:
+    """Fold a long flow into rows, one major unit (a column) per row.
+
+    Only a main flow that runs through two or more major units is folded:
+    it is cut where it leaves a major unit for the next (right after the
+    unit and its own branches -- the next row starts with what feeds the
+    next unit), and before the first unit when at least ``min_head`` items
+    other than edge flags (``edge``) come before it (a feed preheat train
+    gets a row of its own).  Rows are runs of ``plan.order``.
+    """
+    order = plan.order
+    pos = {i: k for k, i in enumerate(order)}
+    on_main = [i for i in plan.main if i in majors]
+    if len(on_main) < 2:
+        return [list(order)]
+    cuts: set[int] = set()
+    first = plan.main.index(on_main[0])
+    if first > 0:
+        at = pos[plan.main[first - 1]] + 1
+        if sum(1 for i in order[:at] if i not in edge) >= min_head:
+            cuts.add(at)
+    for m in on_main[:-1]:
+        k = plan.main.index(m)
+        if k + 1 < len(plan.main):
+            cuts.add(pos[plan.main[k + 1]])
+    bounds = [0, *sorted(c for c in cuts if 0 < c < len(order)), len(order)]
+    return [order[a:b] for a, b in zip(bounds, bounds[1:]) if b > a]
 
 
 def _through_taps(

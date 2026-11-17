@@ -11,7 +11,7 @@ from typing import Any
 
 from .elements import DEFAULT_LIBRARY, CustomSpec, ElementLibrary, Geometry
 from .expand import GENERATED_PREFIX, Expanded, expand
-from .flow import plan_flow
+from .flow import plan_flow, split_rows
 from .geometry import find_crossings
 from .layout import (
     FlowLink,
@@ -55,9 +55,10 @@ KINDS = tuple(DEFAULT_LINE_STYLES)  # built-in line kinds (kept for compatibilit
 _ELEMENT_KEYS = {"id", "type", "level", "params", "ports", "desc", "elevation", "span"}
 _CONNECTION_KEYS = {"from", "to", "type", "inline", "anchor", "recycle"}
 _TOP_KEYS = set(
-    "version layout custom_elements line_kinds elements connections".split()
+    "version layout rows custom_elements line_kinds elements connections".split()
 )
 LAYOUTS = ("order", "flow")
+ROW_MODES = ("auto", "single")
 
 
 @dataclass
@@ -77,6 +78,8 @@ class Diagram:
         default_factory=lambda: dict(DEFAULT_LINE_STYLES)
     )
     uturns: int = 0
+    # a sheet folded into rows (flow layout): each row's (bottom, top) y
+    rows: list[tuple[float, float]] = field(default_factory=list)
 
     @property
     def bends(self) -> int:
@@ -91,6 +94,75 @@ class Diagram:
     def size(self) -> tuple[int, int]:
         """Overall (width, height) of the equipment area in grid cells."""
         return _size(self.placed)
+
+
+ROW_GAP = 6  # cells between two rows, besides their specification texts
+
+
+def _stack(diagrams: list[Diagram], styles: dict[str, LineStyle]) -> Diagram:
+    """Rows stacked top first, each row's left edge at x = 0; the gap below
+    a row leaves room for its rotating machines' specs and the specs of the
+    row below (their lines of text, at the default theme's size)."""
+    from .style import DEFAULT_THEME
+
+    em = DEFAULT_THEME.fontsize / 36.0  # font height in cells (render.PT_PER_UNIT)
+    pitch = DEFAULT_THEME.spec_line_height * em
+
+    def extent(d: Diagram) -> tuple[float, float, float]:
+        ys = [v for p in d.placed for v in (p.bbox[1], p.bbox[3])]
+        ys += [y for _, r in d.routes for _, y in r.points]
+        xs = [p.bbox[0] for p in d.placed] + [
+            x for _, r in d.routes for x, _ in r.points
+        ]
+        return min(xs), min(ys), max(ys)
+
+    def text_lines(d: Diagram, rotating: bool) -> int:
+        return max(
+            (
+                d.descs[p.id].count("\n") + 2
+                for p in d.placed
+                if p.id in d.descs and p.geo.rotating == rotating
+            ),
+            default=0,
+        )
+
+    placed: list[Placed] = []
+    routes: list[tuple[Connection, Route]] = []
+    warnings: list[str] = []
+    descs: dict[str, str] = {}
+    bands: list[tuple[float, float]] = []
+    top = 0.0  # the next row's top edge
+    for k, d in enumerate(diagrams):
+        x0, y0, y1 = extent(d)
+        if k:
+            gap = (text_lines(diagrams[k - 1], True) + text_lines(d, False)) * pitch
+            top -= ROW_GAP + int(gap + 0.999)
+        dx, dy = -int(x0), int(top - y1)
+        placed += [replace(p, x=p.x + dx, y=p.y + dy) for p in d.placed]
+        routes += [
+            (
+                c,
+                Route(
+                    [(x + dx, y + dy) for x, y in r.points],
+                    r.strict,
+                    [(x + dx, y + dy) for x, y in r.nodes],
+                ),
+            )
+            for c, r in d.routes
+        ]
+        warnings += d.warnings
+        descs.update(d.descs)
+        bands.append((y0 + dy, y1 + dy))
+        top = y0 + dy
+    return Diagram(
+        placed,
+        routes,
+        warnings,
+        descs,
+        dict(styles),
+        sum(d.uturns for d in diagrams),
+        bands,
+    )
 
 
 def _natural(text: str) -> tuple:
@@ -160,6 +232,9 @@ class Flowsheet:
         if layout not in LAYOUTS:
             raise ValueError(f"layout must be one of {LAYOUTS}, got {layout!r}")
         self.layout = layout
+        # flow layout: "auto" folds a main flow through several columns into
+        # rows (see :meth:`_row_split`); "single" keeps one row
+        self.rows = "auto"
         # flow layout: how many cells of sheet size one extra bend may cost
         self.bend_cost = BEND_COST
         self.library = ElementLibrary(parent=library or DEFAULT_LIBRARY)
@@ -336,9 +411,113 @@ class Flowsheet:
             key=lambda c: (_natural(c.src), _natural(c.dst), c.kind),
         )
         try:
+            rows = self._row_split() if self.rows == "auto" else []
+            if len(rows) > 1:
+                return self._build_rows(rows, max_expand, compact)
             return self._build_swapped(max_expand, compact)
         finally:
             self.equipment, self.connections = user
+
+    # -- rows -------------------------------------------------------------------
+    def _row_split(self) -> list[set[str]]:
+        """The ids of each row (top first) when the flow is folded.
+
+        A main flow running through two or more major units (columns, tall
+        items) is cut where it leaves one unit for the next, and before the
+        first unit when a feed train comes before it (see
+        :func:`.flow.split_rows`).  Items joined only to inline items (a
+        controller on an inline valve) go with the line carrying them.
+        """
+        eqs, conns = self.equipment, self.connections
+        geos = {e.id: self.geometry(e) for e in eqs}
+        plan = plan_flow(eqs, conns, geos, self._process_kinds())
+        majors = {i for i, e in enumerate(eqs) if e.type == "column" or e.span > 1}
+        edge = {i for i, e in enumerate(eqs) if geos[e.id].off_sheet}
+        rows = split_rows(plan, majors, edge)
+        if len(rows) < 2:
+            return []
+        row = {eqs[i].id: k for k, r in enumerate(rows) for i in r}
+        hosts = self._inline_rows(row)
+        for e in eqs:  # every line on an inline item: go with that line
+            others = [
+                o
+                for c in conns
+                for (a, _), (o, _) in (c.ends, c.ends[::-1])
+                if a == e.id
+            ]
+            if others and all(o in hosts for o in others):
+                row[e.id] = hosts[others[0]]
+        out: list[set[str]] = [set() for _ in rows]
+        for i, k in row.items():
+            out[k].add(i)
+        return out
+
+    def _inline_rows(self, row: dict[str, int]) -> dict[str, int]:
+        """Row of every inline item that has an id: the row of the end its
+        line's items stand next to (the destination, or the source when the
+        line runs out to an off-sheet flag)."""
+        out: dict[str, int] = {}
+        for c in self.connections:
+            (s, _), (d, _) = c.ends
+            if s not in row or d not in row:
+                continue
+            off = self.geometry(next(e for e in self.equipment if e.id == d)).off_sheet
+            side = s if c.anchor == "src" or (c.anchor == "auto" and off) else d
+            for item in c.inline:
+                if item.id:
+                    out[item.id] = row[side]
+        return out
+
+    def _build_rows(
+        self, rows: list[set[str]], max_expand: int, compact: bool
+    ) -> Diagram:
+        """Build each row as a sheet of its own and stack them, top first.
+
+        A line between two rows is cut into a pair of continuation flags: one
+        on the right edge of its source's row (``to <id>``) and one on the
+        left edge of its destination's row (``from <id>``); inline items stay
+        with the destination.
+        """
+        row = {i: k for k, r in enumerate(rows) for i in r}
+        row.update(self._inline_rows(row))
+        by_id = {e.id: e for e in self.equipment}
+        subs: list[Flowsheet] = []
+        for r in rows:
+            sub = Flowsheet(layout="flow")
+            sub.library = self.library
+            sub.line_styles = self.line_styles
+            sub.bend_cost = self.bend_cost
+            sub.rows = "single"
+            sub.equipment = [replace(e) for e in self.equipment if e.id in r]
+            subs.append(sub)
+        for n, c in enumerate(self.connections):
+            (s, sp), (d, dp) = c.ends
+            a, b = row[s], row[d]
+            if a == b:
+                subs[a].connections.append(c)
+                continue
+            out_id, in_id = f"{GENERATED_PREFIX}RO{n}", f"{GENERATED_PREFIX}RI{n}"
+            src_eq, dst_eq = by_id.get(s), by_id.get(d)
+            subs[a].equipment.append(
+                Equipment(
+                    out_id,
+                    "connector",
+                    src_eq.level if src_eq else 0,
+                    {"text": f"to {d}", "point": "right"},
+                )
+            )
+            subs[b].equipment.append(
+                Equipment(
+                    in_id,
+                    "connector",
+                    dst_eq.level if dst_eq else 0,
+                    {"text": f"from {s}", "point": "right"},
+                )
+            )
+            subs[a].connections.append(Connection(c.src, f"{out_id}.tail", c.kind))
+            subs[b].connections.append(replace(c, src=f"{in_id}.tip", recycle=False))
+        diagrams = [sub._build_swapped(max_expand, compact) for sub in subs]
+        return _stack(diagrams, self.line_styles)
 
     def _build_swapped(self, max_expand: int, compact: bool) -> Diagram:
         """:meth:`_build`, then the swappable ports re-sorted (see build)."""
@@ -828,6 +1007,9 @@ class Flowsheet:
         if unknown:
             raise ValueError(f"unknown top-level keys {sorted(unknown)}")
         fs = cls(library, d.get("layout", "flow"))  # JSON: from the flow
+        if d.get("rows", "auto") not in ROW_MODES:
+            raise ValueError(f"rows must be one of {ROW_MODES}, got {d['rows']!r}")
+        fs.rows = d.get("rows", "auto")
         for i, spec in enumerate(d.get("custom_elements", [])):
             where = f"custom_elements[{i}] ({spec.get('name', '?')})"
             _context(where, lambda: fs.library.register(CustomSpec.from_dict(spec)))
@@ -892,6 +1074,8 @@ class Flowsheet:
         written out; they must be registered again before reading the file.
         """
         d: dict[str, Any] = {"version": FORMAT_VERSION, "layout": self.layout}
+        if self.rows != "auto":
+            d["rows"] = self.rows
         customs = [
             s.to_dict()
             for s in self.library.local().values()
