@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import math
 import zipfile
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from xml.sax.saxutils import escape
@@ -37,6 +38,7 @@ from .geometry import Ellipse, Polyline, Shape
 from .render import (
     PT_PER_UNIT,
     Group,
+    Point,
     Scene,
     Stroke,
     Text,
@@ -76,7 +78,13 @@ class _Box:
         b = max(self.y + self.cy, o.y + o.cy)
         return _Box(x, y, r - x, b - y)
 
-    def xfrm(self, tag: str = "a:xfrm", child: bool = False) -> str:
+    def xfrm(
+        self,
+        tag: str = "a:xfrm",
+        child: bool = False,
+        flip_h: bool = False,
+        flip_v: bool = False,
+    ) -> str:
         inner = (
             f'<a:off x="{self.x}" y="{self.y}"/><a:ext cx="{self.cx}" cy="{self.cy}"/>'
         )
@@ -85,7 +93,8 @@ class _Box:
                 f'<a:chOff x="{self.x}" y="{self.y}"/>'
                 f'<a:chExt cx="{self.cx}" cy="{self.cy}"/>'
             )
-        return f"<{tag}>{inner}</{tag}>"
+        flips = (' flipH="1"' if flip_h else "") + (' flipV="1"' if flip_v else "")
+        return f"<{tag}{flips}>{inner}</{tag}>"
 
 
 class _Sheet:
@@ -121,14 +130,6 @@ def _extent(shapes: list[Shape]) -> tuple[float, float, float, float]:
     return min(xs), min(ys), max(xs), max(ys)
 
 
-def _on_ellipse(e: Ellipse, deg: float) -> tuple[float, float]:
-    """The point of ``e`` seen at ``deg`` from its centre (the angles of an arc
-    are such visual angles, as in matplotlib)."""
-    c, s = math.cos(math.radians(deg)), math.sin(math.radians(deg))
-    k = 1 / math.hypot(c / e.rx, s / e.ry)
-    return e.cx + k * c, e.cy + k * s
-
-
 # -- DrawingML -----------------------------------------------------------------
 class _Writer:
     def __init__(self, sc: Scene):
@@ -154,102 +155,143 @@ class _Writer:
         return self.next_id - 1
 
     # one item --------------------------------------------------------------
-    def symbol(self, g: Group, shapes: list[Shape]) -> list[tuple[str, _Box]]:
-        """The element's outline as freeform shapes: one for all its lines and
-        arcs, one more per solid part."""
-        p = g.placed
-        assert p is not None
-        plain = [s for s in shapes if not s.fill]
-        out = []
-        if plain:
-            out.append(self.freeform(plain, p.id, p.type))
-        for k, s in enumerate(s for s in shapes if s.fill):
-            out.append(self.freeform([s], f"{p.id} fill {k + 1}", p.type, s.fill))
-        return out
-
-    def freeform(
-        self, shapes: list[Shape], name: str, descr: str, fill: str | None = None
-    ) -> tuple[str, _Box]:
-        at = self.at
-        box = at.box(*_extent(shapes))
-
-        def pt(x: float, y: float) -> str:
-            return f'<a:pt x="{at.x(x) - box.x}" y="{at.y(y) - box.y}"/>'
-
-        paths = []
-        for s in shapes:
-            if isinstance(s, Polyline):
-                body = f"<a:moveTo>{pt(*s.points[0])}</a:moveTo>" + "".join(
-                    f"<a:lnTo>{pt(*q)}</a:lnTo>" for q in s.points[1:]
-                )
-                closed = s.closed
-            else:
-                # y points down on the sheet: counter-clockwise arcs turn
-                # clockwise there, and DrawingML angles run clockwise
-                start = round(-s.theta1 * ANGLE) % FULL
-                sweep = -round((s.theta2 - s.theta1) * ANGLE)
-                sweep = max(-FULL, min(FULL, sweep))
-                body = (
-                    f"<a:moveTo>{pt(*_on_ellipse(s, s.theta1))}</a:moveTo>"
-                    f'<a:arcTo wR="{round(s.rx * UNIT)}" hR="{round(s.ry * UNIT)}" '
-                    f'stAng="{start}" swAng="{sweep}"/>'
-                )
-                closed = s.full
-            if closed:
-                body += "<a:close/>"
-            attr = "" if fill else ' fill="none"'
-            paths.append(
-                f'<a:path w="{max(box.cx, 1)}" h="{max(box.cy, 1)}"{attr}>{body}</a:path>'
-            )
-        paint = (
-            f'<a:solidFill><a:srgbClr val="{to_hex(fill)[1:].upper()}"/></a:solidFill>'
-            if fill
-            else "<a:noFill/>"
-        )
-        lw = round(self.sc.theme.equipment_lw * PT)
-        xml = (
-            f'<xdr:sp><xdr:nvSpPr><xdr:cNvPr id="{self._id()}" name="{escape(name)}" '
-            f'descr="{escape(descr)}"/><xdr:cNvSpPr/></xdr:nvSpPr>'
-            f"<xdr:spPr>{box.xfrm()}"
-            "<a:custGeom><a:avLst/><a:gdLst/><a:ahLst/><a:cxnLst/>"
-            '<a:rect l="0" t="0" r="r" b="b"/>'
-            f"<a:pathLst>{''.join(paths)}</a:pathLst></a:custGeom>{paint}"
-            f'<a:ln w="{lw}" cap="rnd"><a:solidFill><a:srgbClr val="000000"/>'
-            '</a:solidFill><a:prstDash val="solid"/><a:round/></a:ln>'
-            "</xdr:spPr></xdr:sp>"
-        )
-        return xml, box
-
-    def stroke(self, s: Stroke, name: str) -> tuple[str, _Box]:
-        at = self.at
-        xs = [at.x(x) for x, _ in s.points]
-        ys = [at.y(y) for _, y in s.points]
-        box = _Box(min(xs), min(ys), max(xs) - min(xs), max(ys) - min(ys))
-        w, h = max(box.cx, 1), max(box.cy, 1)
-        pts = [(x - box.x, y - box.y) for x, y in zip(xs, ys)]
-        path = f'<a:moveTo><a:pt x="{pts[0][0]}" y="{pts[0][1]}"/></a:moveTo>'
-        path += "".join(f'<a:lnTo><a:pt x="{x}" y="{y}"/></a:lnTo>' for x, y in pts[1:])
-        lw = s.style.get("lw") or self.sc.theme.equipment_lw
-        dash = DASH.get(str(s.style.get("ls") or "-"), "solid")
-        arrow = str(s.style.get("arrow") or "")
-        ends = ""
+    def _ln(
+        self, lw: float, ls: str = "-", head: bool = False, tail: bool = False
+    ) -> str:
         tip = '<a:{}End type="triangle" w="lg" len="lg"/>'
-        if arrow.startswith("<"):
-            ends += tip.format("head")
-        if arrow.endswith(">"):
-            ends += tip.format("tail")
-        xml = (
-            f'<xdr:sp><xdr:nvSpPr><xdr:cNvPr id="{self._id()}" name="{escape(name)}"/>'
-            f"<xdr:cNvSpPr/></xdr:nvSpPr><xdr:spPr>{box.xfrm()}"
-            "<a:custGeom><a:avLst/><a:gdLst/><a:ahLst/><a:cxnLst/>"
-            '<a:rect l="0" t="0" r="r" b="b"/>'
-            f'<a:pathLst><a:path w="{w}" h="{h}" fill="none">{path}</a:path>'
-            "</a:pathLst></a:custGeom><a:noFill/>"
+        ends = (tip.format("head") if head else "") + (
+            tip.format("tail") if tail else ""
+        )
+        return (
             f'<a:ln w="{round(lw * PT)}" cap="rnd">'
             '<a:solidFill><a:srgbClr val="000000"/></a:solidFill>'
-            f'<a:prstDash val="{dash}"/><a:round/>{ends}</a:ln></xdr:spPr></xdr:sp>'
+            f'<a:prstDash val="{DASH.get(ls, "solid")}"/><a:round/>{ends}</a:ln>'
+        )
+
+    def _cnv(self, name: str, descr: str) -> str:
+        d = f' descr="{escape(descr)}"' if descr else ""
+        return f'<xdr:cNvPr id="{self._id()}" name="{escape(name)}"{d}/>'
+
+    def line(
+        self, a: Point, b: Point, name: str, ln: str, descr: str = ""
+    ) -> tuple[str, _Box]:
+        """One straight line (an Excel line, flipped to run from ``a`` to ``b``,
+        so an arrowhead at its end sits at ``b``)."""
+        at = self.at
+        x1, y1, x2, y2 = at.x(a[0]), at.y(a[1]), at.x(b[0]), at.y(b[1])
+        box = _Box(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))
+        xml = (
+            f'<xdr:cxnSp macro=""><xdr:nvCxnSpPr>{self._cnv(name, descr)}'
+            f"<xdr:cNvCxnSpPr/></xdr:nvCxnSpPr><xdr:spPr>"
+            f"{box.xfrm(flip_h=x2 < x1, flip_v=y2 < y1)}"
+            f'<a:prstGeom prst="line"><a:avLst/></a:prstGeom>{ln}</xdr:spPr>'
+            "</xdr:cxnSp>"
         )
         return xml, box
+
+    def lines(
+        self,
+        pts: Sequence[Point],
+        name: str,
+        lw: float,
+        ls: str = "-",
+        arrow: str = "",
+        descr: str = "",
+    ) -> list[tuple[str, _Box]]:
+        """A polyline as one straight line per segment; an arrow only at the
+        polyline's ends."""
+        segs = [(a, b) for a, b in zip(pts, pts[1:]) if a != b]
+        out = []
+        for k, (a, b) in enumerate(segs):
+            ln = self._ln(
+                lw,
+                ls,
+                head=k == 0 and arrow.startswith("<"),
+                tail=k == len(segs) - 1 and arrow.endswith(">"),
+            )
+            out.append(self.line(a, b, f"{name}-{k + 1}", ln, descr))
+        return out
+
+    def stroke(self, s: Stroke, name: str) -> list[tuple[str, _Box]]:
+        lw = s.style.get("lw") or self.sc.theme.equipment_lw
+        ls = str(s.style.get("ls") or "-")
+        return self.lines(s.points, name, lw, ls, str(s.style.get("arrow") or ""))
+
+    def ellipse(self, e: Ellipse, name: str, descr: str) -> tuple[str, _Box]:
+        """A whole ellipse (an Excel oval, filled if solid) or an arc (an Excel
+        arc, whose handles change its angles)."""
+        box = self.at.box(e.cx - e.rx, e.cy - e.ry, e.cx + e.rx, e.cy + e.ry)
+        if e.full:
+            geom = '<a:prstGeom prst="ellipse"><a:avLst/></a:prstGeom>'
+        else:
+            # counter-clockwise on the drawing = clockwise on the sheet (y down);
+            # the arc runs clockwise from adj1 to adj2
+            adj1 = round(-e.theta2 * ANGLE) % FULL
+            adj2 = round(-e.theta1 * ANGLE) % FULL
+            geom = (
+                '<a:prstGeom prst="arc"><a:avLst>'
+                f'<a:gd name="adj1" fmla="val {adj1}"/>'
+                f'<a:gd name="adj2" fmla="val {adj2}"/></a:avLst></a:prstGeom>'
+            )
+        paint = _paint(e.fill if e.full else None)
+        xml = (
+            f"<xdr:sp><xdr:nvSpPr>{self._cnv(name, descr)}<xdr:cNvSpPr/></xdr:nvSpPr>"
+            f"<xdr:spPr>{box.xfrm()}{geom}{paint}"
+            f"{self._ln(self.sc.theme.equipment_lw)}</xdr:spPr></xdr:sp>"
+        )
+        return xml, box
+
+    def solid(self, poly: Polyline, name: str, descr: str) -> tuple[str, _Box]:
+        """A solid (filled) polygon as one freeform."""
+        at = self.at
+        box = at.box(*_extent([poly]))
+        pts = "".join(
+            f'<a:{"moveTo" if k == 0 else "lnTo"}><a:pt x="{at.x(x) - box.x}" '
+            f'y="{at.y(y) - box.y}"/></a:{"moveTo" if k == 0 else "lnTo"}>'
+            for k, (x, y) in enumerate(poly.points)
+        )
+        xml = (
+            f"<xdr:sp><xdr:nvSpPr>{self._cnv(name, descr)}<xdr:cNvSpPr/></xdr:nvSpPr>"
+            f"<xdr:spPr>{box.xfrm()}"
+            "<a:custGeom><a:avLst/><a:gdLst/><a:ahLst/><a:cxnLst/>"
+            '<a:rect l="0" t="0" r="r" b="b"/><a:pathLst>'
+            f'<a:path w="{max(box.cx, 1)}" h="{max(box.cy, 1)}">{pts}<a:close/>'
+            f"</a:path></a:pathLst></a:custGeom>{_paint(poly.fill)}"
+            f"{self._ln(self.sc.theme.equipment_lw)}</xdr:spPr></xdr:sp>"
+        )
+        return xml, box
+
+    def rect(self, s: Stroke, name: str) -> tuple[str, _Box]:
+        """The sheet frame: one rectangle."""
+        xs = [x for x, _ in s.points]
+        ys = [y for _, y in s.points]
+        box = self.at.box(min(xs), min(ys), max(xs), max(ys))
+        lw = s.style.get("lw") or self.sc.theme.equipment_lw
+        xml = (
+            f"<xdr:sp><xdr:nvSpPr>{self._cnv(name, '')}<xdr:cNvSpPr/></xdr:nvSpPr>"
+            f'<xdr:spPr>{box.xfrm()}<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>'
+            f"<a:noFill/>{self._ln(lw)}</xdr:spPr></xdr:sp>"
+        )
+        return xml, box
+
+    def symbol(self, g: Group, shapes: list[Shape]) -> list[tuple[str, _Box]]:
+        """The element's outline part by part: every straight piece a line,
+        every arc an arc, a whole circle an oval, a solid polygon a freeform;
+        each named after the element and described by its type."""
+        p = g.placed
+        assert p is not None
+        lw = self.sc.theme.equipment_lw
+        out: list[tuple[str, _Box]] = []
+        for k, s in enumerate(shapes):
+            name = f"{p.id} {k + 1}"
+            if isinstance(s, Ellipse):
+                out.append(self.ellipse(s, name, p.type))
+            elif s.fill:
+                out.append(self.solid(s, name, p.type))
+            else:
+                pts = s.points + ((s.points[0],) if s.closed else ())
+                out += self.lines(pts, name, lw, descr=p.type)
+        return out
 
     def text(self, t: Text, name: str) -> tuple[str, _Box]:
         em = t.fontsize / PT_PER_UNIT  # font size in drawing units
@@ -298,7 +340,7 @@ class _Writer:
             pipes = [s for s in shapes if isinstance(s, Polyline) and s.pipe]
             for k, s in enumerate(pipes):
                 pts = s.points + ((s.points[0],) if s.closed else ())
-                parts.append(self.stroke(Stroke(pts), f"{g.id} pipe {k + 1}"))
+                parts += self.stroke(Stroke(pts), f"{g.id} pipe {k + 1}")
             symbol = [s for s in shapes if not (isinstance(s, Polyline) and s.pipe)]
             if symbol:
                 parts += self.symbol(g, symbol)
@@ -306,8 +348,10 @@ class _Writer:
             name = f"{g.id} {i + 1}"
             if isinstance(item, Text):
                 parts.append(self.text(item, f"{g.id}: {item.text.splitlines()[0]}"))
+            elif g.kind == "sheet" and _is_frame(item):
+                parts.append(self.rect(item, "frame"))
             else:
-                parts.append(self.stroke(item, name))
+                parts += self.stroke(item, name)
         if not parts:
             return []
         if g.kind == "sheet" or len(parts) == 1:
@@ -323,6 +367,22 @@ class _Writer:
             + "</xdr:grpSp>"
         )
         return [_anchor(xml, box)]
+
+
+def _paint(fill: str | None) -> str:
+    if not fill:
+        return "<a:noFill/>"
+    return f'<a:solidFill><a:srgbClr val="{to_hex(fill)[1:].upper()}"/></a:solidFill>'
+
+
+def _is_frame(s: Stroke) -> bool:
+    """A closed axis-aligned rectangle (the sheet frame)."""
+    pts = s.points
+    return (
+        len(pts) == 5
+        and pts[0] == pts[-1]
+        and all(a[0] == b[0] or a[1] == b[1] for a, b in zip(pts, pts[1:]))
+    )
 
 
 def _anchor(xml: str, box: _Box) -> str:
