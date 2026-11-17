@@ -1,11 +1,13 @@
 """Excel output: the sheet as editable drawing objects in a workbook.
 
-* every piece of equipment is a picture of its outline -- SVG (sharp at any
-  zoom in Excel 365) with a high-resolution PNG fallback for other readers --
-  cut to exactly the area it covers on the sheet, aspect ratio locked;
-* every line is an Excel shape: one freeform polyline per piece between
-  crossing gaps, in the line kind's width and dash, the last piece ending in
-  an arrowhead;
+Everything is an Excel shape -- nothing is a picture:
+
+* every piece of equipment is a freeform shape of its outline: polylines,
+  and the heads and casings as elliptic arcs (``arcTo``); solid parts (the
+  dot of a globe valve ...) are filled freeforms of their own.  Piping an
+  element draws itself (a header's pipes, a tee's arms) is a line instead;
+* every line is a freeform polyline per piece between crossing gaps, in the
+  line kind's width and dash, the last piece ending in an arrowhead;
 * tags, texts inside symbols and specification rows are text boxes;
 * the frame is a shape too.
 
@@ -16,22 +18,19 @@ nothing shifts.  A piece of equipment is grouped with its tag; a line with
 its pieces and nozzle ticks.
 
 The workbook is written directly (the drawing parts are DrawingML that the
-usual Python libraries cannot write: freeform arrows, SVG pictures).
+usual Python libraries cannot write: freeform arcs, arrowheads).
 """
 
 from __future__ import annotations
 
-import io
 import math
 import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 from xml.sax.saxutils import escape
 
-import matplotlib
-import schemdraw
 from matplotlib.backends.backend_agg import RendererAgg
-from matplotlib.figure import Figure
+from matplotlib.colors import to_hex
 from matplotlib.font_manager import FontProperties
 
 from .geometry import Ellipse, Polyline, Shape
@@ -41,21 +40,17 @@ from .render import (
     Scene,
     Stroke,
     Text,
-    _segment,
-    _Shapes,
     _text_width,
-    configure,
 )
 
 INCH = 914400  # EMU
 UNIT = INCH // 2  # one drawing unit: 0.5 inch (SchemDraw's default scale)
 PT = 12700  # EMU per point
-PNG_DPI = 400  # fallback picture resolution
-PAD = 0.15  # drawing units around an outline in its picture (line width, caps)
 MARGIN = 0.5  # drawing units of blank sheet around the frame
 
+ANGLE = 60000  # DrawingML angle units per degree
+FULL = 360 * ANGLE
 DASH = {"-": "solid", "--": "dash", ":": "sysDot", "-.": "dashDot"}
-SVG_EXT = "{96DAC541-7B7A-43D3-8B79-37D633B846F1}"
 NS = (
     'xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" '
     'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" '
@@ -112,7 +107,7 @@ class _Sheet:
         return _Box(left, top, self.x(x1) - left, self.y(y0) - top)
 
 
-# -- pictures ------------------------------------------------------------------
+# -- outlines -------------------------------------------------------------------
 def _extent(shapes: list[Shape]) -> tuple[float, float, float, float]:
     xs: list[float] = []
     ys: list[float] = []
@@ -126,32 +121,12 @@ def _extent(shapes: list[Shape]) -> tuple[float, float, float, float]:
     return min(xs), min(ys), max(xs), max(ys)
 
 
-def _picture(
-    shapes: list[Shape], area: tuple[float, float, float, float], sc: Scene
-) -> tuple[bytes, bytes]:
-    """PNG and SVG of ``shapes`` drawn exactly as on the sheet, covering exactly
-    ``area`` (drawing units) at the sheet's scale, transparent elsewhere."""
-    matplotlib.use("Agg")
-    schemdraw.use("matplotlib")
-    x0, y0, x1, y1 = area
-    w, h = x1 - x0, y1 - y0
-    fig = Figure(figsize=(w * UNIT / INCH, h * UNIT / INCH))
-    ax = fig.add_axes((0.0, 0.0, 1.0, 1.0))
-    d = schemdraw.Drawing(show=False)
-    configure(d, sc)
-    d.add(_Shapes([_segment(s) for s in shapes]).at((0, 0)))
-    d.draw(show=False, canvas=ax)
-    ax.set_xlim(x0, x1)
-    ax.set_ylim(y0, y1)
-    ax.set_aspect("auto")
-    ax.set_position((0.0, 0.0, 1.0, 1.0))
-    ax.set_axis_off()
-    out = []
-    for fmt, kw in (("png", {"dpi": PNG_DPI}), ("svg", {})):
-        buf = io.BytesIO()
-        fig.savefig(buf, format=fmt, transparent=True, **kw)
-        out.append(buf.getvalue())
-    return out[0], out[1]
+def _on_ellipse(e: Ellipse, deg: float) -> tuple[float, float]:
+    """The point of ``e`` seen at ``deg`` from its centre (the angles of an arc
+    are such visual angles, as in matplotlib)."""
+    c, s = math.cos(math.radians(deg)), math.sin(math.radians(deg))
+    k = 1 / math.hypot(c / e.rx, s / e.ry)
+    return e.cx + k * c, e.cy + k * s
 
 
 # -- DrawingML -----------------------------------------------------------------
@@ -160,8 +135,6 @@ class _Writer:
         self.sc = sc
         self.at = _Sheet(sc)
         self.next_id = 2
-        self.media: list[tuple[str, bytes]] = []  # (file name, data)
-        self.rels: list[tuple[str, str]] = []  # (rId, target)
         self.font = sc.font or sc.theme.fonts[0]
         self._pitch: dict[float, float] = {}
 
@@ -180,44 +153,70 @@ class _Writer:
         self.next_id += 1
         return self.next_id - 1
 
-    def _rel(self, name: str, data: bytes) -> str:
-        self.media.append((name, data))
-        rid = f"rId{len(self.rels) + 1}"
-        self.rels.append((rid, f"../media/{name}"))
-        return rid
-
     # one item --------------------------------------------------------------
-    def picture(
-        self, g: Group, shapes: list[Shape], whole: bool = True
-    ) -> tuple[str, _Box]:
-        """The element's symbol as a picture: covering its whole place, or
-        (``whole=False``: its piping is drawn as lines) just ``shapes``."""
+    def symbol(self, g: Group, shapes: list[Shape]) -> list[tuple[str, _Box]]:
+        """The element's outline as freeform shapes: one for all its lines and
+        arcs, one more per solid part."""
         p = g.placed
         assert p is not None
-        ex = _extent(shapes)
-        bx0, by0, bx1, by1 = p.bbox if whole else ex
-        area = (
-            min(ex[0], bx0) - PAD,
-            min(ex[1], by0) - PAD,
-            max(ex[2], bx1) + PAD,
-            max(ex[3], by1) + PAD,
+        plain = [s for s in shapes if not s.fill]
+        out = []
+        if plain:
+            out.append(self.freeform(plain, p.id, p.type))
+        for k, s in enumerate(s for s in shapes if s.fill):
+            out.append(self.freeform([s], f"{p.id} fill {k + 1}", p.type, s.fill))
+        return out
+
+    def freeform(
+        self, shapes: list[Shape], name: str, descr: str, fill: str | None = None
+    ) -> tuple[str, _Box]:
+        at = self.at
+        box = at.box(*_extent(shapes))
+
+        def pt(x: float, y: float) -> str:
+            return f'<a:pt x="{at.x(x) - box.x}" y="{at.y(y) - box.y}"/>'
+
+        paths = []
+        for s in shapes:
+            if isinstance(s, Polyline):
+                body = f"<a:moveTo>{pt(*s.points[0])}</a:moveTo>" + "".join(
+                    f"<a:lnTo>{pt(*q)}</a:lnTo>" for q in s.points[1:]
+                )
+                closed = s.closed
+            else:
+                # y points down on the sheet: counter-clockwise arcs turn
+                # clockwise there, and DrawingML angles run clockwise
+                start = round(-s.theta1 * ANGLE) % FULL
+                sweep = -round((s.theta2 - s.theta1) * ANGLE)
+                sweep = max(-FULL, min(FULL, sweep))
+                body = (
+                    f"<a:moveTo>{pt(*_on_ellipse(s, s.theta1))}</a:moveTo>"
+                    f'<a:arcTo wR="{round(s.rx * UNIT)}" hR="{round(s.ry * UNIT)}" '
+                    f'stAng="{start}" swAng="{sweep}"/>'
+                )
+                closed = s.full
+            if closed:
+                body += "<a:close/>"
+            attr = "" if fill else ' fill="none"'
+            paths.append(
+                f'<a:path w="{max(box.cx, 1)}" h="{max(box.cy, 1)}"{attr}>{body}</a:path>'
+            )
+        paint = (
+            f'<a:solidFill><a:srgbClr val="{to_hex(fill)[1:].upper()}"/></a:solidFill>'
+            if fill
+            else "<a:noFill/>"
         )
-        png, svg = _picture(shapes, area, self.sc)
-        k = len(self.media) // 2 + 1
-        png_id = self._rel(f"image{k}.png", png)
-        svg_id = self._rel(f"image{k}.svg", svg)
-        box = self.at.box(*area)
+        lw = round(self.sc.theme.equipment_lw * PT)
         xml = (
-            f'<xdr:pic><xdr:nvPicPr><xdr:cNvPr id="{self._id()}" '
-            f'name="{escape(p.id)}" descr="{escape(p.type)}"/>'
-            '<xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr>'
-            f'</xdr:nvPicPr><xdr:blipFill><a:blip r:embed="{png_id}"><a:extLst>'
-            f'<a:ext uri="{SVG_EXT}"><asvg:svgBlip xmlns:asvg='
-            '"http://schemas.microsoft.com/office/drawing/2016/SVG/main" '
-            f'r:embed="{svg_id}"/></a:ext></a:extLst></a:blip>'
-            "<a:stretch><a:fillRect/></a:stretch></xdr:blipFill>"
-            f'<xdr:spPr>{box.xfrm()}<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>'
-            "</xdr:spPr></xdr:pic>"
+            f'<xdr:sp><xdr:nvSpPr><xdr:cNvPr id="{self._id()}" name="{escape(name)}" '
+            f'descr="{escape(descr)}"/><xdr:cNvSpPr/></xdr:nvSpPr>'
+            f"<xdr:spPr>{box.xfrm()}"
+            "<a:custGeom><a:avLst/><a:gdLst/><a:ahLst/><a:cxnLst/>"
+            '<a:rect l="0" t="0" r="r" b="b"/>'
+            f"<a:pathLst>{''.join(paths)}</a:pathLst></a:custGeom>{paint}"
+            f'<a:ln w="{lw}" cap="rnd"><a:solidFill><a:srgbClr val="000000"/>'
+            '</a:solidFill><a:prstDash val="solid"/><a:round/></a:ln>'
+            "</xdr:spPr></xdr:sp>"
         )
         return xml, box
 
@@ -290,7 +289,7 @@ class _Writer:
 
     # groups ----------------------------------------------------------------
     def group(self, g: Group) -> list[str]:
-        """Anchors for one scene group: a group shape for equipment (picture,
+        """Anchors for one scene group: a group shape for equipment (outline,
         texts, tag) and for a line (pieces, ticks); loose items for the sheet."""
         parts: list[tuple[str, _Box]] = []
         if g.kind == "equipment":
@@ -302,7 +301,7 @@ class _Writer:
                 parts.append(self.stroke(Stroke(pts), f"{g.id} pipe {k + 1}"))
             symbol = [s for s in shapes if not (isinstance(s, Polyline) and s.pipe)]
             if symbol:
-                parts.append(self.picture(g, symbol, whole=not pipes))
+                parts += self.symbol(g, symbol)
         for i, item in enumerate(i for i in g.items if isinstance(i, (Text, Stroke))):
             name = f"{g.id} {i + 1}"
             if isinstance(item, Text):
@@ -376,9 +375,6 @@ def write_xlsx(sc: Scene, path: str | Path, sheet_name: str = "PFD") -> None:
             [("rId1", f"{REL}/drawing", "../drawings/drawing1.xml")]
         ),
         "xl/drawings/drawing1.xml": drawing,
-        "xl/drawings/_rels/drawing1.xml.rels": _rels(
-            [(rid, f"{REL}/image", target) for rid, target in w.rels]
-        ),
     }
     with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
         for name, text in files.items():
@@ -387,8 +383,6 @@ def write_xlsx(sc: Scene, path: str | Path, sheet_name: str = "PFD") -> None:
                     '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' + text
                 )
             z.writestr(name, text.encode("utf-8"))
-        for name, data in w.media:
-            z.writestr(f"xl/media/{name}", data)
 
 
 def _rels(rels: list[tuple[str, str, str]]) -> str:
@@ -412,8 +406,6 @@ def _content_types() -> str:
         '<Default Extension="rels" '
         'ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
         '<Default Extension="xml" ContentType="application/xml"/>'
-        '<Default Extension="png" ContentType="image/png"/>'
-        '<Default Extension="svg" ContentType="image/svg+xml"/>'
         + "".join(
             f'<Override PartName="{p}" ContentType="{t}"/>' for p, t in parts.items()
         )

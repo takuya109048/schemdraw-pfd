@@ -1,17 +1,15 @@
 """Excel output: a valid package whose drawing objects sit exactly where the
 SVG/PNG drawing puts them."""
 
-import io
 import xml.etree.ElementTree as ET
 import zipfile
 
 import pytest
-from PIL import Image
 
 from schemdraw_pfd import Flowsheet
-from schemdraw_pfd.geometry import Polyline
+from schemdraw_pfd.geometry import Ellipse, Polyline
 from schemdraw_pfd.render import Stroke, Text, scene
-from schemdraw_pfd.xlsx import MARGIN, PAD, UNIT
+from schemdraw_pfd.xlsx import MARGIN, UNIT
 
 NS = {
     "xdr": "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing",
@@ -68,7 +66,7 @@ def test_package_is_well_formed(book):
         if name.endswith((".xml", ".rels")):
             ET.fromstring(z.read(name))  # every part parses
     types = z.read("[Content_Types].xml").decode()
-    assert 'Extension="svg"' in types and 'Extension="png"' in types
+    assert "drawing+xml" in types and "image/" not in types  # shapes only
     sheet = z.read("xl/worksheets/sheet1.xml").decode()
     assert '<drawing r:id="rId1"/>' in sheet and 'showGridLines="0"' in sheet
 
@@ -79,8 +77,8 @@ def test_lines_are_arrow_shapes_exactly_on_the_routes(book):
     drawn = []
     for sp in root.iter(f"{{{NS['xdr']}}}sp"):
         path = sp.find(".//a:path", NS)
-        if path is None:
-            continue
+        if path is None or _find(sp, ".//xdr:cNvPr").get("descr"):
+            continue  # a text box, or an equipment outline
         x, y, cx, cy = _box(_find(sp, "xdr:spPr/a:xfrm"))
         w, h = int(_attr(path, "w")), int(_attr(path, "h"))
         pts = []
@@ -106,36 +104,74 @@ def test_lines_are_arrow_shapes_exactly_on_the_routes(book):
             assert abs(a - c) < 1e-5 and abs(b - d) < 1e-5  # at most 1 EMU off
 
 
-def test_equipment_pictures_cover_their_place_with_their_own_aspect(book):
+def test_equipment_outlines_are_freeforms_exactly_on_the_symbol(book):
+    """No pictures: every symbol is a freeform shape (arcs as arcTo) whose box
+    is exactly the extent of its outline; solid parts are filled freeforms."""
     z, sc = book
+    assert not [n for n in z.namelist() if n.startswith("xl/media/")]
     root = ET.fromstring(z.read("xl/drawings/drawing1.xml"))
-    rels = ET.fromstring(z.read("xl/drawings/_rels/drawing1.xml.rels"))
-    target = {_attr(r, "Id"): _attr(r, "Target") for r in rels}
-    placed = {
-        g.id: g.placed
-        for g in sc.groups
-        if g.kind == "equipment"
-        and not any(_is_pipe(i) for i in g.items)  # pictures cut to the symbol
-    }
-    pics = list(root.iter(f"{{{NS['xdr']}}}pic"))
-    assert len(pics) == len(placed)
-    for pic in pics:
-        p = placed[_attr(_find(pic, ".//xdr:cNvPr"), "name")]
-        assert p is not None
-        x, y, cx, cy = _box(_find(pic, "xdr:spPr/a:xfrm"))
+    assert not list(root.iter(f"{{{NS['xdr']}}}pic"))
+    outlines = {}
+    for sp in root.iter(f"{{{NS['xdr']}}}sp"):
+        pr = _find(sp, ".//xdr:cNvPr")
+        if pr.get("descr"):
+            outlines[_attr(pr, "name")] = sp
+    for g in sc.groups:
+        if g.kind != "equipment":
+            continue
+        shapes = [
+            i
+            for i in g.items
+            if isinstance(i, (Polyline, Ellipse)) and not _is_pipe(i) and not i.fill
+        ]
+        if not shapes:
+            assert g.id not in outlines  # all piping (a tee)
+            continue
+        sp = outlines[g.id]
+        x, y, cx, cy = _box(_find(sp, "xdr:spPr/a:xfrm"))
         left, top = _units(sc, x, y)
         right, bottom = _units(sc, x + cx, y + cy)
-        # the outline lies inside, the picture reaches PAD beyond the place
-        assert left <= p.bbox[0] - PAD + 1e-5 and right >= p.bbox[2] + PAD - 1e-5
-        assert bottom <= p.bbox[1] - PAD + 1e-5 and top >= p.bbox[3] + PAD - 1e-5
-        blip = _find(pic, ".//a:blip")
-        embed = f"{{{NS['r']}}}embed"
-        png = z.read("xl/" + target[_attr(blip, embed)][3:])
-        svg = _attr(_find(blip, ".//asvg:svgBlip"), embed)
-        assert target[svg].endswith(".svg")
-        pw, ph = Image.open(io.BytesIO(png)).size
-        assert abs(pw / ph - cx / cy) < 0.002  # never stretched
-        assert _attr(_find(pic, ".//a:picLocks"), "noChangeAspect") == "1"
+        xs = [v for s in shapes for v in _xs(s)]
+        ys = [v for s in shapes for v in _ys(s)]
+        assert abs(left - min(xs)) < 1e-5 and abs(right - max(xs)) < 1e-5
+        assert abs(bottom - min(ys)) < 1e-5 and abs(top - max(ys)) < 1e-5
+        paths = list(sp.iter(f"{{{NS['a']}}}path"))
+        assert len(paths) == len(shapes)
+        arcs = sum(isinstance(s, Ellipse) for s in shapes)
+        assert len(list(sp.iter(f"{{{NS['a']}}}arcTo"))) == arcs
+        assert _find(sp, "xdr:spPr/a:noFill") is not None
+
+
+def _xs(s) -> list[float]:
+    if isinstance(s, Polyline):
+        return [p[0] for p in s.points]
+    return [s.cx - s.rx, s.cx + s.rx]
+
+
+def _ys(s) -> list[float]:
+    if isinstance(s, Polyline):
+        return [p[1] for p in s.points]
+    return [s.cy - s.ry, s.cy + s.ry]
+
+
+def test_solid_parts_are_filled_freeforms(tmp_path):
+    fs = Flowsheet()
+    fs.add("valve", "V1", kind="globe")
+    fs.add("valve", "V2")
+    fs.connect("V1.out", "V2.in")
+    fs.render(tmp_path / "v.xlsx")
+    root = ET.fromstring(
+        zipfile.ZipFile(tmp_path / "v.xlsx").read("xl/drawings/drawing1.xml")
+    )
+    filled = [
+        sp
+        for sp in root.iter(f"{{{NS['xdr']}}}sp")
+        if _find(sp, ".//xdr:cNvPr").get("descr") == "valve"
+        and sp.find("xdr:spPr/a:solidFill", NS) is not None
+    ]
+    assert len(filled) == 1  # the globe valve's dot
+    assert _attr(_find(filled[0], ".//xdr:cNvPr"), "name") == "V1 fill 1"
+    assert _attr(_find(filled[0], ".//a:srgbClr"), "val") == "000000"
 
 
 def test_texts_are_text_boxes(book):
@@ -155,9 +191,9 @@ def test_texts_are_text_boxes(book):
     assert boxes == texts and "T-101" in boxes
 
 
-def test_piping_drawn_by_elements_is_lines_not_pictures(tmp_path):
+def test_piping_drawn_by_elements_is_lines(tmp_path):
     """Headers and tees (main pipes, taps) are piping: line shapes in the
-    equipment line width; a header's inserted valve stays a picture."""
+    equipment line width; a header's inserted valve is an outline shape."""
     fs = Flowsheet()
     fs.add("pump", "P1")
     fs.add("header", "H1", branches=2, branch_elements={1: "valve"})
@@ -172,13 +208,14 @@ def test_piping_drawn_by_elements_is_lines_not_pictures(tmp_path):
         _attr(_find(sp, "xdr:nvSpPr/xdr:cNvPr"), "name")
         for sp in root.iter(f"{{{NS['xdr']}}}sp")
     ]
-    pics = {
-        _attr(_find(pic, ".//xdr:cNvPr"), "name")
-        for pic in root.iter(f"{{{NS['xdr']}}}pic")
+    outlines = {
+        _attr(pr, "name")
+        for pr in root.iter(f"{{{NS['xdr']}}}cNvPr")
+        if pr.get("descr")
     }
     # main pipe + one plain branch + the valve branch's two pieces
     assert sum(n.startswith("H1 pipe") for n in names) == 4
-    assert pics == {"P1", "H1", "D1"}  # H1's picture: just its valve
+    assert outlines == {"P1", "H1", "D1"}  # H1's outline: just its valve
     for sp in root.iter(f"{{{NS['xdr']}}}sp"):
         if _attr(_find(sp, "xdr:nvSpPr/xdr:cNvPr"), "name").startswith("H1 pipe"):
             ln = _find(sp, "xdr:spPr/a:ln")
