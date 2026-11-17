@@ -19,7 +19,9 @@ def main(argv: list[str] | None = None) -> int:
         prog="pfd", description="Generate a PFD from a JSON spec"
     )
     ap.add_argument("spec", nargs="?", help="JSON flowsheet specification")
-    ap.add_argument("-o", "--output", default="pfd.svg", help="svg/png/pdf output path")
+    ap.add_argument(
+        "-o", "--output", default="pfd.svg", help="svg/png/pdf/xlsx output path"
+    )
     ap.add_argument("--no-labels", action="store_true")
     ap.add_argument("--no-frame", action="store_true", help="omit the sheet border")
     ap.add_argument(
