@@ -285,11 +285,17 @@ class Flowsheet:
         become equipment, every port carries at most one line.
 
         ``equipment``: the items in another order (default: as added)."""
+        eqs = self.equipment if equipment is None else equipment
+        edges = None
+        if self.layout == "flow":  # flags stand on the sheet edges
+            geos = {e.id: self.geometry(e) for e in eqs}
+            edges = self._flag_edges(eqs, self.connections, geos)
         return expand(
-            self.equipment if equipment is None else equipment,
+            eqs,
             self.connections,
             self.library,
             lambda e, build: _context(e.id, build),
+            edges,
         )
 
     # -- build ----------------------------------------------------------------
@@ -556,18 +562,29 @@ class Flowsheet:
                     port_dx(gb, pb.side, pb.offset),
                 )
             )
-        # a flag sits on the edge its connecting port faces away from -- or,
-        # when only utility lines reach it, right beside what it serves
+        return flow, self._flag_edges(net.equipment, net.connections, net.geos)
+
+    def _flag_edges(
+        self,
+        eqs: list[Equipment],
+        conns: list[Connection],
+        geos: dict[str, Geometry],
+    ) -> dict[str, str]:
+        """Where each off-sheet flag goes (flow layout): on the edge its
+        connecting port faces away from (``"left"`` / ``"right"``) -- or,
+        when only utility lines reach it, right beside what it serves
+        (``"local"``)."""
         faces: dict[str, str] = {}
         kinds: dict[str, set[str]] = {}
-        for c in net.connections:
+        for c in conns:
             for eq, port in c.ends:
-                if net.geos[eq].off_sheet:
-                    faces.setdefault(eq, net.geos[eq].ports[port].side)
+                g = geos.get(eq)
+                if g is not None and g.off_sheet and port in g.ports:
+                    faces.setdefault(eq, g.ports[port].side)
                     kinds.setdefault(eq, set()).add(c.kind)
         flags: dict[str, str] = {}
-        for e in net.equipment:
-            if not net.geos[e.id].off_sheet:
+        for e in eqs:
+            if not geos[e.id].off_sheet:
                 continue
             local = e.params.get("local", "auto")
             if local == "auto":
@@ -577,7 +594,7 @@ class Flowsheet:
                 flags[e.id] = "local"
             else:
                 flags[e.id] = "right" if faces.get(e.id) == "W" else "left"
-        return flow, flags
+        return flags
 
     def _route_all(
         self,
@@ -941,6 +958,13 @@ def _settle_lifts(net: Expanded, flags: dict[str, str], links: list[Link]) -> No
     index = {e.id: i for i, e in enumerate(eqs)}
     # the taps of one main pipe are lifted together: the main pipe stays straight
     group = {t: [index[u] for u in h] for h in net.headers for t in h}
+    taps = {index[t] for h in net.headers for t in h}
+    # corresponding items of repeated units are lifted together: they stay alike
+    sym = find_units(net)
+    classes: dict[int, list[int]] = {}
+    for i, k in enumerate(sym.item_class):
+        classes.setdefault(k, []).append(i)
+    alike = {i: classes[k] for i, k in enumerate(sym.item_class)}
     for _ in range(8):
         items, ys, base = _heights(net, links, flags, anchor_free=True)
         moved = False
@@ -974,15 +998,63 @@ def _settle_lifts(net: Expanded, flags: dict[str, str], links: list[Link]) -> No
                 if eqs[j].id in fixed or y < base[items[j].level]:
                     continue
                 elevation = y - base[items[j].level]
-                members = group.get(eqs[j].id, [j])
+                # a main pipe's taps, or the copies of an item in repeated
+                # units (columns side by side), rise together
+                members = group.get(eqs[j].id) or [
+                    k for k in alike.get(j, [j]) if eqs[k].id not in fixed
+                ]
                 if len(members) > 1:
                     elevation = max(
                         [elevation] + [eqs[k].elevation or 0 for k in members]
                     )
                 for k in members:
                     moved |= _lift(eqs[k], elevation)
+        moved |= _clear_main_pipes(eqs, items, ys, base, links, taps, fixed, alike)
         if not moved:
             return
+
+
+def _clear_main_pipes(
+    eqs: list[Equipment],
+    items: list[Item],
+    ys: list[int],
+    base: list[int],
+    links: list[Link],
+    taps: set[int],
+    fixed: set[str],
+    alike: dict[int, list[int]],
+) -> bool:
+    """Lift vessels that stand across a main pipe on their own level.
+
+    A main pipe runs straight along its band from tap to tap (and on to the
+    port it leaves); a vessel between two of its taps whose body reaches the
+    pipe's height (a column on the floor beside the pumps whose outlets
+    merge into one bottoms line) would make the pipe dip under it.  The
+    vessel stands on the pipe instead: a cell above it, so its bottom
+    nozzle drops through the pipe (a crossing) to whatever it feeds.  The
+    copies of the vessel in repeated units are lifted alike.  True if
+    anything moved.
+    """
+    moved = False
+    for lk in links:
+        if (lk.a_side, lk.b_side) != ("E", "W") or not ({lk.a, lk.b} & taps):
+            continue
+        level = items[lk.a].level
+        if items[lk.b].level != level:
+            continue
+        tap = lk.a if lk.a in taps else lk.b
+        pipe = ys[tap] + (lk.a_off if tap == lk.a else lk.b_off)
+        for j in range(lk.a + 1, lk.b):
+            it = items[j]
+            if j in taps or it.level != level or not it.geo.nozzles:
+                continue
+            if not ys[j] <= pipe <= ys[j] + it.geo.height:
+                continue
+            elevation = pipe + 1 - base[level]
+            for k in alike.get(j, [j]):
+                if eqs[k].id not in fixed and (eqs[k].elevation or 0) < elevation:
+                    moved |= _lift(eqs[k], elevation)
+    return moved
 
 
 def _settle_tees(net: Expanded, links: list[Link]) -> None:
@@ -1002,7 +1074,7 @@ def _settle_tees(net: Expanded, links: list[Link]) -> None:
             o = index[t.owner]
             port_y = ys[o] + (net.geos[t.owner].height if t.side == "N" else 0)
             floor = base[items[index[t.tee]].level]
-            want = max(port_y - floor + (0 if t.side == "N" else -2), 0)
+            want = max(port_y - floor + (1 if t.side == "N" else -3), 0)
             moved |= _lift(net.equipment[index[t.tee]], want)
         if not moved:
             return

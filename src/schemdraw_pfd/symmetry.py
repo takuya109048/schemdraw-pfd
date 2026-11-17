@@ -84,8 +84,8 @@ def find_units(net: Expanded) -> Symmetry:
 
     groups: dict[tuple, list[tuple[list[int], dict[tuple, int]]]] = {}
     for r, members in comps.items():
-        if len(members) < 2:
-            continue  # a lone item is no train
+        if len(members) < 2 and not lines_of.get(r):
+            continue  # a lone item with no lines is no train
         local = {i: k for k, i in enumerate(members)}
         items = tuple(
             (

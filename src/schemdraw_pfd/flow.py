@@ -96,7 +96,7 @@ def plan_flow(
     process = {i for _, u, v in edges for i in (u, v)} - taps
     walk = _branch_order(n, _through_taps(forward, taps), process)
     keys: dict[int, list[int]] = {i: [k] for k, i in enumerate(walk)}
-    _place_taps(keys, taps, conns, index, eqs, owners)
+    _place_taps(keys, taps, conns, index, eqs, owners, geos)
     _attach(keys, attach, eqs, geos)
     for i in range(n):  # unconnected items go last, as declared
         keys.setdefault(i, [n + i])
@@ -139,20 +139,23 @@ def _place_taps(
     index: dict[str, int],
     eqs: list[Equipment],
     owners: dict[str, str],
+    geos: dict[str, Geometry],
 ) -> None:
     """Order each tap right after the item on its branch (the item it is
-    joined to other than the main pipe's own port); a tap with no such item
+    joined to other than the main pipe's own port) -- or right in front of
+    it when the branch reaches the item's west face, so the line drops (or
+    rises) beside the item straight into the nozzle; a tap with no such item
     (the riser of a main pipe running both ways) goes after the owner."""
-    partner: dict[int, int] = {}
+    partner: dict[int, tuple[int, int]] = {}
     for c in conns:
-        (a, _), (b, _) = c.ends
-        for t, o in ((a, b), (b, a)):
+        for (t, _), (o, op) in (c.ends, c.ends[::-1]):
             if t in owners and o not in owners and o in index and o != owners[t]:
-                partner[index[t]] = index[o]
+                side = geos[o].ports[op].side if op in geos[o].ports else ""
+                partner[index[t]] = (index[o], -1 if side == "W" else 1)
     for t in sorted(taps):
-        p = partner.get(t, index.get(owners[eqs[t].id], -1))
+        p, where = partner.get(t, (index.get(owners[eqs[t].id], -1), 1))
         if p in keys:
-            keys[t] = keys[p] + [1, t]
+            keys[t] = keys[p] + [where, t]
 
 
 def _runs_left(out_side: str, in_side: str) -> bool:
@@ -210,7 +213,10 @@ def _branch_order(
       thus stays between its column and the next main unit instead of being
       mixed with other trains.  Between branches of equal length, one that
       leads to a merge point (an item other lines flow into as well) comes
-      last, so an item's own branch stays beside it.
+      last, so an item's own branch stays beside it;
+    * a merge point fed by branches the walk reaches anyway (parallel trains
+      off one feed, merging into one product) waits for the last of them, so
+      each train stays together.
     """
     succ: dict[int, list[int]] = {i: [] for i in range(n)}
     pred: dict[int, list[int]] = {i: [] for i in range(n)}
@@ -225,8 +231,25 @@ def _branch_order(
             tail[u] = max((1 + length(v) for v in succ[u]), default=0)
         return tail[u]
 
+    up: dict[int, set[int]] = {}  # everything that flows into an item
+
+    def ancestors(u: int) -> set[int]:
+        if u not in up:
+            up[u] = set()  # (loop-free; this only stops recursion)
+            up[u] = set(pred[u]).union(*(ancestors(p) for p in pred[u]))
+        return up[u]
+
     order: list[int] = []
     seen: set[int] = set()
+
+    def waits(v: int) -> bool:
+        """A merge point waits for the other branches flowing into it that
+        the walk will reach on its own (parallel trains off one feed): it
+        is placed after the last of them, instead of pulling them in --
+        and with them the other trains -- in front of this branch."""
+        return any(
+            p not in seen and ancestors(p) & seen for p in pred[v] if len(pred[v]) > 1
+        )
 
     def visit(u: int) -> None:
         if u in seen:
@@ -238,7 +261,8 @@ def _branch_order(
         # on a tie a merge point (fed by other items too) waits for the
         # item's own branches
         for v in sorted(succ[u], key=lambda v: (length(v), len(pred[v]) > 1, v)):
-            visit(v)
+            if not waits(v):
+                visit(v)
 
     feeds = sorted((i for i in process if not pred[i]), key=lambda i: (-length(i), i))
     for i in feeds[:1] + sorted(process):  # main feed first, then leftovers

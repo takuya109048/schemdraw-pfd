@@ -1,0 +1,118 @@
+{
+  "layout": "flow",
+  "elements": [
+    {
+      "id": "FEED",
+      "type": "connector",
+      "params": {
+        "text": "FEED\nfrom Storage"
+      }
+    },
+    {
+      "id": "P-100",
+      "type": "pump",
+      "desc": "Column feed pump"
+    },
+    {
+      "id": "C-101",
+      "type": "column",
+      "desc": "Column, train 1"
+    },
+    {
+      "id": "P-101",
+      "type": "pump",
+      "desc": "Bottoms pump, train 1"
+    },
+    {
+      "id": "C-201",
+      "type": "column",
+      "desc": "Column, train 2"
+    },
+    {
+      "id": "P-201",
+      "type": "pump",
+      "desc": "Bottoms pump, train 2"
+    },
+    {
+      "id": "C-301",
+      "type": "column",
+      "desc": "Column, train 3"
+    },
+    {
+      "id": "P-301",
+      "type": "pump",
+      "desc": "Bottoms pump, train 3"
+    },
+    {
+      "id": "OVHD",
+      "type": "connector",
+      "level": 2,
+      "params": {
+        "text": "OVERHEAD\nto Condenser",
+        "point": "right"
+      }
+    },
+    {
+      "id": "BTMS",
+      "type": "connector",
+      "params": {
+        "text": "BOTTOMS\nto Storage",
+        "point": "right"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "FEED.tip",
+      "to": "P-100.in"
+    },
+    {
+      "from": "P-100.out",
+      "to": "C-101.w8"
+    },
+    {
+      "from": "C-101.top",
+      "to": "OVHD.tail"
+    },
+    {
+      "from": "C-101.bottom",
+      "to": "P-101.in"
+    },
+    {
+      "from": "P-101.out",
+      "to": "BTMS.tail"
+    },
+    {
+      "from": "P-100.out",
+      "to": "C-201.w8"
+    },
+    {
+      "from": "C-201.top",
+      "to": "OVHD.tail"
+    },
+    {
+      "from": "C-201.bottom",
+      "to": "P-201.in"
+    },
+    {
+      "from": "P-201.out",
+      "to": "BTMS.tail"
+    },
+    {
+      "from": "P-100.out",
+      "to": "C-301.w8"
+    },
+    {
+      "from": "C-301.top",
+      "to": "OVHD.tail"
+    },
+    {
+      "from": "C-301.bottom",
+      "to": "P-301.in"
+    },
+    {
+      "from": "P-301.out",
+      "to": "BTMS.tail"
+    }
+  ]
+}
