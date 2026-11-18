@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import json
 import multiprocessing as mp
 import os
@@ -29,7 +30,7 @@ from .layout import (
     place_y,
     port_dx,
 )
-from .levels import auto_levels
+from .levels import Levels, moves, search_levels, start_levels
 from .netlist import (
     ANCHORS,
     Connection,
@@ -138,12 +139,55 @@ def _pool_map(fn: Callable[..., Any], tasks: list[tuple], jobs: int | None) -> l
     return [fn(*t) for t in tasks]
 
 
+def _run_level_cost(fs: Flowsheet, levels: Levels, max_expand: int) -> int | None:
+    """Cost of one sheet on the given levels: placed and routed once, in
+    the plain placement mode and without squeezing the gaps."""
+    sheet = copy.copy(fs)
+    sheet.equipment = fs._with_levels(levels)
+    sheet._in_order = sheet._flag_room = False
+    sheet._quick = True
+    try:
+        return sheet._level_cost(sheet._build(max_expand, compact=False))
+    except RoutingError:
+        return None
+
+
+def _repeated(fs: Flowsheet) -> list[list[str]]:
+    """Ids of the corresponding items of repeated units (see
+    :mod:`.symmetry`), found on the levels the search starts from."""
+    sheet = copy.copy(fs)
+    sheet.equipment = fs._with_levels()
+    net = sheet._prepare()[0]
+    sym = find_units(net)
+    classes: dict[int, list[str]] = {}
+    for e, c in zip(net.equipment, sym.item_class):
+        classes.setdefault(c, []).append(e.id)
+    return [ids for ids in classes.values() if len(ids) > 1]
+
+
+def _settle_levels(sheets: list[Flowsheet], max_expand: int, jobs: int | None) -> None:
+    """Give every item without a level the level the search finds best
+    (see :mod:`.levels`), sheet by sheet."""
+    for fs in sheets:
+        sets = moves(fs.equipment, fs.connections, _repeated(fs))
+        lv = start_levels(fs.equipment)
+        if sets:
+
+            def evaluate(tasks: list[Levels], fs: Flowsheet = fs) -> list[int | None]:
+                work = [(fs, t, max_expand) for t in tasks]
+                return _pool_map(_run_level_cost, work, jobs)
+
+            lv = search_levels(lv, sets, evaluate)
+        fs.equipment = fs._with_levels(lv)
+
+
 def _build_sheets(
     sheets: list[Flowsheet], max_expand: int, compact: bool, jobs: int | None
 ) -> list[Diagram]:
     """Build several sheets (the rows of a folded sheet, or one sheet): every
     placement mode of every sheet at once, the cheapest per sheet kept (the
     first on a tie), then each sheet's ports re-sorted."""
+    _settle_levels(sheets, max_expand, jobs)
     modes = [fs._modes() for fs in sheets]
     tasks = [(fs, m, max_expand, compact) for fs, ms in zip(sheets, modes) for m in ms]
     results = iter(_pool_map(_run_first, tasks, jobs))
@@ -306,6 +350,7 @@ class Flowsheet:
         self.rows = "auto"
         self._in_order = False  # placement mode of the build in progress
         self._flag_room = False  # see _settle_lifts
+        self._quick = False  # level search: the first spacing that routes
         # worker processes for the builds of a sheet's rows and placement
         # modes (None: one per CPU; 1: everything in this process)
         self.jobs: int | None = None
@@ -479,7 +524,6 @@ class Flowsheet:
         JSON lists.
         """
         user = self.equipment, self.connections
-        self.equipment = self._with_levels()
         try:
             if self.layout != "flow":
                 return self._build_swapped(max_expand, compact)
@@ -495,22 +539,27 @@ class Flowsheet:
         finally:
             self.equipment, self.connections = user
 
-    def _with_levels(self) -> list[Equipment]:
-        """The equipment with every level left out worked out (copies; see
-        :mod:`.levels`)."""
+    def _with_levels(self, levels: Levels | None = None) -> list[Equipment]:
+        """The equipment with every level left out filled in (copies): from
+        ``levels``, or where the search starts (see :mod:`.levels`; a build
+        searches for the best levels first, see :func:`_settle_levels`)."""
         if all(e.level is not None for e in self.equipment):
             return self.equipment
-        geos = {e.id: self.geometry(e) for e in self.equipment}
-        kinds = {k for k, s in self.line_styles.items() if s.process}
-        lv, span = auto_levels(
-            self.equipment, self.connections, geos, kinds, self._process_kinds()
-        )
+        lv = start_levels(self.equipment) if levels is None else levels
         return [
-            e
-            if e.level is not None
-            else replace(e, level=lv[e.id], span=span.get(e.id, e.span))
+            e if e.level is not None else replace(e, level=lv[e.id])
             for e in self.equipment
         ]
+
+    def _level_cost(self, d: Diagram) -> int:
+        """What the level search lowers: bends and crossings (``bend_cost``
+        each) plus the length of all lines in cells."""
+        length = sum(
+            abs(b[0] - a[0]) + abs(b[1] - a[1])
+            for _, r in d.routes
+            for a, b in zip(r.points, r.points[1:])
+        )
+        return (d.bends + d.crossings) * self.bend_cost + round(length)
 
     def _branchy(self) -> bool:
         """Does any item send process lines to three or more items?"""
@@ -831,7 +880,7 @@ class Flowsheet:
             failures = failures or fails
             if trial and (best is None or cost(trial) < cost(best)):
                 best, (gx, gy) = trial, spread(k)
-            if best and not weight:
+            if best and (not weight or self._quick):
                 break  # order layout: the tightest one; flow: the cheapest one
         if best is None:  # relaxed: the spacing with the fewest U-turns, then bends
             relaxed = True

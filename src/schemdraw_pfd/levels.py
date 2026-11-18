@@ -1,243 +1,130 @@
 """Automatic levels: the height tier of every item whose level is not given.
 
-A level is the tier an item stands on (0: the ground).  When the user leaves
-it out it follows from the lines alone, as on a plant:
+Only pumps have a fixed place: they stand on the ground (level 0).  Every
+other item left without a level is placed on whatever level makes the
+drawing best -- the pipes shortest, with the fewest bends and crossings.  No
+item's role or the fluid in its lines is assumed.
 
-* **Pumps stand on the ground**: level 0.
-* **A pump's suction comes from above**: whatever feeds a pump stands at
-  least one level higher (a drum, a column bottom, a cooler before it).
-* **Liquid falls**: a line from a vessel's bottom nozzle into another item's
-  top nozzle (a condenser draining into its reflux drum) needs the source
-  wholly above the destination.
-* **Vapour rises**: a line out of a vessel's top nozzle (overhead vapour to a
-  condenser, flash gas to a compressor) goes to an item above it.
-* **A bottom nozzle is fed from below**: a line from a side nozzle into a
-  vessel's bottom nozzle (a feed into a desalter) comes up from a lower
-  level.
-* **Columns stand on the ground**: a column (``column``) stands from level 0
-  up through the level above the pumps (``span`` 2; 1 on a sheet without
-  pumps), so its pumps stand beside its bottom, the items on the structure
-  beside its upper part, and its overhead above its top.
+The search starts with pumps on the ground and everything else one level up
+(level 0 on a sheet without pumps).  A move shifts a level up or down: one
+item, an item with its satellites (flags and instruments joined to it alone),
+or the two items at the ends of a line -- the corresponding items of repeated
+units (parallel trains) always together, so the copies stay alike (see
+:func:`moves`).  Every move is tried (a cheap layout and routing of the
+sheet, see ``Flowsheet._level_cost``) in batches; the best one of the first
+batch that lowers the cost is taken, and the search stops when no move lowers
+it.  Moves are tried in the natural order of the ids and a tie goes to the
+first, so the result does not depend on the order of the lists.
 
-Every other item stands as low as these allow: on the ground when the sheet
-has no pumps, otherwise one level up (on the structure, beside the pumps
-below).  Lines marked or found as recycles do not lift anything: they run
-back against the flow.  A rule that would contradict the ones already taken
-(a loop of rising lines) is dropped.
-
-Items with no height of their own follow what they serve: an off-sheet flag
-on a main-flow line stands by its item a level above it when it meets a top
-nozzle (or a header's branch), a level below when it meets a bottom nozzle;
-one on utility lines only stands on its item's level.  Flags that run a
-main pipe (lines to several items) each keep a level of their own, a supply
-above a collecting one; instruments, standalone valves and tees stand on
-the level of what they are joined to.
-
-Levels given by the user are kept as they are, and the rules then work around
-them.  The result never depends on the order of the lists: rules are applied
-in a fixed order of the ids.
+Levels given by the user are kept as they are.
 """
 
 from __future__ import annotations
 
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 
-from .elements import Geometry
-from .netlist import Connection, Equipment, split_ref
+from .netlist import Connection, Equipment
 
 PUMP = "pump"
-TOWER = "column"
-# items that take the level of what they are joined to
-FOLLOWERS = {"instrument", "valve", "tee"}
+MAX_ROUNDS = 100  # moves taken at most (each one lowers the cost)
+BATCH = 16  # moves tried at once (see search_levels)
+
+Levels = dict[str, int]
 
 
 def _natural(text: str) -> tuple:
     return tuple(int(t) if t.isdigit() else t for t in re.split(r"(\d+)", text))
 
 
-def _homes(eqs: list[Equipment], conns: list[Connection], geos: dict[str, Geometry]):
-    """Inline item id -> the equipment id it stands next to (its anchor)."""
-    known = {e.id for e in eqs}
-    out: dict[str, str] = {}
-    for c in conns:
-        (s, _), (d, _) = c.ends
-        d_off = d in geos and geos[d].off_sheet
-        home = s if c.anchor == "src" or (c.anchor == "auto" and d_off) else d
-        for item in c.inline:
-            if item.id and item.id not in known:
-                out[item.id] = home
-    return out
-
-
-def _solve(
-    bodies: list[str],
-    fixed: dict[str, int],
-    low: dict[str, int],
-    rules: list[tuple[str, str, int]],
-) -> dict[str, int] | None:
-    """Lowest levels (at least ``low``) with ``lv[hi] >= lv[lo] + k`` for
-    every rule; None when the rules contradict each other or a fixed level."""
-    lv = {b: fixed.get(b, low[b]) for b in bodies}
-    for _ in range(len(bodies) + 1):
-        changed = False
-        for hi, lo, k in rules:
-            if lv[hi] < lv[lo] + k:
-                if hi in fixed:
-                    return None
-                lv[hi] = lv[lo] + k
-                changed = True
-        if not changed:
-            return lv
-    return None
-
-
-def auto_levels(
-    eqs: list[Equipment],
-    conns: list[Connection],
-    geos: dict[str, Geometry],
-    process_kinds: set[str],
-    main_kinds: set[str],
-    given: Callable[[Equipment], int | None] = lambda e: e.level,
-) -> tuple[dict[str, int], dict[str, int]]:
-    """Level of every item of ``eqs``, and the span of every column whose
-    level is worked out (see the module docstring)."""
-    by_id = {e.id: e for e in eqs}
-    homes = _homes(eqs, conns, geos)
-
-    def owner(ref: str) -> tuple[str | None, str | None]:
-        """(equipment id, port side) of a line end; the side is None for an
-        end on an inline item (it stands by its anchor)."""
-        eq, port = split_ref(ref)
-        if eq in by_id:
-            port_ = geos[eq].ports.get(port)
-            return eq, port_.side if port_ else None
-        seen = set()
-        while eq in homes and eq not in seen:
-            seen.add(eq)
-            eq = homes[eq]
-            if eq in by_id:
-                return eq, None
-        return None, None
-
-    def kind(e: Equipment) -> str:
-        if geos[e.id].off_sheet:
-            return "flag"
-        if e.type == PUMP:
-            return "pump"
-        if e.type in FOLLOWERS:
-            return "follow"
-        return "body"
-
-    kinds = {e.id: kind(e) for e in eqs}
-    fixed = {e.id: lv for e in eqs if (lv := given(e)) is not None}
-    for e in eqs:
-        if kinds[e.id] == "pump":
-            fixed.setdefault(e.id, 0)
-    bodies = sorted(
-        (i for i, k in kinds.items() if k in ("body", "pump") or i in fixed),
-        key=_natural,
-    )
-    body = set(bodies)
-    base = 1 if any(k == "pump" for k in kinds.values()) else 0
-    # a column stands on the ground through the pumps' level, its upper part
-    # beside the items on the structure (it stretches no level band)
-    towers = {
-        e.id: base + 1
+def start_levels(eqs: Sequence[Equipment]) -> Levels:
+    """Where the search starts: given levels kept, pumps on the ground, the
+    rest one level up (on the ground when the sheet has no pumps)."""
+    up = int(any(e.type == PUMP for e in eqs))
+    return {
+        e.id: e.level if e.level is not None else 0 if e.type == PUMP else up
         for e in eqs
-        if e.type == TOWER and e.id not in fixed and e.span == 1
     }
-    span = {e.id: towers.get(e.id, max(e.span, 1)) for e in eqs}
-    low = {b: 0 if b in towers else base for b in bodies}
 
-    lines = sorted(
-        (c for c in conns if c.kind in process_kinds),
-        key=lambda c: (_natural(c.src), _natural(c.dst)),
-    )
-    suction, falls, rises, enters = [], [], [], []
-    for c in lines:
-        (s, s_side), (d, d_side) = owner(c.src), owner(c.dst)
-        if s is None or d is None or s == d or s not in body or d not in body:
-            continue
-        if kinds[d] == "pump" and kinds[s] != "pump":
-            suction.append((s, d, 1 if span[s] == 1 else 0))
-        if c.recycle:
-            continue
-        if d_side == "S" and s_side != "N" and geos[d].nozzles and span[s] == 1:
-            # into a bottom nozzle from the side: it comes from below
-            enters.append((d, s, 1))
-        if not geos[s].nozzles or kinds[s] == "pump":
-            continue
-        if s_side == "S" and d_side == "N":
-            falls.append((s, d, span[d]))
-        elif s_side == "N" and kinds[d] != "pump":
-            # the destination's top band above the source's
-            rises.append((d, s, span[s] - span[d] + 1))
 
-    rules: list[tuple[str, str, int]] = []
-    lv = _solve(bodies, fixed, low, rules)
-    assert lv is not None  # no rules yet: always solvable
-    for rule in suction + falls + rises + enters:
-        trial = _solve(bodies, fixed, low, rules + [rule])
-        if trial is not None:
-            rules.append(rule)
-            lv = trial
+def moves(
+    eqs: Sequence[Equipment],
+    conns: Sequence[Connection],
+    together: Sequence[Sequence[str]] = (),
+) -> list[list[str]]:
+    """The sets of items one move of the search shifts a level up or down.
 
-    # flags, then instruments / valves / tees: by what they are joined to
-    out = dict(lv)
-    pending = sorted((i for i in kinds if i not in out), key=_natural)
-    flags = [i for i in pending if kinds[i] == "flag"]
-    rest = [i for i in pending if kinds[i] != "flag"]
-    # per item: (partner, the partner's port side, a main-flow line?)
-    ends: dict[str, list[tuple[str, str | None, bool]]] = {}
-    for c in sorted(conns, key=lambda c: (_natural(c.src), _natural(c.dst))):
-        (pa, sa), (pb, sb) = owner(c.src), owner(c.dst)
-        if pa is None or pb is None:
-            continue
-        (ea, _), (eb, _) = split_ref(c.src), split_ref(c.dst)
-        main = c.kind in main_kinds
-        if ea in by_id:
-            ends.setdefault(ea, []).append((pb, sb, main))
-        if eb in by_id:
-            ends.setdefault(eb, []).append((pa, sa, main))
+    Every item whose level was left out (pumps aside) moves on its own;
+    with its satellites (the items joined by lines to it alone: a flag, an
+    instrument), so a branch can move off without leaving them behind; and
+    with the item at the other end of each of its lines.  ``together``: the
+    corresponding items of repeated units, which always move together.
+    """
+    free = {e.id for e in eqs if e.level is None and e.type != PUMP}
+    ids = {e.id for e in eqs}
+    group: dict[str, list[str]] = {}
+    for g in together:
+        members = [i for i in g if i in free]
+        for i in members:
+            group[i] = members
+    partners: dict[str, set[str]] = {i: set() for i in ids}
+    for c in conns:
+        (a, _), (b, _) = c.ends
+        if a in ids and b in ids and a != b:
+            partners[a].add(b)
+            partners[b].add(a)
 
-    for f in flags:
-        levels = []
-        for p, side, main in ends.get(f, []):
-            if p in lv:
-                if not main or kinds[p] == "pump":  # utility; a pump outlet
-                    levels.append(lv[p])
-                elif side == "N":
-                    levels.append(lv[p] + span[p])
-                elif side == "S":
-                    levels.append(max(lv[p] - 1, 0))
-                else:
-                    levels.append(lv[p])
-        if levels:
-            out[f] = min(levels)
-    # a flag with lines to several items runs a main pipe along its level:
-    # two such pipes on one level would run into each other, so each keeps a
-    # level of its own -- a supply main above a collecting one
-    feeds = {f for f in flags for c in conns if split_ref(c.src)[0] == f}
-    mains = sorted(
-        (f for f in flags if f in out and len(ends.get(f, [])) > 1),
-        key=lambda f: (f in feeds, _natural(f)),
-    )
-    taken: set[int] = set()
-    for f in mains:
-        while out[f] in taken:
-            out[f] += 1
-        taken.add(out[f])
-    changed = True
-    while changed:
-        changed = False
-        for i in rest + flags:
-            if i in out:
-                continue
-            levels = [out[p] for p, _, _ in ends.get(i, []) if p in out]
-            if levels:
-                out[i] = min(levels)
-                changed = True
-    for i in pending:
-        out.setdefault(i, base)
-    return out, towers
+    def close(items: list[str]) -> tuple[str, ...]:
+        out = {j for i in items for j in group.get(i, [i])}
+        return tuple(sorted(out & free, key=_natural))
+
+    sets: dict[tuple[str, ...], None] = {}
+    for i in sorted(free, key=_natural):
+        sets[close([i])] = None
+        sats = [j for j in free if partners[j] == {i}]
+        if sats:
+            sets[close([i, *sats])] = None
+        for o in sorted(partners[i] & free, key=_natural):
+            sets[close([i, o])] = None
+    return [list(m) for m in sets if m]
+
+
+def search_levels(
+    start: Levels,
+    sets: Sequence[Sequence[str]],
+    evaluate: Callable[[list[Levels]], list[int | None]],
+    rounds: int = MAX_ROUNDS,
+) -> Levels:
+    """Descent over the levels of one sheet from ``start``.
+
+    The moves (each set of :func:`moves` a level down, then up) are tried in
+    batches of ``BATCH``: the best one of the first batch that lowers the
+    cost is taken, and the next round starts from it.  ``evaluate`` returns
+    the cost of each levels it gets (None: it does not route); a batch goes
+    to it in one call, so it can work them out in parallel.  The batch size
+    is fixed, so the result does not depend on how many processes do the
+    work.
+    """
+    current = dict(start)
+    (cost,) = evaluate([current])
+    for _ in range(rounds):
+        top = max(current.values()) + 1
+        tasks: list[Levels] = []
+        for move in sets:
+            for step in (-1, 1):
+                shifted = {i: current[i] + step for i in move}
+                if all(0 <= v <= top for v in shifted.values()):
+                    tasks.append({**current, **shifted})
+        found = None
+        for k in range(0, len(tasks), BATCH):
+            batch = tasks[k : k + BATCH]
+            for lv, c in zip(batch, evaluate(batch)):
+                if c is not None and (cost is None or c < cost):
+                    if found is None or c < found[0]:
+                        found = (c, lv)
+            if found is not None:
+                break
+        if found is None:
+            break
+        cost, current = found
+    return current
