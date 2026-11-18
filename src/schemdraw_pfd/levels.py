@@ -29,6 +29,7 @@ from .netlist import Connection, Equipment
 PUMP = "pump"
 MAX_ROUNDS = 100  # moves taken at most (each one lowers the cost)
 BATCH = 16  # moves tried at once (see search_levels)
+ESTIMATED_BATCHES = 2  # batches tried per round when moves are ranked
 
 Levels = dict[str, int]
 
@@ -93,6 +94,7 @@ def search_levels(
     start: Levels,
     sets: Sequence[Sequence[str]],
     evaluate: Callable[[list[Levels]], list[int | None]],
+    estimate: Callable[[list[Levels]], list[int]] | None = None,
     rounds: int = MAX_ROUNDS,
 ) -> Levels:
     """Descent over the levels of one sheet from ``start``.
@@ -104,6 +106,11 @@ def search_levels(
     to it in one call, so it can work them out in parallel.  The batch size
     is fixed, so the result does not depend on how many processes do the
     work.
+
+    ``estimate`` (optional) gives a quick estimate of each levels' cost (no
+    routing): the moves are then tried best estimate first, and a round
+    gives up after ``ESTIMATED_BATCHES`` batches without a move that lowers
+    the cost.
     """
     current = dict(start)
     (cost,) = evaluate([current])
@@ -115,6 +122,10 @@ def search_levels(
                 shifted = {i: current[i] + step for i in move}
                 if all(0 <= v <= top for v in shifted.values()):
                     tasks.append({**current, **shifted})
+        if estimate is not None and tasks:
+            guess = estimate(tasks)
+            ranked = sorted(range(len(tasks)), key=lambda k: (guess[k], k))
+            tasks = [tasks[k] for k in ranked[: ESTIMATED_BATCHES * BATCH]]
         found = None
         for k in range(0, len(tasks), BATCH):
             batch = tasks[k : k + BATCH]

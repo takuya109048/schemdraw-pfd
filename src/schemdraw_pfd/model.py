@@ -39,7 +39,14 @@ from .netlist import (
     check_id,
     split_ref,
 )
-from .router import Route, Router, RoutingError, needless_uturn, resolve_port
+from .router import (
+    Route,
+    Router,
+    RoutingError,
+    _min_bends,
+    needless_uturn,
+    resolve_port,
+)
 from .style import DEFAULT_LINE_STYLES, LineStyle
 from .symmetry import Symmetry, find_units, gap_groups
 
@@ -155,6 +162,14 @@ def _run_level_cost(fs: Flowsheet, levels: Levels, max_expand: int) -> int | Non
         return None
 
 
+def _run_level_estimate(fs: Flowsheet, levels: Levels) -> int:
+    """Quick estimate of :func:`_run_level_cost` (placed, not routed)."""
+    sheet = copy.copy(fs)
+    sheet.equipment = fs._with_levels(levels)
+    sheet._in_order = sheet._flag_room = False
+    return sheet._estimate_cost()
+
+
 def _repeated(fs: Flowsheet) -> list[list[str]]:
     """Ids of the corresponding items of repeated units (see
     :mod:`.symmetry`), found on the levels the search starts from."""
@@ -180,7 +195,10 @@ def _settle_levels(sheets: list[Flowsheet], max_expand: int, jobs: int | None) -
                 work = [(fs, t, max_expand) for t in tasks]
                 return _pool_map(_run_level_cost, work, jobs)
 
-            lv = search_levels(lv, sets, evaluate)
+            def estimate(tasks: list[Levels], fs: Flowsheet = fs) -> list[int]:
+                return _pool_map(_run_level_estimate, [(fs, t) for t in tasks], jobs)
+
+            lv = search_levels(lv, sets, evaluate, estimate)
         fs.equipment = fs._with_levels(lv)
 
 
@@ -563,6 +581,30 @@ class Flowsheet:
             for a, b in zip(r.points, r.points[1:])
         )
         return (d.bends + d.crossings) * self.bend_cost + round(length)
+
+    def _estimate_cost(self) -> int:
+        """A quick estimate of :meth:`_level_cost` without routing: the
+        sheet placed on the tightest spacing, each line costed by the bends
+        it certainly needs (from the directions of its two ports) and the
+        straight distance between them.  Crossings are not estimated."""
+        net, items, links, flow = self._prepare()
+        free = self.layout == "flow"
+        levels = _band_count(net.equipment)
+        if free:
+            gx = [MIN_GAP] * len(items)
+        else:
+            gx = min_gap_x(items, place_y(items, [MIN_GAP] * levels, links, free))
+        overlap = [free and not it.edge for it in items]
+        placed = place(items, gx, [MIN_GAP] * levels, links, overlap, flow, free)
+        by = {p.id: p for p in placed}
+        total = 0
+        for c in net.connections:
+            (a, pa), (b, pb) = c.ends
+            s, t = resolve_port(by[a], pa), resolve_port(by[b], pb)
+            bends = _min_bends(s.first, s.out_dir, t.first, (t.out_dir + 2) % 4)
+            dist = abs(t.first[0] - s.first[0]) + abs(t.first[1] - s.first[1])
+            total += bends * self.bend_cost + dist + 2
+        return total
 
     def _branchy(self) -> bool:
         """Does any item send process lines to three or more items?"""
