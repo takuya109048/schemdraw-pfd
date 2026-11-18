@@ -33,6 +33,12 @@ def main(argv: list[str] | None = None) -> int:
         help="override the spec's layout: declared order, or from the flow direction",
     )
     ap.add_argument(
+        "-j",
+        "--jobs",
+        type=int,
+        help="worker processes for the builds (default: one per CPU; 1: none)",
+    )
+    ap.add_argument(
         "--list-elements",
         action="store_true",
         help="list element types (including the spec's custom elements) and exit",
@@ -57,6 +63,8 @@ def main(argv: list[str] | None = None) -> int:
         ap.error("the spec argument is required")
     if args.layout:
         fs.layout = args.layout
+    if args.jobs:
+        fs.jobs = args.jobs
 
     diagram = fs.render(
         args.output,

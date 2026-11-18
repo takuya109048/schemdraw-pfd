@@ -3,8 +3,13 @@
 from __future__ import annotations
 
 import json
+import multiprocessing as mp
+import os
+import pickle
 import re
 from collections.abc import Callable, Sequence
+from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures.process import BrokenProcessPool
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
@@ -94,6 +99,69 @@ class Diagram:
     def size(self) -> tuple[int, int]:
         """Overall (width, height) of the equipment area in grid cells."""
         return _size(self.placed)
+
+
+def _run_first(
+    fs: Flowsheet, mode: tuple[bool, bool], max_expand: int, compact: bool
+) -> Diagram | RoutingError:
+    try:
+        return fs._first(mode, max_expand, compact)
+    except RoutingError as e:
+        return e
+
+
+def _run_swap(
+    fs: Flowsheet,
+    mode: tuple[bool, bool],
+    best: Diagram,
+    max_expand: int,
+    compact: bool,
+) -> Diagram:
+    return fs._swap(mode, best, max_expand, compact)
+
+
+def _pool_map(fn: Callable[..., Any], tasks: list[tuple], jobs: int | None) -> list:
+    """``fn(*task)`` for every task, in worker processes when there are
+    several tasks and CPUs; in order.  The builds are deterministic, so the
+    results are the same either way -- only the wall time differs."""
+    workers = min(jobs or os.cpu_count() or 1, len(tasks))
+    if workers > 1:
+        try:
+            ctx = (
+                mp.get_context("fork") if "fork" in mp.get_all_start_methods() else None
+            )
+            with ProcessPoolExecutor(workers, mp_context=ctx) as pool:
+                return list(pool.map(fn, *zip(*tasks)))
+        except (OSError, BrokenProcessPool, pickle.PicklingError):
+            pass  # no processes here: build in this one
+    return [fn(*t) for t in tasks]
+
+
+def _build_sheets(
+    sheets: list[Flowsheet], max_expand: int, compact: bool, jobs: int | None
+) -> list[Diagram]:
+    """Build several sheets (the rows of a folded sheet, or one sheet): every
+    placement mode of every sheet at once, the cheapest per sheet kept (the
+    first on a tie), then each sheet's ports re-sorted."""
+    modes = [fs._modes() for fs in sheets]
+    tasks = [(fs, m, max_expand, compact) for fs, ms in zip(sheets, modes) for m in ms]
+    results = iter(_pool_map(_run_first, tasks, jobs))
+    chosen: list[tuple[tuple[bool, bool], Diagram]] = []
+    for fs, ms in zip(sheets, modes):
+        best: tuple[tuple[bool, bool], Diagram] | None = None
+        error: RoutingError | None = None
+        for m in ms:
+            r = next(results)
+            if isinstance(r, RoutingError):
+                error = r
+            elif best is None or fs._cost(r) < fs._cost(best[1]):
+                best = (m, r)
+        if best is None:
+            assert error is not None
+            raise error
+        chosen.append(best)
+    swaps = [(fs, m, d, max_expand, compact) for fs, (m, d) in zip(sheets, chosen)]
+    return _pool_map(_run_swap, swaps, jobs)
 
 
 ROW_GAP = 6  # cells between two rows, besides their specification texts
@@ -237,6 +305,9 @@ class Flowsheet:
         self.rows = "auto"
         self._in_order = False  # placement mode of the build in progress
         self._flag_room = False  # see _settle_lifts
+        # worker processes for the builds of a sheet's rows and placement
+        # modes (None: one per CPU; 1: everything in this process)
+        self.jobs: int | None = None
         self._room_used = False
         # flow layout: how many cells of sheet size one extra bend may cost
         self.bend_cost = BEND_COST
@@ -529,41 +600,49 @@ class Flowsheet:
             )
             subs[a].connections.append(Connection(c.src, f"{out_id}.tail", c.kind))
             subs[b].connections.append(replace(c, src=f"{in_id}.tip", recycle=False))
-        diagrams = [sub._build_swapped(max_expand, compact) for sub in subs]
+        diagrams = _build_sheets(subs, max_expand, compact, self.jobs)
         return _stack(diagrams, self.line_styles)
 
     def _build_swapped(self, max_expand: int, compact: bool) -> Diagram:
-        """:meth:`_build`, then the swappable ports re-sorted (see build).
+        """:meth:`_build` in every placement mode (see :meth:`_modes`), the
+        cheapest kept, then the swappable ports re-sorted (see build)."""
+        return _build_sheets([self], max_expand, compact, self.jobs)[0]
+
+    def _modes(self) -> list[tuple[bool, bool]]:
+        """Placement modes worth a build: (in order, flag room).
 
         Flow layout with branching units (an item with three or more branches
         -- a column's side draws): the sheet is built both packed freely and
         with every item kept in order (see :func:`.layout.place`); with a
         flag one cell under a bottom nozzle, both with and without moving it
-        down (see :func:`_settle_lifts`).  The cheapest one is kept."""
+        (see :func:`_settle_lifts`).  The cheapest one is kept."""
         orders = [False]
         if self.layout == "flow" and self._branchy():
             orders.append(True)
         rooms = [False]
         if self.layout == "flow":
             self._flag_room = True
-            self._prepare()
-            self._flag_room = False
+            try:
+                self._prepare()
+            finally:
+                self._flag_room = False
             if self._room_used:  # a flag would move: try both ways
                 rooms.append(True)
-        modes = [(o, r) for o in orders for r in rooms]
-        best, chosen = None, modes[0]
-        for mode in modes:
-            self._in_order, self._flag_room = mode
-            try:
-                trial = self._build(max_expand, compact)
-            except RoutingError:
-                if mode == modes[-1] and best is None:
-                    raise
-                continue
-            if best is None or self._cost(trial) < self._cost(best):
-                best, chosen = trial, mode
-        assert best is not None
-        self._in_order, self._flag_room = chosen
+        return [(o, r) for o in orders for r in rooms]
+
+    def _first(
+        self, mode: tuple[bool, bool], max_expand: int, compact: bool
+    ) -> Diagram:
+        """:meth:`_build` in one placement mode."""
+        self._in_order, self._flag_room = mode
+        return self._build(max_expand, compact)
+
+    def _swap(
+        self, mode: tuple[bool, bool], best: Diagram, max_expand: int, compact: bool
+    ) -> Diagram:
+        """Re-sort the lines on swappable ports and rebuild while it costs no
+        more (see build), in the placement mode ``best`` was built in."""
+        self._in_order, self._flag_room = mode
         user = self.connections
         try:
             for _ in range(SWAP_ROUNDS):
