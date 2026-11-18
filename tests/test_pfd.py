@@ -259,7 +259,7 @@ def test_routes_have_no_u_or_i_turns_and_enter_perpendicular():
 
 def test_fewest_bends_first():
     fs = Flowsheet()
-    fs.add("vertical_drum", "D")
+    fs.add("vertical_drum", "D", level=0)
     fs.add("pump", "P")
     fs.add("heat_exchanger", "E", level=1)
     fs.connect("D.w2", "P.in")  # replaced below

@@ -4,7 +4,6 @@
     {
       "id": "SUPPLY",
       "type": "connector",
-      "level": 3,
       "params": {
         "text": "FEED SUPPLY\nfrom Upstream",
         "point": "right"
@@ -12,63 +11,51 @@
     },
     {
       "id": "T-101",
-      "type": "vertical_drum",
-      "level": 1
+      "type": "vertical_drum"
     },
     {
       "id": "P-101",
-      "type": "pump",
-      "level": 0
+      "type": "pump"
     },
     {
       "id": "H-101",
-      "type": "header",
-      "level": 1
+      "type": "header"
     },
     {
       "id": "F-101",
-      "type": "filter_housing",
-      "level": 1
+      "type": "filter_housing"
     },
     {
       "id": "T-201",
-      "type": "vertical_drum",
-      "level": 1
+      "type": "vertical_drum"
     },
     {
       "id": "P-201",
-      "type": "pump",
-      "level": 0
+      "type": "pump"
     },
     {
       "id": "H-201",
-      "type": "header",
-      "level": 1
+      "type": "header"
     },
     {
       "id": "F-201",
-      "type": "filter_housing",
-      "level": 1
+      "type": "filter_housing"
     },
     {
       "id": "T-301",
-      "type": "vertical_drum",
-      "level": 1
+      "type": "vertical_drum"
     },
     {
       "id": "P-301",
-      "type": "pump",
-      "level": 0
+      "type": "pump"
     },
     {
       "id": "H-301",
-      "type": "header",
-      "level": 1
+      "type": "header"
     },
     {
       "id": "F-301",
-      "type": "filter_housing",
-      "level": 1
+      "type": "filter_housing"
     },
     {
       "id": "MAIN",
@@ -76,8 +63,7 @@
       "params": {
         "text": "MAIN HEADER\nto Users",
         "point": "right"
-      },
-      "level": 2
+      }
     }
   ],
   "connections": [

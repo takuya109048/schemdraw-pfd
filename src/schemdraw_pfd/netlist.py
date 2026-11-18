@@ -44,12 +44,19 @@ def check_id(id: str) -> None:
 class Equipment:
     id: str
     type: str
-    level: int = 0
+    level: int | None = None  # None: automatic (see :mod:`.levels`)
     params: dict[str, Any] = field(default_factory=dict)
     ports: dict[str, Any] = field(default_factory=dict)  # extra user ports
     desc: str = ""  # spec text shown in the top (bottom for pumps) row
     elevation: int | None = None  # cells above the level floor (None = automatic)
     span: int = 1  # levels a tall item (a tower) stands through
+
+    @property
+    def tier(self) -> int:
+        """The level, once worked out (the layout never sees None)."""
+        if self.level is None:
+            raise ValueError(f"{self.id}: level not worked out yet")
+        return self.level
 
     def geometry(self, library: ElementLibrary | None = None) -> Geometry:
         geo = (library or DEFAULT_LIBRARY).build(self.type, self.params)
@@ -60,7 +67,8 @@ class Equipment:
     def to_dict(self) -> dict[str, Any]:
         ports = {k: parse_port(v) for k, v in self.ports.items()}
         return _changed(
-            {"id": self.id, "type": self.type, "level": self.level},
+            {"id": self.id, "type": self.type},
+            ("level", self.level, None),
             ("elevation", self.elevation, None),
             ("span", self.span, 1),
             ("desc", self.desc, ""),

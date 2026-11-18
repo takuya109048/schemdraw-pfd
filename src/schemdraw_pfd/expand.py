@@ -132,7 +132,7 @@ def _expand_line(
         params = dict(item.params)
         if not forward:
             params.setdefault("mirror", True)  # in/out face the way the line runs
-        level = home.level if item.level is None else item.level
+        level = home.tier if item.level is None else item.level
         eq = Equipment(
             item.id or f"{GENERATED_PREFIX}L{ci}_{k}",
             item.type,
@@ -198,7 +198,7 @@ def _auto_tees(
         for end, ref in enumerate(c.ends):
             uses.setdefault(ref, []).append((ci, end))
     by_id = {e.id: e for e in eqs}
-    top = max((e.level for e in eqs), default=0)
+    top = max((e.tier for e in eqs), default=0)
     conns = list(conns)
     trunks: dict[int, list[Connection]] = {}
 
@@ -236,7 +236,7 @@ def _auto_tees(
             return order[o.id] - order[owner_id]
 
         side = ports[pname].side
-        level = owner.level
+        level = owner.tier
         settle = False
         if side in "NS":
             # hang the main pipe in the band below an S port, or stand it in
@@ -245,14 +245,14 @@ def _auto_tees(
             # sending reflux back down to its column and product on to a
             # flag keeps the main pipe on its own band, just above the port
             ends = [by_id.get(conns[ci].ends[1 - e][0]) for ci, e in us]
-            levels = [o.level for o in ends if o and not geo(o).off_sheet]
+            levels = [o.tier for o in ends if o and not geo(o).off_sheet]
             if side == "S":
-                back = bool(levels) and min(levels) > owner.level
+                back = bool(levels) and min(levels) > owner.tier
             else:
-                back = bool(levels) and max(levels) < owner.level
-            if side == "S" and owner.level > 0 and not back:
+                back = bool(levels) and max(levels) < owner.tier
+            if side == "S" and owner.tier > 0 and not back:
                 level -= 1
-            elif side == "N" and owner.level < top and not back:
+            elif side == "N" and owner.tier < top and not back:
                 level += 1
             else:
                 settle = True
@@ -261,7 +261,7 @@ def _auto_tees(
 
         def dy(u: Use) -> int:
             o = other(u)
-            return 0 if o is None else _sign(o.level - level)
+            return 0 if o is None else _sign(o.tier - level)
 
         def faces(u: Use) -> str:
             """The side the line's other port faces ("" if unknown)."""

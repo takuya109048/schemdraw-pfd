@@ -26,12 +26,12 @@ def _taps(d, prefix):
 # -- A: two column tops merge into one vent ------------------------------------
 def _two_tops_to_vent() -> Flowsheet:
     fs = Flowsheet(layout="flow")
-    fs.add("connector", "FEED", text="FEED")
-    fs.add("pump", "P-1")
-    fs.add("column", "C-1")
-    fs.add("column", "C-2")
+    fs.add("connector", "FEED", level=0, text="FEED")
+    fs.add("pump", "P-1", level=0)
+    fs.add("column", "C-1", level=0)
+    fs.add("column", "C-2", level=0)
     fs.add("connector", "VENT", level=2, text="VENT", point="right")
-    fs.add("connector", "B2", text="BTM", point="right")
+    fs.add("connector", "B2", level=0, text="BTM", point="right")
     fs.connect("FEED.tip", "P-1.in")
     fs.connect("P-1.out", "C-1.w8")
     fs.connect("C-1.bottom", "C-2.w8")
@@ -53,12 +53,12 @@ def test_column_tops_merge_into_one_straight_vent_pipe():
 # -- B: one feed pump distributes to three columns -----------------------------
 def _feed_to_three_columns() -> Flowsheet:
     fs = Flowsheet(layout="flow")
-    fs.add("connector", "FEED", text="FEED")
-    fs.add("pump", "P-1")
+    fs.add("connector", "FEED", level=0, text="FEED")
+    fs.add("pump", "P-1", level=0)
     for i in (1, 2, 3):
-        fs.add("column", f"C-{i}")
+        fs.add("column", f"C-{i}", level=0)
         fs.add("connector", f"OH{i}", level=2, text=f"OH{i}", point="right")
-        fs.add("connector", f"BT{i}", text=f"BTM{i}", point="right")
+        fs.add("connector", f"BT{i}", level=0, text=f"BTM{i}", point="right")
     fs.connect("FEED.tip", "P-1.in")
     for i in (1, 2, 3):
         fs.connect("P-1.out", f"C-{i}.w8")
@@ -83,10 +83,10 @@ def test_feed_main_pipe_drops_beside_each_column():
 def _bottom_split() -> Flowsheet:
     fs = Flowsheet(layout="flow")
     fs.add("connector", "FEED", level=1, text="FEED")
-    fs.add("column", "C-1")
-    fs.add("heat_exchanger", "E-2")
-    fs.add("pump", "P-2")
-    fs.add("connector", "OUT", text="BTM", point="right")
+    fs.add("column", "C-1", level=0)
+    fs.add("heat_exchanger", "E-2", level=0)
+    fs.add("pump", "P-2", level=0)
+    fs.add("connector", "OUT", level=0, text="BTM", point="right")
     fs.add("connector", "OH", level=2, text="OH", point="right")
     fs.connect("FEED.tip", "C-1.w8")
     fs.connect("C-1.top", "OH.tail")
@@ -106,14 +106,14 @@ def test_column_bottom_splits_to_reboiler_and_pump():
 # -- D: reflux and a slop return share one side nozzle -------------------------
 def _reflux_and_slop() -> Flowsheet:
     fs = Flowsheet(layout="flow")
-    fs.add("connector", "FEED", text="FEED")
-    fs.add("column", "C-1")
+    fs.add("connector", "FEED", level=0, text="FEED")
+    fs.add("column", "C-1", level=0)
     fs.add("heat_exchanger", "E-1", level=2)
     fs.add("vertical_drum", "D-1", level=2, width=4, height=6)
     fs.add("pump", "P-3", level=1)
     fs.add("connector", "SLOP", level=1, text="SLOP", point="left")
     fs.add("connector", "DIST", level=1, text="DIST", point="right")
-    fs.add("connector", "BT", text="BTM", point="right")
+    fs.add("connector", "BT", level=0, text="BTM", point="right")
     fs.connect("FEED.tip", "C-1.w8")
     fs.connect("C-1.top", "E-1.tube_in")
     fs.connect("E-1.tube_out", "D-1.w_mid")
@@ -143,13 +143,13 @@ def test_reflux_pump_outlet_splits_on_its_own_level():
 # -- E: three column trains into common overhead and bottoms pipes -------------
 def _column_trains() -> Flowsheet:
     fs = Flowsheet(layout="flow")
-    fs.add("connector", "FEED", text="FEED")
-    fs.add("pump", "P-0")
+    fs.add("connector", "FEED", level=0, text="FEED")
+    fs.add("pump", "P-0", level=0)
     for i in (1, 2, 3):
-        fs.add("column", f"C-{i}")
-        fs.add("pump", f"P-{i}")
+        fs.add("column", f"C-{i}", level=0)
+        fs.add("pump", f"P-{i}", level=0)
     fs.add("connector", "OH", level=2, text="OVHD", point="right")
-    fs.add("connector", "BT", text="BTMS", point="right")
+    fs.add("connector", "BT", level=0, text="BTMS", point="right")
     fs.connect("FEED.tip", "P-0.in")
     for i in (1, 2, 3):
         fs.connect("P-0.out", f"C-{i}.w8")
@@ -204,13 +204,13 @@ def test_feed_main_pipe_feeds_each_column_with_an_l():
 # -- F: column overhead to the condenser and a relief line ---------------------
 def _overhead_and_relief() -> Flowsheet:
     fs = Flowsheet(layout="flow")
-    fs.add("connector", "FEED", text="FEED")
-    fs.add("column", "C-1")
+    fs.add("connector", "FEED", level=0, text="FEED")
+    fs.add("column", "C-1", level=0)
     fs.add("heat_exchanger", "E-1", level=2)
     fs.add("vertical_drum", "D-1", level=2, width=4, height=6)
-    fs.add("pump", "P-2")
+    fs.add("pump", "P-2", level=0)
     fs.add("connector", "FL", level=2, text="FLARE", point="right")
-    fs.add("connector", "BT", text="BTM", point="right")
+    fs.add("connector", "BT", level=0, text="BTM", point="right")
     fs.connect("FEED.tip", "C-1.w8")
     fs.connect("C-1.top", "E-1.tube_in")
     fs.connect("C-1.top", "FL.tail")

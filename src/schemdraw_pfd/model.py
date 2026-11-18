@@ -29,6 +29,7 @@ from .layout import (
     place_y,
     port_dx,
 )
+from .levels import auto_levels
 from .netlist import (
     ANCHORS,
     Connection,
@@ -327,7 +328,7 @@ class Flowsheet:
         self,
         type: str,
         id: str | None = None,
-        level: int = 0,
+        level: int | None = None,
         ports: dict[str, Any] | None = None,
         desc: str = "",
         elevation: int | None = None,
@@ -340,7 +341,8 @@ class Flowsheet:
         starting at ``level``: it does not stretch those bands, the items on
         them stand beside it, and the first level above clears its top.
 
-        ``level``: 0 is the bottom tier.  ``ports``: extra connection points for
+        ``level``: 0 is the bottom tier; None (the default) works it out from
+        the lines (pumps on the ground, see :mod:`.levels`).  ``ports``: extra connection points for
         this item, ``{"name": ("N|S|E|W", grid_offset)}``; they are projected onto
         the element's outline like the built-in ones.  ``desc``: specification
         text (name, size, material ...) listed with the tag above the diagram, or
@@ -350,7 +352,7 @@ class Flowsheet:
         and ``mirror`` (bool).
         """
         self.library.get(type)  # validate early
-        if level < 0:
+        if level is not None and level < 0:
             raise ValueError("level must be >= 0")
         if elevation is not None and elevation < 0:
             raise ValueError("elevation must be >= 0")
@@ -444,7 +446,7 @@ class Flowsheet:
         become equipment, every port carries at most one line.
 
         ``equipment``: the items in another order (default: as added)."""
-        eqs = self.equipment if equipment is None else equipment
+        eqs = self._with_levels() if equipment is None else equipment
         edges = None
         if self.layout == "flow":  # flags stand on the sheet edges
             geos = {e.id: self.geometry(e) for e in eqs}
@@ -476,21 +478,39 @@ class Flowsheet:
         direction and the levels alone -- the same whatever the order of the
         JSON lists.
         """
-        if self.layout != "flow":
-            return self._build_swapped(max_expand, compact)
         user = self.equipment, self.connections
-        self.equipment = sorted(self.equipment, key=lambda e: _natural(e.id))
-        self.connections = sorted(
-            self.connections,
-            key=lambda c: (_natural(c.src), _natural(c.dst), c.kind),
-        )
+        self.equipment = self._with_levels()
         try:
+            if self.layout != "flow":
+                return self._build_swapped(max_expand, compact)
+            self.equipment = sorted(self.equipment, key=lambda e: _natural(e.id))
+            self.connections = sorted(
+                self.connections,
+                key=lambda c: (_natural(c.src), _natural(c.dst), c.kind),
+            )
             rows = self._row_split() if self.rows == "auto" else []
             if len(rows) > 1:
                 return self._build_rows(rows, max_expand, compact)
             return self._build_swapped(max_expand, compact)
         finally:
             self.equipment, self.connections = user
+
+    def _with_levels(self) -> list[Equipment]:
+        """The equipment with every level left out worked out (copies; see
+        :mod:`.levels`)."""
+        if all(e.level is not None for e in self.equipment):
+            return self.equipment
+        geos = {e.id: self.geometry(e) for e in self.equipment}
+        kinds = {k for k, s in self.line_styles.items() if s.process}
+        lv, span = auto_levels(
+            self.equipment, self.connections, geos, kinds, self._process_kinds()
+        )
+        return [
+            e
+            if e.level is not None
+            else replace(e, level=lv[e.id], span=span.get(e.id, e.span))
+            for e in self.equipment
+        ]
 
     def _branchy(self) -> bool:
         """Does any item send process lines to three or more items?"""
@@ -875,14 +895,13 @@ class Flowsheet:
             # 1st pass on the lines as the user wrote them (inline items left
             # out: their mirroring depends on the declared order); then expand
             # in that order, so inline items face the way their line runs
-            geos = {e.id: self.geometry(e) for e in self.equipment}
-            first = plan_flow(
-                self.equipment, self.connections, geos, self._process_kinds()
-            )
-            pos = {self.equipment[i].id: k for k, i in enumerate(first.order)}
+            eqs = self._with_levels()
+            geos = {e.id: self.geometry(e) for e in eqs}
+            first = plan_flow(eqs, self.connections, geos, self._process_kinds())
+            pos = {eqs[i].id: k for k, i in enumerate(first.order)}
             # copies: heights are settled on them, never on the user's items
             net = self.expand(
-                [replace(e) for e in sorted(self.equipment, key=lambda e: pos[e.id])]
+                [replace(e) for e in sorted(eqs, key=lambda e: pos[e.id])]
             )
             flow, flags = self._apply_flow(net)
         links = _links(net)
@@ -1181,7 +1200,7 @@ class Flowsheet:
         self.add(
             e["type"],
             e.get("id"),
-            int(e.get("level", 0)),
+            None if e.get("level") is None else int(e["level"]),
             e.get("ports"),
             e.get("desc", ""),
             e.get("elevation"),
@@ -1274,13 +1293,13 @@ def _items(net: Expanded, flags: dict[str, str] | None = None) -> list[Item]:
             edge = e.params.get("edge") or (flags or {}).get(e.id, auto)
             if edge not in ("left", "right"):
                 raise ValueError(f"{e.id}: edge must be 'left' or 'right'")
-        items.append(Item(e.id, e.type, e.level, g, e.elevation, edge, e.span))
+        items.append(Item(e.id, e.type, e.tier, g, e.elevation, edge, e.span))
     return items
 
 
 def _band_count(eqs: list[Equipment]) -> int:
     """Level bands needed: the highest level, or the top of a tall item."""
-    return max(e.level + max(e.span, 1) for e in eqs)
+    return max(e.tier + max(e.span, 1) for e in eqs)
 
 
 def _validate(net: Expanded) -> None:
