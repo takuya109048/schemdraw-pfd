@@ -131,7 +131,7 @@ fs.to_json("out.json")  # 同じ形式で保存（from_json で読み戻せる�
 | ファイル | 内容 | 結果 |
 |---|---|---|
 | `examples/hda_benzene.json` | トルエンの水素化脱アルキル (HDA) によるベンゼン製造。Turton ら *Analysis, Synthesis and Design of Chemical Processes* の例題の構成を再構成 | 36機器・警告0 |
-| `examples/tennessee_eastman.json` | Tennessee Eastman プロセス（Downs & Vogel 1993 の制御ベンチマーク）の主要ユニットを再構成 | 30機器・警告1 |
+| `examples/tennessee_eastman.json` | Tennessee Eastman プロセス（Downs & Vogel 1993 の制御ベンチマーク）の主要ユニットを再構成 | 30機器・警告0 |
 | `examples/parallel_trains.json` | タンク→ポンプ→ヘッダー→フィルターの3系列並列。上流の供給フラグから最上段の供給主管を通って各タンク頂部へ供給し、各ヘッダーの枝管1本ずつが共通主管へ合流（下の「ノズル・枝管の自動割り当て」「繰り返し構成の対称化」） | 14機器・警告0・交差2 |
 | `examples/crude_distillation.json` | 原油の常圧・減圧蒸留装置（予熱列・脱塩器・プレフラッシュ・加熱炉・常圧塔とオーバーヘッド／ポンプアラウンド／サイドストリッパー・減圧塔）。並び順・段の指定なし、`level` と接続だけで、予熱／常圧塔／減圧塔の3段に自動で折り返す（下の「段への折り返し」） | 75機器・3段・警告0・交差17・約10秒（4コア） |
 | `examples/column_trains.json` | 蒸留塔＋ボトムポンプの3系列並列。1台のフィードポンプから供給主管で各塔の側面ノズルへ分配し、塔頂は共通の塔頂主管へ、ボトムポンプの吐出は共通のボトム主管へ合流（下の「自動主管と塔」） | 19機器・警告0・交差4 |
