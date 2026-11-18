@@ -46,7 +46,6 @@
     {
       "id": "OVHD",
       "type": "connector",
-      "level": 2,
       "params": {
         "text": "OVERHEAD\nto Condenser",
         "point": "right"

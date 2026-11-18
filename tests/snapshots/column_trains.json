@@ -3,126 +3,119 @@
   [
    "FEED",
    0,
-   4,
+   1,
    6,
    2
   ],
   [
    "P-100",
-   9,
+   7,
    0,
    2,
    3
   ],
   [
    "_T_P-100_out",
-   13,
-   65,
+   11,
+   15,
    2,
    2
   ],
   [
    "C-101",
-   19,
-   56,
+   14,
+   30,
    4,
    20
   ],
   [
-   "_T_OVHD_tail_3",
-   20,
-   77,
-   2,
-   2
-  ],
-  [
    "P-101",
-   23,
+   18,
    0,
    2,
    3
   ],
   [
    "_T_BTMS_tail_3",
-   24,
-   4,
-   2,
-   2
-  ],
-  [
-   "C-201",
-   26,
-   56,
-   4,
-   20
-  ],
-  [
-   "_T_OVHD_tail_2",
-   27,
-   77,
-   2,
-   2
-  ],
-  [
-   "P-201",
-   30,
-   0,
-   2,
-   3
-  ],
-  [
-   "_T_BTMS_tail_2",
-   31,
+   19,
    4,
    2,
    2
   ],
   [
    "_T_P-100_out_2",
-   33,
-   65,
+   18,
+   15,
+   2,
+   2
+  ],
+  [
+   "C-201",
+   21,
+   30,
+   4,
+   20
+  ],
+  [
+   "P-201",
+   25,
+   0,
+   2,
+   3
+  ],
+  [
+   "_T_BTMS_tail_2",
+   26,
+   4,
    2,
    2
   ],
   [
    "C-301",
-   38,
+   29,
    6,
    4,
    20
   ],
   [
-   "_T_OVHD_tail",
-   39,
-   77,
-   2,
-   2
-  ],
-  [
-   "OVHD",
-   46,
-   77,
-   6,
-   2
-  ],
-  [
    "P-301",
-   42,
+   33,
    0,
    2,
    3
   ],
   [
    "_T_BTMS_tail",
-   43,
+   34,
    4,
    2,
    2
   ],
   [
    "BTMS",
-   46,
+   39,
    4,
+   6,
+   2
+  ],
+  [
+   "_T_OVHD_tail_2",
+   33,
+   27,
+   2,
+   2
+  ],
+  [
+   "_T_OVHD_tail",
+   36,
+   27,
+   2,
+   2
+  ],
+  [
+   "OVHD",
+   39,
+   27,
    6,
    2
   ]
@@ -134,15 +127,15 @@
    "pipe",
    [
     [
-     21.0,
-     56.0
+     16.0,
+     30.0
     ],
     [
-     21,
+     16,
      2
     ],
     [
-     23,
+     18,
      2
     ]
    ]
@@ -153,12 +146,12 @@
    "pipe",
    [
     [
-     41,
-     78
+     38,
+     28
     ],
     [
-     46,
-     78
+     39,
+     28
     ]
    ]
   ],
@@ -168,42 +161,35 @@
    "pipe",
    [
     [
-     29,
-     78
+     35,
+     28
     ],
     [
-     39,
-     78
-    ]
-   ]
-  ],
-  [
-   "_T_OVHD_tail_3.e",
-   "_T_OVHD_tail_2.w",
-   "pipe",
-   [
-    [
-     22,
-     78
-    ],
-    [
-     27,
-     78
+     36,
+     28
     ]
    ]
   ],
   [
    "C-101.top",
-   "_T_OVHD_tail_3.s",
+   "_T_OVHD_tail_2.n",
    "pipe",
    [
     [
-     21.0,
-     76.0
+     16.0,
+     50.0
     ],
     [
-     21,
-     77
+     16,
+     52
+    ],
+    [
+     34,
+     52
+    ],
+    [
+     34,
+     29
     ]
    ]
   ],
@@ -213,31 +199,39 @@
    "pipe",
    [
     [
-     28.0,
-     56.0
+     23.0,
+     30.0
     ],
     [
-     28,
+     23,
      2
     ],
     [
-     30,
+     25,
      2
     ]
    ]
   ],
   [
    "C-201.top",
-   "_T_OVHD_tail_2.s",
+   "_T_OVHD_tail.n",
    "pipe",
    [
     [
-     28.0,
-     76.0
+     23.0,
+     50.0
     ],
     [
-     28,
-     77
+     23,
+     51
+    ],
+    [
+     37,
+     51
+    ],
+    [
+     37,
+     29
     ]
    ]
   ],
@@ -247,31 +241,35 @@
    "pipe",
    [
     [
-     40.0,
+     31.0,
      6.0
     ],
     [
-     40,
+     31,
      2
     ],
     [
-     42,
+     33,
      2
     ]
    ]
   ],
   [
    "C-301.top",
-   "_T_OVHD_tail.s",
+   "_T_OVHD_tail_2.w",
    "pipe",
    [
     [
-     40.0,
+     31.0,
      26.0
     ],
     [
-     40,
-     77
+     31,
+     28
+    ],
+    [
+     33,
+     28
     ]
    ]
   ],
@@ -282,18 +280,10 @@
    [
     [
      6.0,
-     5.0
+     2.0
     ],
     [
      7,
-     5
-    ],
-    [
-     7,
-     2
-    ],
-    [
-     9,
      2
     ]
    ]
@@ -304,16 +294,16 @@
    "pipe",
    [
     [
-     11,
+     9,
      3
     ],
     [
-     11,
-     66
+     9,
+     16
     ],
     [
-     13,
-     66
+     11,
+     16
     ]
    ]
   ],
@@ -323,82 +313,50 @@
    "pipe",
    [
     [
-     15,
-     66
+     13,
+     16
     ],
     [
-     16,
-     66
-    ],
-    [
-     16,
-     80
-    ],
-    [
-     31,
-     80
-    ],
-    [
-     31,
-     66
-    ],
-    [
-     33,
-     66
+     18,
+     16
     ]
    ]
   ],
   [
-   "_T_P-100_out.s",
+   "_T_P-100_out.n",
    "C-101.w8",
    "pipe",
    [
     [
-     14,
-     65
+     12,
+     17
+    ],
+    [
+     12,
+     40
     ],
     [
      14,
-     64
-    ],
-    [
-     17,
-     64
-    ],
-    [
-     17,
-     66
-    ],
-    [
-     19,
-     66
+     40
     ]
    ]
   ],
   [
-   "_T_P-100_out_2.s",
+   "_T_P-100_out_2.n",
    "C-201.w8",
    "pipe",
    [
     [
-     34,
-     65
+     19,
+     17
     ],
     [
-     34,
-     55
+     19,
+     40
     ],
     [
-     24,
-     55
-    ],
-    [
-     24,
-     66
-    ],
-    [
-     26,
-     66
+     21,
+     40
     ]
    ]
   ],
@@ -408,19 +366,11 @@
    "pipe",
    [
     [
-     35,
-     66
-    ],
-    [
-     36,
-     66
-    ],
-    [
-     36,
+     20,
      16
     ],
     [
-     38,
+     29,
      16
     ]
    ]
@@ -431,11 +381,11 @@
    "pipe",
    [
     [
-     45,
+     36,
      5
     ],
     [
-     46,
+     39,
      5
     ]
    ]
@@ -446,11 +396,11 @@
    "pipe",
    [
     [
-     33,
+     28,
      5
     ],
     [
-     43,
+     34,
      5
     ]
    ]
@@ -461,11 +411,11 @@
    "pipe",
    [
     [
-     26,
+     21,
      5
     ],
     [
-     31,
+     26,
      5
     ]
    ]
@@ -476,11 +426,11 @@
    "pipe",
    [
     [
-     25,
+     20,
      3
     ],
     [
-     25,
+     20,
      4
     ]
    ]
@@ -491,11 +441,11 @@
    "pipe",
    [
     [
-     32,
+     27,
      3
     ],
     [
-     32,
+     27,
      4
     ]
    ]
@@ -506,11 +456,11 @@
    "pipe",
    [
     [
-     44,
+     35,
      3
     ],
     [
-     44,
+     35,
      4
     ]
    ]
@@ -535,27 +485,27 @@
      "path": [
       [
        0,
-       4
+       1
       ],
       [
        5,
-       4
+       1
       ],
       [
        6,
-       5
+       2
       ],
       [
        5,
-       6
+       3
       ],
       [
        0,
-       6
+       3
       ],
       [
        0,
-       4
+       1
       ]
      ],
      "visible": true,
@@ -584,7 +534,7 @@
      "visible": true,
      "xy": [
       2.7,
-      5
+      2
      ],
      "zorder": null
     }
@@ -599,7 +549,7 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      10,
+      8,
       2
      ],
      "clip": null,
@@ -630,11 +580,11 @@
      "lw": null,
      "path": [
       [
-       11,
+       9,
        2
       ],
       [
-       11,
+       9,
        3
       ]
      ],
@@ -657,11 +607,11 @@
      "lw": null,
      "path": [
       [
-       9,
+       7,
        2
       ],
       [
-       10.2,
+       8.2,
        2
       ]
      ],
@@ -684,15 +634,15 @@
      "lw": null,
      "path": [
       [
-       9.8,
+       7.8,
        2.2
       ],
       [
-       10.2,
+       8.2,
        2
       ],
       [
-       9.8,
+       7.8,
        1.8
       ]
      ],
@@ -715,19 +665,19 @@
      "lw": null,
      "path": [
       [
-       9.5,
+       7.5,
        1.13
       ],
       [
-       9.1,
+       7.1,
        0.3
       ],
       [
-       10.9,
+       8.9,
        0.3
       ],
       [
-       10.5,
+       8.5,
        1.13
       ]
      ],
@@ -756,7 +706,7 @@
      "text": "P-100",
      "visible": true,
      "xy": [
-      10.0,
+      8.0,
       -0.777778
      ],
      "zorder": null
@@ -777,11 +727,11 @@
      "lw": 0.8,
      "path": [
       [
-       9.138889,
+       7.138889,
        -1.122222
       ],
       [
-       10.861111,
+       8.861111,
        -1.122222
       ]
      ],
@@ -806,12 +756,39 @@
      "lw": null,
      "path": [
       [
-       14,
-       66
+       12,
+       16
+      ],
+      [
+       11,
+       16
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       12,
+       16
       ],
       [
        13,
-       66
+       16
       ]
      ],
      "visible": true,
@@ -833,39 +810,12 @@
      "lw": null,
      "path": [
       [
-       14,
-       66
+       12,
+       16
       ],
       [
-       15,
-       66
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       14,
-       66
-      ],
-      [
-       14,
-       65
+       12,
+       17
       ]
      ],
      "visible": true,
@@ -889,12 +839,12 @@
      "lw": null,
      "path": [
       [
-       19,
-       58
+       14,
+       32
       ],
       [
-       19,
-       74
+       14,
+       48
       ]
      ],
      "visible": true,
@@ -916,12 +866,12 @@
      "lw": null,
      "path": [
       [
-       23,
-       58
+       18,
+       32
       ],
       [
-       23,
-       74
+       18,
+       48
       ]
      ],
      "visible": true,
@@ -936,8 +886,8 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      21,
-      74
+      16,
+      48
      ],
      "clip": null,
      "color": null,
@@ -960,8 +910,8 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      21,
-      58
+      16,
+      32
      ],
      "clip": null,
      "color": null,
@@ -991,24 +941,24 @@
      "lw": null,
      "path": [
       [
-       19,
-       59.0
+       14,
+       33.0
       ],
       [
-       23,
-       59.0
+       18,
+       33.0
       ],
       [
-       23,
-       65.5
+       18,
+       39.5
       ],
       [
-       19,
-       65.5
+       14,
+       39.5
       ],
       [
-       19,
-       59.0
+       14,
+       33.0
       ]
      ],
      "visible": true,
@@ -1030,12 +980,12 @@
      "lw": null,
      "path": [
       [
-       19,
-       59.0
+       14,
+       33.0
       ],
       [
-       23,
-       65.5
+       18,
+       39.5
       ]
      ],
      "visible": true,
@@ -1057,12 +1007,12 @@
      "lw": null,
      "path": [
       [
-       19,
-       65.5
+       14,
+       39.5
       ],
       [
-       23,
-       59.0
+       18,
+       33.0
       ]
      ],
      "visible": true,
@@ -1084,24 +1034,24 @@
      "lw": null,
      "path": [
       [
-       19,
-       66.5
+       14,
+       40.5
       ],
       [
-       23,
-       66.5
+       18,
+       40.5
       ],
       [
-       23,
-       73.0
+       18,
+       47.0
       ],
       [
-       19,
-       73.0
+       14,
+       47.0
       ],
       [
-       19,
-       66.5
+       14,
+       40.5
       ]
      ],
      "visible": true,
@@ -1123,12 +1073,12 @@
      "lw": null,
      "path": [
       [
-       19,
-       66.5
+       14,
+       40.5
       ],
       [
-       23,
-       73.0
+       18,
+       47.0
       ]
      ],
      "visible": true,
@@ -1150,12 +1100,12 @@
      "lw": null,
      "path": [
       [
-       19,
-       73.0
+       14,
+       47.0
       ],
       [
-       23,
-       66.5
+       18,
+       40.5
       ]
      ],
      "visible": true,
@@ -1183,8 +1133,8 @@
      "text": "C-101",
      "visible": true,
      "xy": [
-      20.0,
-      76.777778
+      15.0,
+      50.777778
      ],
      "zorder": null
     }
@@ -1204,68 +1154,12 @@
      "lw": 0.8,
      "path": [
       [
-       19.138889,
-       76.433333
+       14.138889,
+       50.433333
       ],
       [
-       20.861111,
-       76.433333
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       21,
-       78
-      ],
-      [
-       22,
-       78
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       21,
-       78
-      ],
-      [
-       21,
-       77
+       15.861111,
+       50.433333
       ]
      ],
      "visible": true,
@@ -1282,7 +1176,7 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      24,
+      19,
       2
      ],
      "clip": null,
@@ -1313,11 +1207,11 @@
      "lw": null,
      "path": [
       [
-       25,
+       20,
        2
       ],
       [
-       25,
+       20,
        3
       ]
      ],
@@ -1340,11 +1234,11 @@
      "lw": null,
      "path": [
       [
-       23,
+       18,
        2
       ],
       [
-       24.2,
+       19.2,
        2
       ]
      ],
@@ -1367,15 +1261,15 @@
      "lw": null,
      "path": [
       [
-       23.8,
+       18.8,
        2.2
       ],
       [
-       24.2,
+       19.2,
        2
       ],
       [
-       23.8,
+       18.8,
        1.8
       ]
      ],
@@ -1398,19 +1292,19 @@
      "lw": null,
      "path": [
       [
-       23.5,
+       18.5,
        1.13
       ],
       [
-       23.1,
+       18.1,
        0.3
       ],
       [
-       24.9,
+       19.9,
        0.3
       ],
       [
-       24.5,
+       19.5,
        1.13
       ]
      ],
@@ -1439,7 +1333,7 @@
      "text": "P-101",
      "visible": true,
      "xy": [
-      24.0,
+      19.0,
       -0.777778
      ],
      "zorder": null
@@ -1460,11 +1354,11 @@
      "lw": 0.8,
      "path": [
       [
-       23.138889,
+       18.138889,
        -1.122222
       ],
       [
-       24.861111,
+       19.861111,
        -1.122222
       ]
      ],
@@ -1489,11 +1383,11 @@
      "lw": null,
      "path": [
       [
-       25,
+       20,
        5
       ],
       [
-       26,
+       21,
        5
       ]
      ],
@@ -1516,11 +1410,11 @@
      "lw": null,
      "path": [
       [
-       25,
+       20,
        5
       ],
       [
-       25,
+       20,
        4
       ]
      ],
@@ -1545,12 +1439,12 @@
      "lw": null,
      "path": [
       [
-       26,
-       58
+       19,
+       16
       ],
       [
-       26,
-       74
+       18,
+       16
       ]
      ],
      "visible": true,
@@ -1572,12 +1466,95 @@
      "lw": null,
      "path": [
       [
-       30,
-       58
+       19,
+       16
       ],
       [
-       30,
-       74
+       20,
+       16
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       19,
+       16
+      ],
+      [
+       19,
+       17
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       21,
+       32
+      ],
+      [
+       21,
+       48
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       25,
+       32
+      ],
+      [
+       25,
+       48
       ]
      ],
      "visible": true,
@@ -1592,8 +1569,8 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      28,
-      74
+      23,
+      48
      ],
      "clip": null,
      "color": null,
@@ -1616,8 +1593,8 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      28,
-      58
+      23,
+      32
      ],
      "clip": null,
      "color": null,
@@ -1647,24 +1624,24 @@
      "lw": null,
      "path": [
       [
-       26,
-       59.0
+       21,
+       33.0
       ],
       [
-       30,
-       59.0
+       25,
+       33.0
       ],
       [
-       30,
-       65.5
+       25,
+       39.5
       ],
       [
-       26,
-       65.5
+       21,
+       39.5
       ],
       [
-       26,
-       59.0
+       21,
+       33.0
       ]
      ],
      "visible": true,
@@ -1686,12 +1663,12 @@
      "lw": null,
      "path": [
       [
-       26,
-       59.0
+       21,
+       33.0
       ],
       [
-       30,
-       65.5
+       25,
+       39.5
       ]
      ],
      "visible": true,
@@ -1713,12 +1690,12 @@
      "lw": null,
      "path": [
       [
-       26,
-       65.5
+       21,
+       39.5
       ],
       [
-       30,
-       59.0
+       25,
+       33.0
       ]
      ],
      "visible": true,
@@ -1740,24 +1717,24 @@
      "lw": null,
      "path": [
       [
-       26,
-       66.5
+       21,
+       40.5
       ],
       [
-       30,
-       66.5
+       25,
+       40.5
       ],
       [
-       30,
-       73.0
+       25,
+       47.0
       ],
       [
-       26,
-       73.0
+       21,
+       47.0
       ],
       [
-       26,
-       66.5
+       21,
+       40.5
       ]
      ],
      "visible": true,
@@ -1779,12 +1756,12 @@
      "lw": null,
      "path": [
       [
-       26,
-       66.5
+       21,
+       40.5
       ],
       [
-       30,
-       73.0
+       25,
+       47.0
       ]
      ],
      "visible": true,
@@ -1806,12 +1783,12 @@
      "lw": null,
      "path": [
       [
-       26,
-       73.0
+       21,
+       47.0
       ],
       [
-       30,
-       66.5
+       25,
+       40.5
       ]
      ],
      "visible": true,
@@ -1839,8 +1816,8 @@
      "text": "C-201",
      "visible": true,
      "xy": [
-      27.0,
-      76.777778
+      26.361111,
+      40.0
      ],
      "zorder": null
     }
@@ -1860,95 +1837,12 @@
      "lw": 0.8,
      "path": [
       [
-       26.138889,
-       76.433333
+       25.5,
+       39.655556
       ],
       [
-       27.861111,
-       76.433333
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       28,
-       78
-      ],
-      [
-       29,
-       78
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       28,
-       78
-      ],
-      [
-       27,
-       78
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       28,
-       78
-      ],
-      [
-       28,
-       77
+       27.222222,
+       39.655556
       ]
      ],
      "visible": true,
@@ -1965,7 +1859,7 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      31,
+      26,
       2
      ],
      "clip": null,
@@ -1996,11 +1890,11 @@
      "lw": null,
      "path": [
       [
-       32,
+       27,
        2
       ],
       [
-       32,
+       27,
        3
       ]
      ],
@@ -2023,11 +1917,11 @@
      "lw": null,
      "path": [
       [
-       30,
+       25,
        2
       ],
       [
-       31.2,
+       26.2,
        2
       ]
      ],
@@ -2050,15 +1944,15 @@
      "lw": null,
      "path": [
       [
-       30.8,
+       25.8,
        2.2
       ],
       [
-       31.2,
+       26.2,
        2
       ],
       [
-       30.8,
+       25.8,
        1.8
       ]
      ],
@@ -2081,19 +1975,19 @@
      "lw": null,
      "path": [
       [
-       30.5,
+       25.5,
        1.13
       ],
       [
-       30.1,
+       25.1,
        0.3
       ],
       [
-       31.9,
+       26.9,
        0.3
       ],
       [
-       31.5,
+       26.5,
        1.13
       ]
      ],
@@ -2122,7 +2016,7 @@
      "text": "P-201",
      "visible": true,
      "xy": [
-      31.0,
+      26.0,
       -0.777778
      ],
      "zorder": null
@@ -2143,11 +2037,11 @@
      "lw": 0.8,
      "path": [
       [
-       30.138889,
+       25.138889,
        -1.122222
       ],
       [
-       31.861111,
+       26.861111,
        -1.122222
       ]
      ],
@@ -2172,11 +2066,11 @@
      "lw": null,
      "path": [
       [
-       32,
+       27,
        5
       ],
       [
-       33,
+       28,
        5
       ]
      ],
@@ -2199,11 +2093,11 @@
      "lw": null,
      "path": [
       [
-       32,
+       27,
        5
       ],
       [
-       31,
+       26,
        5
       ]
      ],
@@ -2226,11 +2120,11 @@
      "lw": null,
      "path": [
       [
-       32,
+       27,
        5
       ],
       [
-       32,
+       27,
        4
       ]
      ],
@@ -2255,94 +2149,11 @@
      "lw": null,
      "path": [
       [
-       34,
-       66
-      ],
-      [
-       33,
-       66
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       34,
-       66
-      ],
-      [
-       35,
-       66
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       34,
-       66
-      ],
-      [
-       34,
-       65
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       38,
+       29,
        8
       ],
       [
-       38,
+       29,
        24
       ]
      ],
@@ -2365,11 +2176,11 @@
      "lw": null,
      "path": [
       [
-       42,
+       33,
        8
       ],
       [
-       42,
+       33,
        24
       ]
      ],
@@ -2385,7 +2196,7 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      40,
+      31,
       24
      ],
      "clip": null,
@@ -2409,7 +2220,7 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      40,
+      31,
       8
      ],
      "clip": null,
@@ -2440,23 +2251,23 @@
      "lw": null,
      "path": [
       [
-       38,
+       29,
        9.0
       ],
       [
-       42,
+       33,
        9.0
       ],
       [
-       42,
+       33,
        15.5
       ],
       [
-       38,
+       29,
        15.5
       ],
       [
-       38,
+       29,
        9.0
       ]
      ],
@@ -2479,11 +2290,11 @@
      "lw": null,
      "path": [
       [
-       38,
+       29,
        9.0
       ],
       [
-       42,
+       33,
        15.5
       ]
      ],
@@ -2506,11 +2317,11 @@
      "lw": null,
      "path": [
       [
-       38,
+       29,
        15.5
       ],
       [
-       42,
+       33,
        9.0
       ]
      ],
@@ -2533,23 +2344,23 @@
      "lw": null,
      "path": [
       [
-       38,
+       29,
        16.5
       ],
       [
-       42,
+       33,
        16.5
       ],
       [
-       42,
+       33,
        23.0
       ],
       [
-       38,
+       29,
        23.0
       ],
       [
-       38,
+       29,
        16.5
       ]
      ],
@@ -2572,11 +2383,11 @@
      "lw": null,
      "path": [
       [
-       38,
+       29,
        16.5
       ],
       [
-       42,
+       33,
        23.0
       ]
      ],
@@ -2599,11 +2410,11 @@
      "lw": null,
      "path": [
       [
-       38,
+       29,
        23.0
       ],
       [
-       42,
+       33,
        16.5
       ]
      ],
@@ -2632,7 +2443,7 @@
      "text": "C-301",
      "visible": true,
      "xy": [
-      36.638889,
+      27.638889,
       15.0
      ],
      "zorder": null
@@ -2653,170 +2464,15 @@
      "lw": 0.8,
      "path": [
       [
-       35.777778,
+       26.777778,
        14.655556
       ],
       [
-       37.5,
+       28.5,
        14.655556
       ]
      ],
      "visible": true,
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       40,
-       78
-      ],
-      [
-       41,
-       78
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       40,
-       78
-      ],
-      [
-       39,
-       78
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       40,
-       78
-      ],
-      [
-       40,
-       77
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       46,
-       77
-      ],
-      [
-       51,
-       77
-      ],
-      [
-       52,
-       78
-      ],
-      [
-       51,
-       79
-      ],
-      [
-       46,
-       79
-      ],
-      [
-       46,
-       77
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "SegmentText",
-    {
-     "align": [
-      "center",
-      "center"
-     ],
-     "bgcolor": null,
-     "clip": null,
-     "color": null,
-     "decoration": null,
-     "font": null,
-     "fontsize": 16.0,
-     "href": null,
-     "mathfont": null,
-     "rotation": null,
-     "rotation_global": true,
-     "rotation_mode": null,
-     "text": "OVERHEAD\nto Condenser",
-     "visible": true,
-     "xy": [
-      48.7,
-      78
-     ],
      "zorder": null
     }
    ]
@@ -2830,7 +2486,7 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      43,
+      34,
       2
      ],
      "clip": null,
@@ -2861,11 +2517,11 @@
      "lw": null,
      "path": [
       [
-       44,
+       35,
        2
       ],
       [
-       44,
+       35,
        3
       ]
      ],
@@ -2888,11 +2544,11 @@
      "lw": null,
      "path": [
       [
-       42,
+       33,
        2
       ],
       [
-       43.2,
+       34.2,
        2
       ]
      ],
@@ -2915,15 +2571,15 @@
      "lw": null,
      "path": [
       [
-       42.8,
+       33.8,
        2.2
       ],
       [
-       43.2,
+       34.2,
        2
       ],
       [
-       42.8,
+       33.8,
        1.8
       ]
      ],
@@ -2946,19 +2602,19 @@
      "lw": null,
      "path": [
       [
-       42.5,
+       33.5,
        1.13
       ],
       [
-       42.1,
+       33.1,
        0.3
       ],
       [
-       43.9,
+       34.9,
        0.3
       ],
       [
-       43.5,
+       34.5,
        1.13
       ]
      ],
@@ -2987,7 +2643,7 @@
      "text": "P-301",
      "visible": true,
      "xy": [
-      43.0,
+      34.0,
       -0.777778
      ],
      "zorder": null
@@ -3008,11 +2664,11 @@
      "lw": 0.8,
      "path": [
       [
-       42.138889,
+       33.138889,
        -1.122222
       ],
       [
-       43.861111,
+       34.861111,
        -1.122222
       ]
      ],
@@ -3037,110 +2693,110 @@
      "lw": null,
      "path": [
       [
-       44,
+       35,
        5
+      ],
+      [
+       36,
+       5
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       35,
+       5
+      ],
+      [
+       34,
+       5
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       35,
+       5
+      ],
+      [
+       35,
+       4
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       39,
+       4
+      ],
+      [
+       44,
+       4
       ],
       [
        45,
        5
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       44,
-       5
-      ],
-      [
-       43,
-       5
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       44,
-       5
       ],
       [
        44,
-       4
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       46,
-       4
-      ],
-      [
-       51,
-       4
-      ],
-      [
-       52,
-       5
-      ],
-      [
-       51,
        6
       ],
       [
-       46,
+       39,
        6
       ],
       [
-       46,
+       39,
        4
       ]
      ],
@@ -3169,7 +2825,7 @@
      "text": "BOTTOMS\nto Storage",
      "visible": true,
      "xy": [
-      48.7,
+      41.7,
       5
      ],
      "zorder": null
@@ -3180,6 +2836,271 @@
    [
     "Segment",
     {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       34,
+       28
+      ],
+      [
+       35,
+       28
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       34,
+       28
+      ],
+      [
+       33,
+       28
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       34,
+       28
+      ],
+      [
+       34,
+       29
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       37,
+       28
+      ],
+      [
+       38,
+       28
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       37,
+       28
+      ],
+      [
+       36,
+       28
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       37,
+       28
+      ],
+      [
+       37,
+       29
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       39,
+       27
+      ],
+      [
+       44,
+       27
+      ],
+      [
+       45,
+       28
+      ],
+      [
+       44,
+       29
+      ],
+      [
+       39,
+       29
+      ],
+      [
+       39,
+       27
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 16.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "OVERHEAD\nto Condenser",
+     "visible": true,
+     "xy": [
+      41.7,
+      28
+     ],
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       16.0,
+       30.0
+      ],
+      [
+       16.0,
+       16.3
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
      "arrow": "->",
      "arrowlength": 0.3,
      "arrowwidth": 0.2,
@@ -3192,272 +3113,278 @@
      "lw": 1.1,
      "path": [
       [
-       21.0,
-       56.0
+       16.0,
+       15.7
       ],
       [
-       21,
+       16,
        2
+      ],
+      [
+       18,
+       2
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       16.3,
+       29.55
+      ],
+      [
+       15.7,
+       29.55
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       38,
+       28
+      ],
+      [
+       39,
+       28
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       35,
+       28
+      ],
+      [
+       36,
+       28
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       16.0,
+       50.0
+      ],
+      [
+       16,
+       52
+      ],
+      [
+       34,
+       52
+      ],
+      [
+       34,
+       51.3
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       34,
+       50.7
+      ],
+      [
+       34,
+       29
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       15.7,
+       50.45
+      ],
+      [
+       16.3,
+       50.45
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       23.0,
+       30.0
+      ],
+      [
+       23.0,
+       16.3
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       23.0,
+       15.7
+      ],
+      [
+       23.0,
+       5.3
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       23.0,
+       4.7
       ],
       [
        23,
        2
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       21.3,
-       55.55
       ],
       [
-       20.7,
-       55.55
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": "->",
-     "arrowlength": 0.3,
-     "arrowwidth": 0.2,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": "-",
-     "lw": 1.1,
-     "path": [
-      [
-       41,
-       78
-      ],
-      [
-       46,
-       78
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": "->",
-     "arrowlength": 0.3,
-     "arrowwidth": 0.2,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": "-",
-     "lw": 1.1,
-     "path": [
-      [
-       29,
-       78
-      ],
-      [
-       39,
-       78
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": "->",
-     "arrowlength": 0.3,
-     "arrowwidth": 0.2,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": "-",
-     "lw": 1.1,
-     "path": [
-      [
-       22,
-       78
-      ],
-      [
-       27,
-       78
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": "->",
-     "arrowlength": 0.3,
-     "arrowwidth": 0.2,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": "-",
-     "lw": 1.1,
-     "path": [
-      [
-       21.0,
-       76.0
-      ],
-      [
-       21,
-       77
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       20.7,
-       76.45
-      ],
-      [
-       21.3,
-       76.45
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": "-",
-     "lw": 1.1,
-     "path": [
-      [
-       28.0,
-       56.0
-      ],
-      [
-       28.0,
-       55.3
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": "-",
-     "lw": 1.1,
-     "path": [
-      [
-       28.0,
-       54.7
-      ],
-      [
-       28.0,
-       5.3
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": "->",
-     "arrowlength": 0.3,
-     "arrowwidth": 0.2,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": "-",
-     "lw": 1.1,
-     "path": [
-      [
-       28.0,
-       4.7
-      ],
-      [
-       28,
-       2
-      ],
-      [
-       30,
+       25,
        2
       ]
      ],
@@ -3480,12 +3407,12 @@
      "lw": null,
      "path": [
       [
-       28.3,
-       55.55
+       23.3,
+       29.55
       ],
       [
-       27.7,
-       55.55
+       22.7,
+       29.55
       ]
      ],
      "visible": true,
@@ -3509,12 +3436,20 @@
      "lw": 1.1,
      "path": [
       [
-       28.0,
-       76.0
+       23.0,
+       50.0
       ],
       [
-       28,
-       77
+       23,
+       51
+      ],
+      [
+       37,
+       51
+      ],
+      [
+       37,
+       29
       ]
      ],
      "visible": true,
@@ -3536,12 +3471,12 @@
      "lw": null,
      "path": [
       [
-       27.7,
-       76.45
+       22.7,
+       50.45
       ],
       [
-       28.3,
-       76.45
+       23.3,
+       50.45
       ]
      ],
      "visible": true,
@@ -3565,11 +3500,11 @@
      "lw": 1.1,
      "path": [
       [
-       40.0,
+       31.0,
        6.0
       ],
       [
-       40.0,
+       31.0,
        5.3
       ]
      ],
@@ -3592,15 +3527,15 @@
      "lw": 1.1,
      "path": [
       [
-       40.0,
+       31.0,
        4.7
       ],
       [
-       40,
+       31,
        2
       ],
       [
-       42,
+       33,
        2
       ]
      ],
@@ -3623,11 +3558,11 @@
      "lw": null,
      "path": [
       [
-       40.3,
+       31.3,
        5.55
       ],
       [
-       39.7,
+       30.7,
        5.55
       ]
      ],
@@ -3652,12 +3587,16 @@
      "lw": 1.1,
      "path": [
       [
-       40.0,
+       31.0,
        26.0
       ],
       [
-       40,
-       77
+       31,
+       28
+      ],
+      [
+       33,
+       28
       ]
      ],
      "visible": true,
@@ -3679,11 +3618,11 @@
      "lw": null,
      "path": [
       [
-       39.7,
+       30.7,
        26.45
       ],
       [
-       40.3,
+       31.3,
        26.45
       ]
      ],
@@ -3709,18 +3648,10 @@
      "path": [
       [
        6.0,
-       5.0
+       2.0
       ],
       [
        7,
-       5
-      ],
-      [
-       7,
-       2
-      ],
-      [
-       9,
        2
       ]
      ],
@@ -3745,16 +3676,16 @@
      "lw": 1.1,
      "path": [
       [
-       11,
+       9,
        3
       ],
       [
-       11,
-       66
+       9,
+       16
       ],
       [
-       13,
-       66
+       11,
+       16
       ]
      ],
      "visible": true,
@@ -3763,6 +3694,66 @@
    ]
   ],
   [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       13,
+       16
+      ],
+      [
+       18,
+       16
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       12,
+       17
+      ],
+      [
+       12,
+       40
+      ],
+      [
+       14,
+       40
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
    [
     "Segment",
     {
@@ -3774,59 +3765,16 @@
      "color": null,
      "fill": null,
      "joinstyle": null,
-     "ls": "-",
-     "lw": 1.1,
+     "ls": null,
+     "lw": null,
      "path": [
       [
-       15,
-       66
+       13.55,
+       40.3
       ],
       [
-       16,
-       66
-      ],
-      [
-       16,
-       80
-      ],
-      [
-       31,
-       80
-      ],
-      [
-       31,
-       78.3
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": "->",
-     "arrowlength": 0.3,
-     "arrowwidth": 0.2,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": "-",
-     "lw": 1.1,
-     "path": [
-      [
-       31,
-       77.7
-      ],
-      [
-       31,
-       66
-      ],
-      [
-       33,
-       66
+       13.55,
+       39.7
       ]
      ],
      "visible": true,
@@ -3850,24 +3798,16 @@
      "lw": 1.1,
      "path": [
       [
-       14,
-       65
-      ],
-      [
-       14,
-       64
-      ],
-      [
-       17,
-       64
-      ],
-      [
-       17,
-       66
+       19,
+       17
       ],
       [
        19,
-       66
+       40
+      ],
+      [
+       21,
+       40
       ]
      ],
      "visible": true,
@@ -3889,12 +3829,12 @@
      "lw": null,
      "path": [
       [
-       18.55,
-       66.3
+       20.55,
+       40.3
       ],
       [
-       18.55,
-       65.7
+       20.55,
+       39.7
       ]
      ],
      "visible": true,
@@ -3918,87 +3858,11 @@
      "lw": 1.1,
      "path": [
       [
-       34,
-       65
-      ],
-      [
-       34,
-       55
-      ],
-      [
-       24,
-       55
-      ],
-      [
-       24,
-       66
-      ],
-      [
-       26,
-       66
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       25.55,
-       66.3
-      ],
-      [
-       25.55,
-       65.7
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": "->",
-     "arrowlength": 0.3,
-     "arrowwidth": 0.2,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": "-",
-     "lw": 1.1,
-     "path": [
-      [
-       35,
-       66
-      ],
-      [
-       36,
-       66
-      ],
-      [
-       36,
+       20,
        16
       ],
       [
-       38,
+       29,
        16
       ]
      ],
@@ -4021,11 +3885,11 @@
      "lw": null,
      "path": [
       [
-       37.55,
+       28.55,
        16.3
       ],
       [
-       37.55,
+       28.55,
        15.7
       ]
      ],
@@ -4050,11 +3914,11 @@
      "lw": 1.1,
      "path": [
       [
-       45,
+       36,
        5
       ],
       [
-       46,
+       39,
        5
       ]
      ],
@@ -4079,11 +3943,11 @@
      "lw": 1.1,
      "path": [
       [
-       33,
+       28,
        5
       ],
       [
-       43,
+       34,
        5
       ]
      ],
@@ -4107,13 +3971,13 @@
      "ls": "-",
      "lw": 1.1,
      "path": [
+      [
+       21,
+       5
+      ],
       [
        26,
        5
-      ],
-      [
-       31,
-       5
       ]
      ],
      "visible": true,
@@ -4137,11 +4001,11 @@
      "lw": 1.1,
      "path": [
       [
-       25,
+       20,
        3
       ],
       [
-       25,
+       20,
        4
       ]
      ],
@@ -4166,11 +4030,11 @@
      "lw": 1.1,
      "path": [
       [
-       32,
+       27,
        3
       ],
       [
-       32,
+       27,
        4
       ]
      ],
@@ -4195,11 +4059,11 @@
      "lw": 1.1,
      "path": [
       [
-       44,
+       35,
        3
       ],
       [
-       44,
+       35,
        4
       ]
      ],
@@ -4230,8 +4094,8 @@
      "text": "C-101\nColumn, train 1",
      "visible": true,
      "xy": [
-      21.0,
-      82.0
+      16.0,
+      54.0
      ],
      "zorder": null
     }
@@ -4257,8 +4121,8 @@
      "text": "C-201\nColumn, train 2",
      "visible": true,
      "xy": [
-      28.0,
-      82.0
+      23.0,
+      54.0
      ],
      "zorder": null
     }
@@ -4284,8 +4148,8 @@
      "text": "C-301\nColumn, train 3",
      "visible": true,
      "xy": [
-      40.0,
-      82.0
+      31.0,
+      54.0
      ],
      "zorder": null
     }
@@ -4311,7 +4175,7 @@
      "text": "P-100\nColumn feed pump",
      "visible": true,
      "xy": [
-      10.0,
+      8.0,
       -2.0
      ],
      "zorder": null
@@ -4338,7 +4202,7 @@
      "text": "P-101\nBottoms pump, train 1",
      "visible": true,
      "xy": [
-      24.0,
+      19.0,
       -2.0
      ],
      "zorder": null
@@ -4365,7 +4229,7 @@
      "text": "P-201\nBottoms pump, train 2",
      "visible": true,
      "xy": [
-      31.555556,
+      26.555556,
       -2.0
      ],
      "zorder": null
@@ -4392,7 +4256,7 @@
      "text": "P-301\nBottoms pump, train 3",
      "visible": true,
      "xy": [
-      43.0,
+      34.111111,
       -2.0
      ],
      "zorder": null
@@ -4417,16 +4281,16 @@
        -4.611111
       ],
       [
-       54.0,
+       47.0,
        -4.611111
       ],
       [
-       54.0,
-       84.611111
+       47.0,
+       56.611111
       ],
       [
        -2.0,
-       84.611111
+       56.611111
       ],
       [
        -2.0,

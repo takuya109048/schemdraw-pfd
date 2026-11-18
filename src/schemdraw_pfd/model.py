@@ -9,6 +9,7 @@ import os
 import pickle
 import re
 from collections.abc import Callable, Sequence
+from collections.abc import Set as AbstractSet
 from concurrent.futures import ProcessPoolExecutor
 from concurrent.futures.process import BrokenProcessPool
 from dataclasses import dataclass, field, replace
@@ -40,6 +41,7 @@ from .netlist import (
     split_ref,
 )
 from .router import (
+    DIRS,
     Route,
     Router,
     RoutingError,
@@ -63,6 +65,8 @@ FORMAT_VERSION = 1  # version of the JSON flowsheet format written by to_dict
 MIN_GAP = 1  # cells always left between neighbouring elements / level bands
 REROUTE_ROUNDS = 3  # rip-up and reroute attempts per placement
 SWAP_ROUNDS = 2  # rebuilds with swappable ports re-sorted (see Flowsheet.build)
+STUB_ROUNDS = 8  # lines eased one after another (see _stub_shifts)
+STUB_REACH = 12  # cells an item may move to ease one line
 QUICK_EXPAND = 3  # level search: spacings tried per levels (see _run_level_cost)
 BEND_COST = 6  # flow layout: sheet cells (width + height) one bend is worth
 KINDS = tuple(DEFAULT_LINE_STYLES)  # built-in line kinds (kept for compatibility)
@@ -160,6 +164,152 @@ def _run_level_cost(fs: Flowsheet, levels: Levels, max_expand: int) -> int | Non
         return sheet._level_cost(d)
     except RoutingError:
         return None
+
+
+@dataclass
+class _Shift:
+    """Move items apart for one line (see :func:`_stub_shifts`): a wider
+    gap in front of item ``gap`` (it and what follows move right), or new
+    elevations for ``lift`` (index -> cells above its band floor)."""
+
+    gap: int | None = None
+    by: int = 0
+    lift: dict[int, int] = field(default_factory=dict)
+
+    def apply(self, items: list[Item], gx: list[int]) -> Callable[[], None]:
+        """Apply to ``items`` / ``gx`` in place; returns the undo."""
+        if self.gap is not None:
+            j, by = self.gap, self.by
+            gx[j] += by
+
+            def undo_gap() -> None:
+                gx[j] -= by
+
+            return undo_gap
+        old = {j: items[j].elevation for j in self.lift}
+        for j, e in self.lift.items():
+            items[j].elevation = e
+
+        def undo_lift() -> None:
+            for j, e in old.items():
+                items[j].elevation = e
+
+        return undo_lift
+
+
+def _turns_back(points: list[tuple[float, float]]) -> bool:
+    """Does the route run in two opposite directions?"""
+    seen = set()
+    for p, q in zip(points, points[1:]):
+        d = (q[0] > p[0]) - (q[0] < p[0]), (q[1] > p[1]) - (q[1] < p[1])
+        if (-d[0], -d[1]) in seen:
+            return True
+        seen.add(d)
+    return False
+
+
+def _reaches(s: tuple[int, int], sd: int, t: tuple[int, int], td: int) -> bool:
+    """Can a line leaving ``s`` moving ``sd`` arrive at ``t`` moving ``td``
+    without ever turning back, nothing in the way?  (An exact search on an
+    empty grid, with the router's moves.)"""
+    x0, x1 = min(s[0], t[0]) - 2, max(s[0], t[0]) + 2
+    y0, y1 = min(s[1], t[1]) - 2, max(s[1], t[1]) + 2
+    start = (s, sd, 1 << sd)
+    seen, todo = {start}, [start]
+    while todo:
+        (x, y), d, mask = todo.pop()
+        for nd in (d, (d + 1) % 4, (d + 3) % 4):
+            if mask & (1 << ((nd + 2) % 4)):
+                continue  # against a direction already travelled
+            nx, ny = x + DIRS[nd][0], y + DIRS[nd][1]
+            if not (x0 <= nx <= x1 and y0 <= ny <= y1):
+                continue
+            if (nx, ny) == t and nd == td:
+                return True
+            state = ((nx, ny), nd, mask | (1 << nd))
+            if state not in seen:
+                seen.add(state)
+                todo.append(state)
+    return False
+
+
+def _missing(
+    s: tuple[int, int], sd: int, t: tuple[int, int], td: int, step: tuple[int, int]
+) -> int | None:
+    """Cells ``t`` must move by ``step`` (a unit vector) until the line
+    reaches it without turning back (None: not within ``STUB_REACH``)."""
+    for k in range(1, STUB_REACH + 1):
+        if _reaches(s, sd, (t[0] + step[0] * k, t[1] + step[1] * k), td):
+            return k
+    return None
+
+
+def _stub_shifts(
+    net: Expanded,
+    items: list[Item],
+    d: Diagram,
+    gy: list[int],
+    fixed: AbstractSet[str] = frozenset(),
+) -> list[_Shift]:
+    """Ways to ease the lines of ``d`` that turn back only because their
+    ports stand too close.
+
+    Every line leaves its port straight for a cell and enters the other
+    straight for a cell.  When the two ports, with those runs, face each
+    other the wrong way -- a branch leaving a main pipe downwards into a
+    port above it, a nozzle facing east into a port behind it -- no L or Z
+    reaches, and the router turns back (a U).  The fix is to move the items
+    apart by what is missing: along X, a wider gap in front of the item
+    placed later (everything after it moves along); along Y, the
+    destination lowered or the source raised within its band (the bands
+    above move up with a taller band).  The taps of one main pipe move
+    together, so the main pipe stays straight.  Items in ``fixed`` (an
+    elevation given by the user) keep their height.
+    """
+    index = {it.id: j for j, it in enumerate(items)}
+    placed = {p.id: p for p in d.placed}
+    _, base = _bands(items, gy)
+    pipe = {t: hs for hs in net.headers for t in hs}
+
+    def lifted(j: int, by: int) -> dict[int, int] | None:
+        """New elevations moving item ``j`` (with its main pipe) by ``by``
+        cells; None if one would leave its band floor or is a flag."""
+        out = {}
+        for i in (index[t] for t in pipe.get(items[j].id, [items[j].id])):
+            it = items[i]
+            e = placed[it.id].y - base[it.level] + by
+            if it.edge or e < 0 or it.id in fixed:
+                return None
+            out[i] = e
+        return out
+
+    shifts: list[_Shift] = []
+    for c, r in d.routes:
+        if not _turns_back(r.points):
+            continue
+        (a, pa), (b, pb) = c.ends
+        s, t = resolve_port(placed[a], pa), resolve_port(placed[b], pb)
+        sd, td = s.out_dir, (t.out_dir + 2) % 4
+        if sd == (td + 2) % 4 or _reaches(s.first, sd, t.first, td):
+            continue  # an arch, or a U the ports do not force
+        ja, jb = index[a], index[b]
+        # along Y: the destination down / up, or the source the other way
+        for sign in (-1, 1):
+            k = _missing(s.first, sd, t.first, td, (0, sign))
+            if k is None:
+                continue
+            for j, by in ((jb, sign * k), (ja, -sign * k)):
+                lift = lifted(j, by)
+                if lift:
+                    shifts.append(_Shift(lift=lift))
+        # along X: only the item placed later can move away from the other
+        k = _missing(s.first, sd, t.first, td, (1, 0))
+        if k is not None and jb > ja:
+            shifts.append(_Shift(gap=jb, by=k))
+        k = _missing(s.first, sd, t.first, td, (-1, 0))
+        if k is not None and ja > jb:
+            shifts.append(_Shift(gap=ja, by=k))
+    return shifts
 
 
 def _run_level_estimate(fs: Flowsheet, levels: Levels) -> int:
@@ -974,6 +1124,27 @@ class Flowsheet:
                     step = (ok + bad) // 2
                 for i, g in zip(group, start):
                     gaps[i] = g - ok
+
+        # a line whose ports stand too close for the straight runs out of
+        # and into them can only turn back: move its items apart instead,
+        # by what is missing (see _stub_shifts) -- kept when it turns back
+        # less without more bends, crossings and pipe length in all
+        if free:
+            fixed = {e.id for e in self.equipment if e.elevation is not None}
+            for _ in range(STUB_ROUNDS):
+                for change in _stub_shifts(net, items, best, gy, fixed):
+                    undo = change.apply(items, gx)
+                    trial, _ = attempt(gx, gy, relaxed, best)
+                    if (
+                        trial
+                        and cost(trial) < cost(best)
+                        and self._level_cost(trial) <= self._level_cost(best)
+                    ):
+                        best = trial
+                        break
+                    undo()
+                else:
+                    break
         return best
 
     def _prepare(self) -> tuple[Expanded, list[Item], list[Link], list[FlowLink]]:
