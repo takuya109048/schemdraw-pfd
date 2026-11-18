@@ -1,0 +1,12 @@
+{
+  "elements": [
+    {"id": "A", "type": "connector", "level": 1, "params": {"text": "A"}},
+    {"id": "B", "type": "connector", "level": 0, "params": {"text": "B"}},
+    {"id": "D-1", "type": "vertical_drum", "level": 1},
+    {"id": "D-2", "type": "vertical_drum", "level": 0}
+  ],
+  "connections": [
+    {"from": "A.tip", "to": "D-2.w_mid"},
+    {"from": "B.tip", "to": "D-1.w_mid"}
+  ]
+}

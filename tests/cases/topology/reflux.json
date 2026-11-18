@@ -1,0 +1,20 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
+    {"id": "T-1", "type": "column", "level": 0, "span": 2},
+    {"id": "E-1", "type": "heat_exchanger", "level": 2},
+    {"id": "D-1", "type": "horizontal_drum", "level": 1},
+    {"id": "P-1", "type": "pump", "level": 0},
+    {"id": "DIST", "type": "connector", "level": 0, "params": {"text": "DIST"}},
+    {"id": "BTM", "type": "connector", "level": 0, "params": {"text": "BTM"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "T-1.w_mid"},
+    {"from": "T-1.top", "to": "E-1.tube_in"},
+    {"from": "E-1.tube_out", "to": "D-1.n1"},
+    {"from": "D-1.s_mid", "to": "P-1.in"},
+    {"from": "P-1.out", "to": "DIST.tail"},
+    {"from": "P-1.out", "to": "T-1.e_high", "recycle": true},
+    {"from": "T-1.bottom", "to": "BTM.tail"}
+  ]
+}

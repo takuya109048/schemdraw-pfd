@@ -1,0 +1,15 @@
+{
+  "elements": [
+    {"id": "F1", "type": "connector", "level": 0, "params": {"text": "F1"}},
+    {"id": "F2", "type": "connector", "level": 0, "params": {"text": "F2"}},
+    {"id": "F3", "type": "connector", "level": 0, "params": {"text": "F3"}},
+    {"id": "T-1", "type": "column", "level": 0},
+    {"id": "BTM", "type": "connector", "level": 0, "params": {"text": "BTM"}}
+  ],
+  "connections": [
+    {"from": "F1.tip", "to": "T-1.w_low"},
+    {"from": "F2.tip", "to": "T-1.w_mid"},
+    {"from": "F3.tip", "to": "T-1.w_high"},
+    {"from": "T-1.bottom", "to": "BTM.tail"}
+  ]
+}

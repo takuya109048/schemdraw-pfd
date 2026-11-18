@@ -1,0 +1,11 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
+    {"id": "I-1", "type": "instrument", "level": 0, "params": {"mount": "panel"}},
+    {"id": "PROD", "type": "connector", "level": 0, "params": {"text": "PROD"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "I-1.w"},
+    {"from": "I-1.e", "to": "PROD.tail"}
+  ]
+}

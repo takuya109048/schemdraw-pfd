@@ -1,0 +1,13 @@
+{
+  "elements": [
+    {"id": "IN1", "type": "connector", "level": 1, "params": {"text": "IN1"}},
+    {"id": "IN2", "type": "connector", "level": 1, "params": {"text": "IN2"}},
+    {"id": "D-1", "type": "vertical_drum", "level": 1},
+    {"id": "PROD", "type": "connector", "level": 0, "params": {"text": "PROD"}}
+  ],
+  "connections": [
+    {"from": "IN1.tip", "to": "D-1.w_mid"},
+    {"from": "IN2.tip", "to": "D-1.w_mid"},
+    {"from": "D-1.bottom", "to": "PROD.tail"}
+  ]
+}

@@ -13,7 +13,9 @@ uv run pytest                                  # 例題のレイアウトはス�
 uv run ruff check . ; uv run pyrefly check
 ```
 
-レイアウト/配線を意図的に変えたときは、スナップショットを更新する: `PFD_UPDATE_SNAPSHOTS=1 uv run pytest tests/test_snapshots.py`
+レイアウト/配線を意図的に変えたときは、スナップショットを更新する: `PFD_UPDATE_SNAPSHOTS=1 uv run pytest tests/test_snapshots.py tests/test_cases.py`
+
+作例とは別に、観点ごとの小さな例（機器2〜8個）を `tests/cases/` に置いている。全エレメント・全ポート・全パラメータ値・全 JSON キー・ポートの向きの総当たりを、どれかの例が必ず使っていることをテストで確かめる（`tests/cases/README.md`）
 
 ### Python API
 

@@ -1,0 +1,11 @@
+{
+  "elements": [
+    {"id": "TO", "type": "connector", "level": 0, "params": {"text": "TO", "point": "left"}},
+    {"id": "D-1", "type": "vertical_drum", "level": 0},
+    {"id": "FROM", "type": "connector", "level": 0, "params": {"text": "FROM", "point": "left"}}
+  ],
+  "connections": [
+    {"from": "FROM.tip", "to": "D-1.e_mid"},
+    {"from": "D-1.w_mid", "to": "TO.tail"}
+  ]
+}

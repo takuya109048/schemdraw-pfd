@@ -1,0 +1,15 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
+    {"id": "P-1", "type": "pump", "level": 0},
+    {"id": "T-1", "type": "tee", "level": 1},
+    {"id": "PG-1", "type": "instrument", "level": 2, "params": {"function": "PG", "number": "5"}},
+    {"id": "PROD", "type": "connector", "level": 1, "params": {"text": "PROD"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "P-1.in"},
+    {"from": "P-1.out", "to": "T-1.w"},
+    {"from": "T-1.e", "to": "PROD.tail"},
+    {"from": "T-1.n", "to": "PG-1.s", "type": "instrument"}
+  ]
+}

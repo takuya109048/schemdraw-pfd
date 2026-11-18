@@ -1,0 +1,55 @@
+# 小さなテスト例（`tests/cases/`）
+
+`examples/` の大きな作例とは別に、**短い例を観点ごとに1つずつ**置く。どの例も機器は2〜8個（段への折り返しを試す例だけが多め）で、1つの例では1つのこと（1つの機器・ポート・パラメータの値・JSON のキー・ポートの向きの組み合わせ）だけを試す。どれも配置・配線は 0.1 秒ほどで終わり、`uv run pytest tests/test_cases.py` 全体でも数秒。
+
+## フォルダ
+
+| フォルダ | 何を試すか |
+|---|---|
+| `routing/flow/`, `routing/order/` | 配管の向きの総当たり。横型ドラム2基 A→B を、出口ポートの向き（東西南北）× 入口ポートの向き（東西南北）× 段の関係（同じ段 `same`／B が上 `up`／B が下 `down`）の 48 通り。`flow` と `order` の両方のレイアウトで。名前は `<出口>_to_<入口>_<段>`（例: `n_to_s_up`） |
+| `elements/` | 標準エレメントそれぞれと、パラメータの値ごと（弁の `kind` 4種と縦置き、ドラム・塔・熱交換器・フィルターの寸法と充填層、ヘッダーの枝数・間隔・枝管機器の書き方3通り、tee の腕の組み合わせ、計器の `field`/`dcs`） |
+| `ports/` | 各エレメントのポートの系列すべて（`top`/`bottom`、鏡板の `n<i>`/`s<i>`、胴の `w<i>`/`e<i>` と `_low`/`_mid`/`_high`、熱交換器の胴側の逆流ポート、フィルターの `vent`/`drain`、ヘッダーの `main_e`/`m<i>`、計器の四方） |
+| `transform/` | `rotation`（0/90/180/270）× `mirror`。ポンプは8通りすべて、熱交換器・横型ドラム・弁・塔はいくつか |
+| `lines/` | 線種（`pipe`/`utility`/`signal`/`instrument`、独自の線種、既定の線種の上書き）、インライン機器（文字列・辞書、`id`/`params`/`level`/`elevation`/`desc`/`in`/`out`、複数、右から左、後で宣言される id への接続）、`anchor`（`auto`/`src`/`dst`）、リサイクル（明示・自動検出・インライン弁付き） |
+| `layout/` | `layout`（省略/`flow`/`order`、`order` で逆順）、`version`、`level`（省略・一部だけ・ポンプを上げる）、`elevation`、`span`、`desc`、追加ポート `ports`、段への折り返し（`rows` の `auto`/`single`、予熱列、段をまたぐ調節計、`span` の機器） |
+| `topology/` | 配管のつながり方（直列、分岐・合流 2本と3本、分かれて合流、ノズルごとの枝、並列系列、ループ、還流、サイドストリッパー、右から左、ドラムの下のポンプ、交差、つながっていない2系統、機器の迂回） |
+| `flags/` | 図面端のフラグ（左端・右端、左向き、`edge` の指定、`local` の `true`/`false`/`auto` と `order` での `local`、左右に積む、2行の文字、長さ、文字なし、2本が1つのフラグへ、上の段のフラグ） |
+| `custom/` | `custom_elements`（図形 `rect`/`polyline`/`ellipse`/`arc`、`boundary`/`fill`/`pipe`/`closed`、`label_pos` 5種、`nozzles`、`texts`、寸法とポート、インライン、回転、ヘッダーの枝管に載せる） |
+| `invalid/` | 受け付けない入力。チェックごとに1つ（未知のキー・型・ポート・線種、範囲外の値、重複 id など） |
+
+## テスト（`tests/test_cases.py`）
+
+- **スナップショット**: 正しい例はすべて、配置・配線・警告・描画が `tests/snapshots/cases/` と一致する
+- **無駄な U ターンなし**: 警告（何もないところでの U ターン）が出ない
+- **書き順に依らない**: `flow` の例は `elements` と `connections` を逆順にしても同じ図になる
+- **JSON の往復**: `from_dict` → `to_dict` で、書いた内容がそのまま戻る（既定値は省かれる）
+- **不正な入力**: `invalid/` の例はそれぞれ決まったエラーとメッセージで止まる（`INVALID` の表）
+- **網羅チェック**（`test_cases_cover_every_option`）: 例全体で、次のすべてが少なくとも1回使われている。足りないと、足りない観点の名前を並べて失敗する
+  - 標準エレメントの種類すべてと、それぞれのポートの系列すべて（`e12` → `e#` のように番号はまとめる）
+  - 列挙パラメータの値すべて（弁の `kind`・`orientation`、熱交換器の `orientation`、計器の `mount`、フラグの `point`・`edge`・`local`）と、ほかのパラメータ（`PARAMS` の表）
+  - `rotation` の4値と `mirror`、tee の4つの腕、ヘッダーの枝管機器の3つの書き方
+  - JSON のキーすべて（トップ・機器・接続・インライン機器・線種・独自エレメント）、`layout`/`rows`/`anchor` の値すべて、線種すべて
+  - 独自エレメントの図形の種類・キー・`label_pos`・ポートの4方向
+  - 配管の向きの総当たり: レイアウト2種 × 出口4方向 × 入口4方向 × 段の関係3種（回転・反転後の向きで数える）
+
+  必須の一覧の多くはコードから取る（`DEFAULT_LIBRARY` のエレメントとポート、`_ELEMENT_KEYS` などのキー、`LAYOUTS`・`ANCHORS`・`ROTATIONS`・`LABEL_POSITIONS`、`LineStyle` のフィールド）。エレメント・ポート・キー・選択肢を増やすと、それを使う例を足すまでこのテストが失敗する。エレメントのパラメータ名だけは表（`ENUMS`・`PARAMS`）に書く。新しいエレメントは `PARAMS` に載せないと `test_every_element_type_has_its_parameters_listed` が失敗する
+- **振る舞い**（`test_cases_show_every_behaviour`）: 段への折り返し、自動主管、配管の交差、機器を迂回する配管、上下に重なる機器が、どれかの例で実際に起きる
+
+## これらの例で見つかった不具合
+
+`test_cases.py` に strict な xfail として書いてある。直ると xfail が成功に変わってテストが失敗するので、そのときは表から外す。
+
+| 例 | 内容 |
+|---|---|
+| `topology/merge_3` | 3本のフラグから1つのノズル（`D-1.w_mid`）へ合流すると、3本目の切り込みが配線できず `RoutingError`（2本の `merge_2` は通る） |
+| `transform/pump_r180` | 180° 回したポンプの吐出が、何もないところで U ターンする（警告が出る） |
+
+## 例の足し方
+
+1. 該当するフォルダに `<名前>.json` を置く（機器は少なく、試すことは1つ。段は書いておくと速く、結果も変わりにくい）
+2. `uv run pytest tests/test_cases.py` を実行すると、初回はスナップショットが書かれる（skip と表示される）。もう一度実行して通ることを確かめる
+3. 図を見るときは `uv run pfd tests/cases/<フォルダ>/<名前>.json -o out.png`
+
+不正な入力の例は `invalid/` に置き、`test_cases.py` の `INVALID` に例外の型とメッセージの一部を書く。
+
+レイアウト・配線・描画を意図して変えたときは、スナップショットを書き直す: `PFD_UPDATE_SNAPSHOTS=1 uv run pytest tests/test_cases.py`

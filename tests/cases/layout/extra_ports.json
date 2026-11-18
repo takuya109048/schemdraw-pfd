@@ -1,0 +1,13 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 1, "params": {"text": "FEED"}},
+    {"id": "D-1", "type": "vertical_drum", "level": 1, "ports": {"in2": ["N", 1], "x": ["E", 7]}},
+    {"id": "F2", "type": "connector", "level": 2, "params": {"text": "F2"}},
+    {"id": "PROD", "type": "connector", "level": 1, "params": {"text": "PROD"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "D-1.w_mid"},
+    {"from": "F2.tip", "to": "D-1.in2"},
+    {"from": "D-1.x", "to": "PROD.tail"}
+  ]
+}

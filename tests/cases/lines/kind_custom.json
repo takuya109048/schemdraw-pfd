@@ -1,0 +1,16 @@
+{
+  "line_kinds": {"steam": {"lw": 1.5, "ls": "-.", "arrow": "->", "process": true, "main": false}},
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 1, "params": {"text": "FEED"}},
+    {"id": "E-1", "type": "heat_exchanger", "level": 1},
+    {"id": "PROD", "type": "connector", "level": 1, "params": {"text": "PROD"}},
+    {"id": "STM", "type": "connector", "level": 2, "params": {"text": "STM"}},
+    {"id": "CON", "type": "connector", "level": 0, "params": {"text": "CON"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "E-1.tube_in"},
+    {"from": "E-1.tube_out", "to": "PROD.tail"},
+    {"from": "STM.tip", "to": "E-1.shell_in", "type": "steam"},
+    {"from": "E-1.shell_out", "to": "CON.tail", "type": "steam"}
+  ]
+}

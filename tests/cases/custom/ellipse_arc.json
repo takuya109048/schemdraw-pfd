@@ -1,0 +1,23 @@
+{
+  "custom_elements": [
+    {
+      "name": "tank",
+      "width": 4,
+      "height": 4,
+      "shapes": [
+        {"type": "ellipse", "cx": 2, "cy": 2, "rx": 2, "ry": 2},
+        {"type": "arc", "cx": 2, "cy": 2, "rx": 1, "ry": 1, "theta1": 0, "theta2": 180, "boundary": false}
+      ],
+      "ports": {"in": {"side": "W", "offset": 2}, "out": {"side": "E", "offset": 2}}
+    }
+  ],
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
+    {"id": "X-1", "type": "tank", "level": 0},
+    {"id": "PROD", "type": "connector", "level": 0, "params": {"text": "PROD"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "X-1.in"},
+    {"from": "X-1.out", "to": "PROD.tail"}
+  ]
+}

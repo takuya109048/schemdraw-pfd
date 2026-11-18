@@ -1,0 +1,10 @@
+{
+  "layout": "order",
+  "elements": [
+    {"id": "A", "type": "horizontal_drum", "level": 1},
+    {"id": "B", "type": "horizontal_drum", "level": 1}
+  ],
+  "connections": [
+    {"from": "A.w", "to": "B.s_mid"}
+  ]
+}

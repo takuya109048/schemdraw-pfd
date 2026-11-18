@@ -1,0 +1,14 @@
+{
+  "layout": "order",
+  "elements": [
+    {"id": "PROD", "type": "connector", "level": 1, "params": {"text": "PROD"}},
+    {"id": "P-1", "type": "pump", "level": 0},
+    {"id": "D-1", "type": "vertical_drum", "level": 1},
+    {"id": "FEED", "type": "connector", "level": 1, "params": {"text": "FEED"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "D-1.w_mid"},
+    {"from": "D-1.bottom", "to": "P-1.in"},
+    {"from": "P-1.out", "to": "PROD.tail"}
+  ]
+}

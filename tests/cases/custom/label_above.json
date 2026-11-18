@@ -1,0 +1,23 @@
+{
+  "custom_elements": [
+    {
+      "name": "box_above",
+      "width": 4,
+      "height": 4,
+      "shapes": [
+        {"type": "rect", "x0": 0, "y0": 0, "x1": 4, "y1": 4}
+      ],
+      "ports": {"in": {"side": "W", "offset": 2}, "out": {"side": "E", "offset": 2}},
+      "label_pos": "above"
+    }
+  ],
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
+    {"id": "X-1", "type": "box_above", "level": 0},
+    {"id": "PROD", "type": "connector", "level": 0, "params": {"text": "PROD"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "X-1.in"},
+    {"from": "X-1.out", "to": "PROD.tail"}
+  ]
+}

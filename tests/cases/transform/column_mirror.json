@@ -1,0 +1,11 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
+    {"id": "T-1", "type": "column", "level": 0, "params": {"mirror": true}},
+    {"id": "SIDE", "type": "connector", "level": 0, "params": {"text": "SIDE"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "T-1.e_mid"},
+    {"from": "T-1.w_high", "to": "SIDE.tail"}
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
+    {"id": "F-1", "type": "filter_housing", "level": 0},
+    {"id": "PROD", "type": "connector", "level": 0, "params": {"text": "PROD"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "F-1.w4"},
+    {"from": "F-1.e_high", "to": "PROD.tail"}
+  ]
+}

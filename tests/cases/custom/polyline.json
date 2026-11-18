@@ -1,0 +1,23 @@
+{
+  "custom_elements": [
+    {
+      "name": "funnel",
+      "width": 4,
+      "height": 4,
+      "shapes": [
+        {"type": "polyline", "points": [[0, 4], [4, 4], [2, 0]], "closed": true},
+        {"type": "polyline", "points": [[0, 2], [1, 2]], "pipe": true, "boundary": false}
+      ],
+      "ports": {"in": {"side": "W", "offset": 2}, "out": {"side": "E", "offset": 2}}
+    }
+  ],
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
+    {"id": "X-1", "type": "funnel", "level": 0},
+    {"id": "PROD", "type": "connector", "level": 0, "params": {"text": "PROD"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "X-1.in"},
+    {"from": "X-1.out", "to": "PROD.tail"}
+  ]
+}

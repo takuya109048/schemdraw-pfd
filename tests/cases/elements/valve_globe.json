@@ -1,0 +1,11 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
+    {"id": "V-1", "type": "valve", "level": 0, "params": {"kind": "globe"}},
+    {"id": "PROD", "type": "connector", "level": 0, "params": {"text": "PROD"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "V-1.in"},
+    {"from": "V-1.out", "to": "PROD.tail"}
+  ]
+}
