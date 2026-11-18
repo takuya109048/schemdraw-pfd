@@ -1,9 +1,16 @@
 """Router search (A*) and rip-up & reroute."""
 
+import copy
+import random
+from pathlib import Path
+
 import pytest
 
 from schemdraw_pfd import Flowsheet, RoutingError, model
-from schemdraw_pfd.router import DIRS, _estimate, _min_bends, needless_uturn
+from schemdraw_pfd.levels import start_levels
+from schemdraw_pfd.router import DIRS, Router, _estimate, _min_bends, needless_uturn
+
+EXAMPLES = Path(__file__).parent.parent / "examples"
 
 # found by fuzzing: routed in the given order, an early line takes the only
 # corridor of a later one; routing the failing line first solves it
@@ -61,6 +68,61 @@ def test_estimate_is_consistent():
                     dx, dy = DIRS[nd]
                     step = 1 + (TURN_COST if nd != d else 0)
                     assert h <= step + _estimate((x + dx, y + dy), nd, t, td)
+
+
+def _random_router(rng: random.Random, size: int = 7) -> Router:
+    """A router on a ``size`` x ``size`` area with random obstacles, routed
+    pipes and doorsteps (no equipment needed)."""
+    r = object.__new__(Router)
+    r.x0 = r.y0 = -1
+    r.h = h = size + 2
+    n = h * h
+    r.blocked = bytearray(n)
+    for i in range(n):
+        x, y = divmod(i, h)
+        frame = x in (0, h - 1) or y in (0, h - 1)
+        r.blocked[i] = 1 if frame or rng.random() < 0.15 else 0
+    r.axes = bytearray(rng.choice((0, 0, 0, 1, 2, 3)) for _ in range(n))
+    r.door = bytearray(rng.choice((0, 0, 0, 0, 1, 2)) for _ in range(n))
+    r.steps = (1, h, -1, -h)
+    r._coords = None
+    return r
+
+
+def test_cheap_checks_never_call_off_a_routable_line():
+    # the staircase and the cell flood are necessary conditions of the exact
+    # flood (which fails exactly when the search does): a "no" from either
+    # must never meet a "yes" from it -- and they do say "no" often
+    rng = random.Random(7)
+    said_no = 0
+    for _ in range(3000):
+        r = _random_router(rng)
+        s = (rng.randrange(7), rng.randrange(7))
+        t = (rng.randrange(7), rng.randrange(7))
+        sd, td = rng.randrange(4), rng.randrange(4)
+        for strict in (True, False):
+            exact = r._reachable(s, sd, t, td, strict)
+            if not r._cells_reachable(s, t, td):
+                said_no += 1
+                assert not exact
+            if strict and sd != (td + 2) % 4 and not r._staircase(s, sd, t, td):
+                said_no += 1
+                assert not exact
+    assert said_no > 1000
+
+
+def test_level_floor_never_exceeds_the_quick_cost():
+    fs = Flowsheet.from_json(EXAMPLES / "parallel_trains.json")
+    fs.jobs = 1
+    sheet = copy.copy(fs)
+    sheet.equipment = fs._with_levels()
+    sheet._in_order = sheet._flag_room = False
+    sheet._quick = True
+    floor = sheet._level_floor(model.QUICK_EXPAND)
+    cost = model._run_level_cost(fs, start_levels(fs.equipment), 4)
+    assert cost is not None and 0 < floor <= cost
+    # a bound it cannot beat skips the routing
+    assert model._run_level_cost(fs, start_levels(fs.equipment), 4, floor) is None
 
 
 # -- which U-turns are worth a warning ---------------------------------------
