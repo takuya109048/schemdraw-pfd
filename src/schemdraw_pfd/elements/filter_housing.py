@@ -2,27 +2,35 @@
 
 from __future__ import annotations
 
-from ..geometry import Ellipse, Polyline, Port, Shape, rect
+from ..geometry import Polyline, Port, Shape, rect
 from .base import ElementSpec, Geometry, even
+
+INSET = 0.25  # the shell's walls stand this far inside the flange plates
+NECK_WIDTH = 0.225  # the neck's width, a share of the housing's width
+CAP_OVERHANG = 0.2  # the cap plate reaches this far past the neck
+CARTRIDGE_HEIGHT = 2 / 3  # the cartridges' height, a share of the shell's
 
 
 class FilterHousingSpec(ElementSpec):
-    """Metal cartridge-filter housing: a pressure shell with a bolted top cover.
+    """Cartridge-filter housing: a straight shell between two flange plates,
+    a narrow neck with a cap on top, the cartridges standing inside.
 
-    Drawn as a cylindrical shell with a dished bottom head, a flange pair at the
-    top (the cover is bolted on so the cartridges can be pulled out) and a domed
-    cover above it.  The cartridge inside is shown as a pleated element.
+    Drawn as a rectangular shell whose bottom plate and top flange reach a
+    little past its walls, a neck in the middle of the top flange closed by a
+    cap plate, and the cartridges as tall rectangles standing on the bottom
+    plate, two thirds of the shell high (one per two cells of width).
 
-    params: ``width`` (diameter, even, default 4), ``height`` (default 8).
-    Ports: ``in`` (west side, low), ``out`` (east side, high), ``vent`` (top of
-    the cover), ``drain`` (bottom apex), and ``w<i>`` / ``e<i>`` on every grid row
-    of the shell below the flange (``w_low``, ``w_mid``, ``w_high``, ... aliases)
-    so a line can reach either side wherever it is convenient.
+    params: ``width`` (even, default 4), ``height`` (default 9: the shell
+    two thirds of it, the neck the rest).  Ports: ``in`` (west side, low),
+    ``out`` (east side, high), ``vent`` (top of the neck), ``drain`` (middle of
+    the bottom plate), and ``w<i>`` / ``e<i>`` on every grid row of the shell
+    (``w_low``, ``w_mid``, ``w_high``, ... aliases) so a line can reach either
+    side wherever it is convenient.
     """
 
     name = "filter_housing"
-    defaults = {"width": 4, "height": 8}
-    label_pos = "left"
+    defaults = {"width": 4, "height": 9}
+    label_pos = "above"
 
     def build(self, params):
         p = {**self.defaults, **params}
@@ -30,29 +38,31 @@ class FilterHousingSpec(ElementSpec):
         h = int(p["height"])
         if h < 6:
             raise ValueError(f"{self.name} height must be >= 6")
-        r = w // 2
-        lo = 1  # bottom head depth
-        flange = h - 2  # bottom face of the flange pair
-        top = h - 1  # top face of the flange pair; the cover dome sits above
+        r = w / 2
+        neck = max(2, h // 3)
+        top = h - neck  # the top flange; the neck stands above it
+        a = INSET
+        half = w * NECK_WIDTH / 2
         shapes: list[Shape] = [
-            Polyline(((0, lo), (0, flange))),
-            Polyline(((w, lo), (w, flange))),
-            Ellipse(r, lo, r, lo, 180, 360),  # dished bottom head
-            rect(0, flange, w, top),  # flange pair (bolted cover joint)
-            Polyline(((0, flange + 0.5), (w, flange + 0.5)), False, False),
-            Ellipse(r, top, r, 1, 0, 180),  # domed cover
+            Polyline(((0, 0), (w, 0))),  # bottom plate
+            Polyline(((a, 0), (a, top))),  # shell walls
+            Polyline(((w - a, 0), (w - a, top))),
+            Polyline(((0, top), (w, top))),  # top flange
+            Polyline(((r - half, top), (r - half, h))),  # neck
+            Polyline(((r + half, top), (r + half, h))),
+            Polyline(((r - half - CAP_OVERHANG, h), (r + half + CAP_OVERHANG, h))),
         ]
-        # pleated cartridge inside the shell
-        cx0, cx1 = 1.0, w - 1.0
-        cy0, cy1 = lo + 0.5, flange - 0.5
-        shapes.append(rect(cx0, cy0, cx1, cy1, boundary=False))
-        pleats = 2 * (w - 2) + 1
-        step = (cx1 - cx0) / pleats
-        zig = [(cx0 + i * step, cy0 if i % 2 == 0 else cy1) for i in range(pleats + 1)]
-        shapes.append(Polyline(tuple(zig), False, False))
+        # cartridges on the bottom plate: the shell's inside cut into equal
+        # slots, cartridges and the room around them taking turns
+        n = w // 2
+        slot = (w - 2 * a) / (2 * n + 1)
+        y1 = top * CARTRIDGE_HEIGHT
+        for k in range(n):
+            x0 = a + (2 * k + 1) * slot
+            shapes.append(rect(x0, 0, x0 + slot, y1, boundary=False))
 
-        rows = list(range(lo, flange + 1))
-        ports = {"vent": Port("N", r), "drain": Port("S", r)}
+        rows = list(range(1, top))
+        ports = {"vent": Port("N", w // 2), "drain": Port("S", w // 2)}
         for i, y in enumerate(rows):
             ports[f"w{i}"] = Port("W", y)
             ports[f"e{i}"] = Port("E", y)
