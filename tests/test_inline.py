@@ -199,8 +199,8 @@ def test_merging_lines_cut_into_a_main_pipe_one_after_another():
     fs = Flowsheet(layout="flow")
     for i in "ABC":
         fs.add("valve", i, level=1)
-    fs.add("pump", "F")
-    fs.add("vertical_drum", "D")
+    fs.add("pump", "F", level=0)
+    fs.add("vertical_drum", "D", level=0)
     for i in "ABCF":
         fs.connect(f"{i}.out", "D.w1")
     net = fs.expand()

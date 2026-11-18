@@ -345,6 +345,8 @@ def _pull_sources(
             continue  # a main pipe's tap stands where its main pipe needs it
         mine = [lk for lk in links if j in (lk.a, lk.b)]
         ahead = [lk for lk in mine if lk.a == j]
+        if any(lk.b not in xs for lk in ahead):
+            continue  # feeds an edge flag: it is not placed yet
         if ahead and (len(ahead) == len(mine) or j in (pull or ())):
             fed[j] = ahead
             sources.append(j)
