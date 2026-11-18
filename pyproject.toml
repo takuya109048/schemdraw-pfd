@@ -32,3 +32,4 @@ ignore = ["E501"]
 
 [tool.pyrefly]
 project-includes = ["src", "tests"]
+search-path = ["src", "tests"]

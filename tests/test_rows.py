@@ -87,3 +87,9 @@ def test_one_column_or_single_rows_stay_on_one_row():
     assert fs.rows == "single" and fs.to_dict()["rows"] == "single"
     with pytest.raises(ValueError, match="rows must be one of"):
         Flowsheet.from_dict({**data, "rows": "many"})
+
+
+def test_crude_has_no_needless_u_turns(crude):
+    # pumparound pumps under mirrored coolers, a cooling water flag under its
+    # condenser, a side stripper's vapour back to the column: all plain Ls
+    assert crude.warnings == []

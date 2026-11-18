@@ -3,8 +3,13 @@
 from __future__ import annotations
 
 import json
+import multiprocessing as mp
+import os
+import pickle
 import re
 from collections.abc import Callable, Sequence
+from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures.process import BrokenProcessPool
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
@@ -94,6 +99,69 @@ class Diagram:
     def size(self) -> tuple[int, int]:
         """Overall (width, height) of the equipment area in grid cells."""
         return _size(self.placed)
+
+
+def _run_first(
+    fs: Flowsheet, mode: tuple[bool, bool], max_expand: int, compact: bool
+) -> Diagram | RoutingError:
+    try:
+        return fs._first(mode, max_expand, compact)
+    except RoutingError as e:
+        return e
+
+
+def _run_swap(
+    fs: Flowsheet,
+    mode: tuple[bool, bool],
+    best: Diagram,
+    max_expand: int,
+    compact: bool,
+) -> Diagram:
+    return fs._swap(mode, best, max_expand, compact)
+
+
+def _pool_map(fn: Callable[..., Any], tasks: list[tuple], jobs: int | None) -> list:
+    """``fn(*task)`` for every task, in worker processes when there are
+    several tasks and CPUs; in order.  The builds are deterministic, so the
+    results are the same either way -- only the wall time differs."""
+    workers = min(jobs or os.cpu_count() or 1, len(tasks))
+    if workers > 1:
+        try:
+            ctx = (
+                mp.get_context("fork") if "fork" in mp.get_all_start_methods() else None
+            )
+            with ProcessPoolExecutor(workers, mp_context=ctx) as pool:
+                return list(pool.map(fn, *zip(*tasks)))
+        except (OSError, BrokenProcessPool, pickle.PicklingError):
+            pass  # no processes here: build in this one
+    return [fn(*t) for t in tasks]
+
+
+def _build_sheets(
+    sheets: list[Flowsheet], max_expand: int, compact: bool, jobs: int | None
+) -> list[Diagram]:
+    """Build several sheets (the rows of a folded sheet, or one sheet): every
+    placement mode of every sheet at once, the cheapest per sheet kept (the
+    first on a tie), then each sheet's ports re-sorted."""
+    modes = [fs._modes() for fs in sheets]
+    tasks = [(fs, m, max_expand, compact) for fs, ms in zip(sheets, modes) for m in ms]
+    results = iter(_pool_map(_run_first, tasks, jobs))
+    chosen: list[tuple[tuple[bool, bool], Diagram]] = []
+    for fs, ms in zip(sheets, modes):
+        best: tuple[tuple[bool, bool], Diagram] | None = None
+        error: RoutingError | None = None
+        for m in ms:
+            r = next(results)
+            if isinstance(r, RoutingError):
+                error = r
+            elif best is None or fs._cost(r) < fs._cost(best[1]):
+                best = (m, r)
+        if best is None:
+            assert error is not None
+            raise error
+        chosen.append(best)
+    swaps = [(fs, m, d, max_expand, compact) for fs, (m, d) in zip(sheets, chosen)]
+    return _pool_map(_run_swap, swaps, jobs)
 
 
 ROW_GAP = 6  # cells between two rows, besides their specification texts
@@ -236,6 +304,11 @@ class Flowsheet:
         # rows (see :meth:`_row_split`); "single" keeps one row
         self.rows = "auto"
         self._in_order = False  # placement mode of the build in progress
+        self._flag_room = False  # see _settle_lifts
+        # worker processes for the builds of a sheet's rows and placement
+        # modes (None: one per CPU; 1: everything in this process)
+        self.jobs: int | None = None
+        self._room_used = False
         # flow layout: how many cells of sheet size one extra bend may cost
         self.bend_cost = BEND_COST
         self.library = ElementLibrary(parent=library or DEFAULT_LIBRARY)
@@ -527,32 +600,49 @@ class Flowsheet:
             )
             subs[a].connections.append(Connection(c.src, f"{out_id}.tail", c.kind))
             subs[b].connections.append(replace(c, src=f"{in_id}.tip", recycle=False))
-        diagrams = [sub._build_swapped(max_expand, compact) for sub in subs]
+        diagrams = _build_sheets(subs, max_expand, compact, self.jobs)
         return _stack(diagrams, self.line_styles)
 
     def _build_swapped(self, max_expand: int, compact: bool) -> Diagram:
-        """:meth:`_build`, then the swappable ports re-sorted (see build).
+        """:meth:`_build` in every placement mode (see :meth:`_modes`), the
+        cheapest kept, then the swappable ports re-sorted (see build)."""
+        return _build_sheets([self], max_expand, compact, self.jobs)[0]
+
+    def _modes(self) -> list[tuple[bool, bool]]:
+        """Placement modes worth a build: (in order, flag room).
 
         Flow layout with branching units (an item with three or more branches
         -- a column's side draws): the sheet is built both packed freely and
-        with every item kept in order (see :func:`.layout.place`), and the
-        cheaper one is kept."""
-        modes = [False]
+        with every item kept in order (see :func:`.layout.place`); with a
+        flag one cell under a bottom nozzle, both with and without moving it
+        (see :func:`_settle_lifts`).  The cheapest one is kept."""
+        orders = [False]
         if self.layout == "flow" and self._branchy():
-            modes.append(True)
-        best = None
-        for mode in modes:
-            self._in_order = mode
+            orders.append(True)
+        rooms = [False]
+        if self.layout == "flow":
+            self._flag_room = True
             try:
-                trial = self._build(max_expand, compact)
-            except RoutingError:
-                if mode == modes[-1] and best is None:
-                    raise
-                continue
-            if best is None or self._cost(trial) < self._cost(best):
-                best, chosen = trial, mode
-        assert best is not None
-        self._in_order = chosen
+                self._prepare()
+            finally:
+                self._flag_room = False
+            if self._room_used:  # a flag would move: try both ways
+                rooms.append(True)
+        return [(o, r) for o in orders for r in rooms]
+
+    def _first(
+        self, mode: tuple[bool, bool], max_expand: int, compact: bool
+    ) -> Diagram:
+        """:meth:`_build` in one placement mode."""
+        self._in_order, self._flag_room = mode
+        return self._build(max_expand, compact)
+
+    def _swap(
+        self, mode: tuple[bool, bool], best: Diagram, max_expand: int, compact: bool
+    ) -> Diagram:
+        """Re-sort the lines on swappable ports and rebuild while it costs no
+        more (see build), in the placement mode ``best`` was built in."""
+        self._in_order, self._flag_room = mode
         user = self.connections
         try:
             for _ in range(SWAP_ROUNDS):
@@ -798,7 +888,7 @@ class Flowsheet:
         links = _links(net)
         _settle_tees(net, links)
         if self.layout == "flow":
-            _settle_lifts(net, flags, links)
+            self._room_used = _settle_lifts(net, flags, links, self._flag_room)
         return net, _items(net, flags), links, flow
 
     def _process_kinds(self) -> set[str]:
@@ -1237,7 +1327,9 @@ def _lift(eq: Equipment, elevation: int) -> bool:
     return True
 
 
-def _settle_lifts(net: Expanded, flags: dict[str, str], links: list[Link]) -> None:
+def _settle_lifts(
+    net: Expanded, flags: dict[str, str], links: list[Link], flag_room: bool = False
+) -> bool:
     """Heights that a top or bottom nozzle needs (flow layout).
 
     On one level, a line between a side port (W/E) of ``p`` and a top / bottom
@@ -1246,8 +1338,13 @@ def _settle_lifts(net: Expanded, flags: dict[str, str], links: list[Link]) -> No
     nozzle the vessel ``q`` is lifted over ``p`` (``p`` cannot go below the
     floor).  Items with an elevation given by the user are never moved.
     Lifting one item can move what lines up with it, so repeat until stable.
+
+    ``flag_room``: a flag one cell below a bottom nozzle on its own level
+    gets the two cells an L needs: it moves down a cell, or the vessel up.
+    Returns whether any flag stood so.
     """
     fixed = {e.id for e in net.equipment if e.elevation is not None}
+    used = False
     eqs = net.equipment
     index = {e.id: i for i, e in enumerate(eqs)}
     # the taps of one main pipe are lifted together: the main pipe stays straight
@@ -1281,6 +1378,7 @@ def _settle_lifts(net: Expanded, flags: dict[str, str], links: list[Link]) -> No
                 if q_side not in "NS" or p_side not in "WE":
                     continue
                 port = ys[p] + p_off
+                room = 1 if flag_room and items[p].geo.off_sheet else 0
                 if q_side == "N" and port <= top + 1:
                     # the pipe turns down one cell above the nozzle: the port
                     # must be two cells up for an L -- a tall item (a column
@@ -1290,8 +1388,19 @@ def _settle_lifts(net: Expanded, flags: dict[str, str], links: list[Link]) -> No
                         j, y = q, port - 2 - items[q].geo.height
                     else:
                         j, y = p, top + 2 - p_off
-                elif q_side == "S" and port >= ys[q]:
-                    j, y = (q, port + 1) if eqs[q].id not in fixed else (p, -1)
+                elif q_side == "S" and port >= ys[q] - room:
+                    # a flag one cell under a bottom nozzle (a cooling water
+                    # supply under its exchanger) needs a cell more: it moves
+                    # down, or (on its floor) the exchanger moves up
+                    low = ys[q] - 2 - p_off
+                    near = room and port == ys[q] - 1
+                    used |= bool(room)
+                    if near and eqs[p].id not in fixed and low >= base[items[p].level]:
+                        j, y = p, low
+                    elif eqs[q].id not in fixed:
+                        j, y = q, port + 1 + room
+                    else:
+                        j, y = p, -1
                 else:
                     continue
                 if eqs[j].id in fixed or y < base[items[j].level]:
@@ -1310,7 +1419,8 @@ def _settle_lifts(net: Expanded, flags: dict[str, str], links: list[Link]) -> No
                     moved |= _lift(eqs[k], elevation)
         moved |= _clear_main_pipes(eqs, items, ys, base, links, taps, fixed, alike)
         if not moved:
-            return
+            return used
+    return used
 
 
 def _clear_main_pipes(

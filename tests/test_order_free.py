@@ -53,3 +53,13 @@ def test_json_lays_out_by_the_flow_unless_told_otherwise():
     fs = Flowsheet()  # the Python API keeps the declared order by default
     assert fs.layout == "order"
     assert fs.to_dict()["layout"] == "order"  # written out explicitly
+
+
+def test_builds_in_worker_processes_match_one_process():
+    # column_trains has a feed pump with three branches: two placement modes
+    one = Flowsheet.from_json("examples/column_trains.json")
+    one.jobs = 1
+    many = Flowsheet.from_json("examples/column_trains.json")
+    many.jobs = 2
+    assert len(one._modes()) == 2
+    assert _sheet(one.build()) == _sheet(many.build())
