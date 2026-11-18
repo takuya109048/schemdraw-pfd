@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from .elements import DEFAULT_LIBRARY, CustomSpec, ElementLibrary, Geometry
-from .expand import GENERATED_PREFIX, Expanded, expand
+from .expand import GENERATED_PREFIX, TAP_PREFIX, Expanded, expand
 from .flow import plan_flow, split_rows
 from .geometry import find_crossings
 from .layout import (
@@ -235,6 +235,7 @@ class Flowsheet:
         # flow layout: "auto" folds a main flow through several columns into
         # rows (see :meth:`_row_split`); "single" keeps one row
         self.rows = "auto"
+        self._in_order = False  # placement mode of the build in progress
         # flow layout: how many cells of sheet size one extra bend may cost
         self.bend_cost = BEND_COST
         self.library = ElementLibrary(parent=library or DEFAULT_LIBRARY)
@@ -418,6 +419,16 @@ class Flowsheet:
         finally:
             self.equipment, self.connections = user
 
+    def _branchy(self) -> bool:
+        """Does any item send process lines to three or more items?"""
+        kinds = self._process_kinds()
+        out: dict[str, set[str]] = {}
+        for c in self.connections:
+            if c.kind in kinds:
+                (s, _), (d, _) = c.ends
+                out.setdefault(s, set()).add(d)
+        return any(len(v) >= 3 for v in out.values())
+
     # -- rows -------------------------------------------------------------------
     def _row_split(self) -> list[set[str]]:
         """The ids of each row (top first) when the flow is folded.
@@ -520,8 +531,28 @@ class Flowsheet:
         return _stack(diagrams, self.line_styles)
 
     def _build_swapped(self, max_expand: int, compact: bool) -> Diagram:
-        """:meth:`_build`, then the swappable ports re-sorted (see build)."""
-        best = self._build(max_expand, compact)
+        """:meth:`_build`, then the swappable ports re-sorted (see build).
+
+        Flow layout with branching units (an item with three or more branches
+        -- a column's side draws): the sheet is built both packed freely and
+        with every item kept in order (see :func:`.layout.place`), and the
+        cheaper one is kept."""
+        modes = [False]
+        if self.layout == "flow" and self._branchy():
+            modes.append(True)
+        best = None
+        for mode in modes:
+            self._in_order = mode
+            try:
+                trial = self._build(max_expand, compact)
+            except RoutingError:
+                if mode == modes[-1] and best is None:
+                    raise
+                continue
+            if best is None or self._cost(trial) < self._cost(best):
+                best, chosen = trial, mode
+        assert best is not None
+        self._in_order = chosen
         user = self.connections
         try:
             for _ in range(SWAP_ROUNDS):
@@ -630,6 +661,20 @@ class Flowsheet:
         """
         net, items, links, flow = self._prepare()
         free = self.layout == "flow"
+        # placed in order, except where they belong elsewhere: a main pipe's
+        # taps (where the main pipe needs them) and the items on a recycle
+        # (a reflux valve stands by the column it returns to)
+        order = None
+        if self._in_order:
+            back = {
+                item.id or f"{GENERATED_PREFIX}L{ci}_{k}"
+                for ci, c in enumerate(self.connections)
+                if c.recycle
+                for k, item in enumerate(c.inline)
+            }
+            order = [
+                not (e.id.startswith(TAP_PREFIX) or e.id in back) for e in net.equipment
+            ]
         sym = find_units(net)
         levels = _band_count(net.equipment)
         # tightest gap each element may ever have (independent of the level gaps)
@@ -653,7 +698,7 @@ class Flowsheet:
             relaxed: bool,
             best: Diagram | None = None,
         ) -> tuple[Diagram | None, list[str]]:
-            placed = place(items, gx, gy, links, overlap, flow, free)
+            placed = place(items, gx, gy, links, overlap, flow, free, order)
             key = (relaxed, tuple((p.x, p.y) for p in placed))
             if key not in seen:
                 bound = None
@@ -1238,8 +1283,13 @@ def _settle_lifts(net: Expanded, flags: dict[str, str], links: list[Link]) -> No
                 port = ys[p] + p_off
                 if q_side == "N" and port <= top + 1:
                     # the pipe turns down one cell above the nozzle: the port
-                    # must be two cells up for an L
-                    j, y = p, top + 2 - p_off
+                    # must be two cells up for an L -- a tall item (a column
+                    # taking back a side stripper's vapour) is not lifted for
+                    # it: the vessel stands lower instead
+                    if items[p].span > 1 and eqs[q].id not in fixed:
+                        j, y = q, port - 2 - items[q].geo.height
+                    else:
+                        j, y = p, top + 2 - p_off
                 elif q_side == "S" and port >= ys[q]:
                     j, y = (q, port + 1) if eqs[q].id not in fixed else (p, -1)
                 else:

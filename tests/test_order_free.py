@@ -9,6 +9,7 @@ import random
 from pathlib import Path
 
 import pytest
+from conftest import built
 
 from schemdraw_pfd import Flowsheet
 
@@ -31,7 +32,7 @@ def _sheet(d):
 @pytest.mark.parametrize("name", FLOW_EXAMPLES)
 def test_shuffled_json_draws_the_same_sheet(name):
     data = json.loads(Path(f"examples/{name}.json").read_text("utf-8-sig"))
-    expected = _sheet(Flowsheet.from_dict(data).build())
+    expected = _sheet(built(name))
     rng = random.Random(name)
     rng.shuffle(data["elements"])
     rng.shuffle(data["connections"])
@@ -40,7 +41,7 @@ def test_shuffled_json_draws_the_same_sheet(name):
 
 def test_reversed_lists_draw_the_same_sheet():
     data = json.loads(Path("examples/column_trains.json").read_text("utf-8"))
-    expected = _sheet(Flowsheet.from_dict(data).build())
+    expected = _sheet(built("column_trains"))
     data["elements"].reverse()
     data["connections"].reverse()
     assert _sheet(Flowsheet.from_dict(data).build()) == expected

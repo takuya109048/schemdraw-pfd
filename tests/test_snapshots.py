@@ -12,9 +12,9 @@ from pathlib import Path
 
 import pytest
 import schemdraw
+from conftest import built
 
 import schemdraw_pfd.render as render
-from schemdraw_pfd import Flowsheet
 
 SNAPSHOTS = Path(__file__).parent / "snapshots"
 EXAMPLES = sorted(p.stem for p in Path("examples").glob("*.json"))
@@ -52,12 +52,12 @@ def _drawing(name: str, monkeypatch) -> list:
 
     monkeypatch.setattr(render._Shapes, "__init__", record)
     monkeypatch.setattr(schemdraw.Drawing, "save", lambda *a, **k: None)
-    Flowsheet.from_json(f"examples/{name}.json").render("unused.svg")
+    render.draw(built(name), "unused.svg")
     return shapes
 
 
 def _snapshot(name: str, monkeypatch) -> dict:
-    d = Flowsheet.from_json(f"examples/{name}.json").build()
+    d = built(name)
     return {
         "placed": [[p.id, p.x, p.y, p.geo.width, p.geo.height] for p in d.placed],
         "routes": [
