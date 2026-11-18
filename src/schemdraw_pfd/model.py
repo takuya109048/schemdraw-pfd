@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from .elements import DEFAULT_LIBRARY, CustomSpec, ElementLibrary, Geometry
-from .expand import GENERATED_PREFIX, Expanded, expand
+from .expand import GENERATED_PREFIX, TAP_PREFIX, Expanded, expand
 from .flow import plan_flow, split_rows
 from .geometry import find_crossings
 from .layout import (
@@ -661,6 +661,20 @@ class Flowsheet:
         """
         net, items, links, flow = self._prepare()
         free = self.layout == "flow"
+        # placed in order, except where they belong elsewhere: a main pipe's
+        # taps (where the main pipe needs them) and the items on a recycle
+        # (a reflux valve stands by the column it returns to)
+        order = None
+        if self._in_order:
+            back = {
+                item.id or f"{GENERATED_PREFIX}L{ci}_{k}"
+                for ci, c in enumerate(self.connections)
+                if c.recycle
+                for k, item in enumerate(c.inline)
+            }
+            order = [
+                not (e.id.startswith(TAP_PREFIX) or e.id in back) for e in net.equipment
+            ]
         sym = find_units(net)
         levels = _band_count(net.equipment)
         # tightest gap each element may ever have (independent of the level gaps)
@@ -684,7 +698,7 @@ class Flowsheet:
             relaxed: bool,
             best: Diagram | None = None,
         ) -> tuple[Diagram | None, list[str]]:
-            placed = place(items, gx, gy, links, overlap, flow, free, self._in_order)
+            placed = place(items, gx, gy, links, overlap, flow, free, order)
             key = (relaxed, tuple((p.x, p.y) for p in placed))
             if key not in seen:
                 bound = None

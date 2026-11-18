@@ -317,8 +317,14 @@ def _pull_sources(
     overlap: Sequence[bool],
     gap_x: Sequence[int],
     risers: dict[int, list[Riser]],
+    pull: set[int] | None = None,
 ) -> None:
     """Move items that only feed items to their right up to them.
+
+    ``pull``: items also moved up to the items on their right that they are
+    joined to, whatever else they are joined to on their left (an item on a
+    recycle, kept out of the in-order placement: it stands just in front of
+    the line it is fed from, not far back by the item it returns to).
 
     Packed from the left, an item with nothing in front of it on its own
     height (a steam flag feeding a column, a supply flag above a heat
@@ -338,8 +344,9 @@ def _pull_sources(
         if items[j].id.startswith("_T_"):
             continue  # a main pipe's tap stands where its main pipe needs it
         mine = [lk for lk in links if j in (lk.a, lk.b)]
-        if mine and all(lk.a == j for lk in mine):
-            fed[j] = mine
+        ahead = [lk for lk in mine if lk.a == j]
+        if ahead and (len(ahead) == len(mine) or j in (pull or ())):
+            fed[j] = ahead
             sources.append(j)
     for j in sorted(sources, reverse=True):
         w = items[j].geo.width
@@ -375,12 +382,12 @@ def place(
     overlap: Sequence[bool] | None = None,
     flow: Sequence[FlowLink] = (),
     anchor_free: bool = False,
-    in_order: bool = False,
+    in_order: Sequence[bool] | None = None,
 ) -> list[Placed]:
     """Place ``items`` (given in left-to-right order); see the module docstring.
 
-    ``in_order`` (with ``overlap``): an item's left edge is never left of the
-    item before it -- items still stack across levels, but a branch's upper
+    ``in_order[i]`` (with ``overlap``): item ``i``'s left edge is never left
+    of the item before it -- items still stack across levels, but a branch's upper
     items (a side stripper, a reflux drum) cannot run ahead of the pumps and
     coolers below them that the lane on their level has pushed right.
 
@@ -424,10 +431,8 @@ def place(
             if left:
                 ends.append(edge_w)
             x = max(ends) + max(gap_x[j], 1) if ends else 0  # they could touch
-            if in_order and done and not items[j].id.startswith("_T_"):
-                # never left of the item before (a main pipe's tap stands
-                # where its main pipe needs it)
-                x = max(x, xs[done[-1]])
+            if in_order and in_order[j] and done:
+                x = max(x, xs[done[-1]])  # never left of the item before
             x = _clear_risers(max(x, link_floor(j)), j, items, xs, ys, done, risers)
         else:
             x = 0 if cursor is None else cursor + gap_x[j]
@@ -435,7 +440,8 @@ def place(
         cursor = max(cursor or 0, xs[j] + items[j].geo.width)
         done.append(j)
     if overlap and any(overlap):
-        _pull_sources(items, xs, ys, links, flow, overlap, gap_x, risers)
+        pull = {j for j in xs if in_order and not in_order[j]}
+        _pull_sources(items, xs, ys, links, flow, overlap, gap_x, risers, pull)
     if right:  # west faces of the right flags line up
         x = (cursor or 0) + max(gap_x[j] for j in right)
         x = max([x] + [link_floor(j) for j in right])
