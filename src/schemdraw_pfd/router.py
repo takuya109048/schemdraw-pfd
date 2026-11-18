@@ -12,6 +12,7 @@ reversals in place.
 from __future__ import annotations
 
 import heapq
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 
 from .geometry import NORMALS, ray_hit
@@ -403,7 +404,7 @@ def _simplify(pts: list[tuple[float, float]]) -> list[tuple[float, float]]:
 Box = tuple[float, float, float, float]  # x0, y0, x1, y1
 
 
-def needless_uturn(points: list[tuple[float, float]], boxes: list[Box]) -> bool:
+def needless_uturn(points: list[tuple[float, float]], boxes: Sequence[Box]) -> bool:
     """Does the route turn back on itself with nothing in the way?
 
     Turning back (a leg, then later one in the opposite direction) is fine

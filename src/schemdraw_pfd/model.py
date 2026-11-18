@@ -236,6 +236,8 @@ class Flowsheet:
         # rows (see :meth:`_row_split`); "single" keeps one row
         self.rows = "auto"
         self._in_order = False  # placement mode of the build in progress
+        self._flag_room = False  # see _settle_lifts
+        self._room_used = False
         # flow layout: how many cells of sheet size one extra bend may cost
         self.bend_cost = BEND_COST
         self.library = ElementLibrary(parent=library or DEFAULT_LIBRARY)
@@ -535,14 +537,23 @@ class Flowsheet:
 
         Flow layout with branching units (an item with three or more branches
         -- a column's side draws): the sheet is built both packed freely and
-        with every item kept in order (see :func:`.layout.place`), and the
-        cheaper one is kept."""
-        modes = [False]
+        with every item kept in order (see :func:`.layout.place`); with a
+        flag one cell under a bottom nozzle, both with and without moving it
+        down (see :func:`_settle_lifts`).  The cheapest one is kept."""
+        orders = [False]
         if self.layout == "flow" and self._branchy():
-            modes.append(True)
-        best = None
+            orders.append(True)
+        rooms = [False]
+        if self.layout == "flow":
+            self._flag_room = True
+            self._prepare()
+            self._flag_room = False
+            if self._room_used:  # a flag would move: try both ways
+                rooms.append(True)
+        modes = [(o, r) for o in orders for r in rooms]
+        best, chosen = None, modes[0]
         for mode in modes:
-            self._in_order = mode
+            self._in_order, self._flag_room = mode
             try:
                 trial = self._build(max_expand, compact)
             except RoutingError:
@@ -552,7 +563,7 @@ class Flowsheet:
             if best is None or self._cost(trial) < self._cost(best):
                 best, chosen = trial, mode
         assert best is not None
-        self._in_order = chosen
+        self._in_order, self._flag_room = chosen
         user = self.connections
         try:
             for _ in range(SWAP_ROUNDS):
@@ -798,7 +809,7 @@ class Flowsheet:
         links = _links(net)
         _settle_tees(net, links)
         if self.layout == "flow":
-            _settle_lifts(net, flags, links)
+            self._room_used = _settle_lifts(net, flags, links, self._flag_room)
         return net, _items(net, flags), links, flow
 
     def _process_kinds(self) -> set[str]:
@@ -1237,7 +1248,9 @@ def _lift(eq: Equipment, elevation: int) -> bool:
     return True
 
 
-def _settle_lifts(net: Expanded, flags: dict[str, str], links: list[Link]) -> None:
+def _settle_lifts(
+    net: Expanded, flags: dict[str, str], links: list[Link], flag_room: bool = False
+) -> bool:
     """Heights that a top or bottom nozzle needs (flow layout).
 
     On one level, a line between a side port (W/E) of ``p`` and a top / bottom
@@ -1246,8 +1259,13 @@ def _settle_lifts(net: Expanded, flags: dict[str, str], links: list[Link]) -> No
     nozzle the vessel ``q`` is lifted over ``p`` (``p`` cannot go below the
     floor).  Items with an elevation given by the user are never moved.
     Lifting one item can move what lines up with it, so repeat until stable.
+
+    ``flag_room``: a flag one cell below a bottom nozzle on its own level
+    gets the two cells an L needs: it moves down a cell, or the vessel up.
+    Returns whether any flag stood so.
     """
     fixed = {e.id for e in net.equipment if e.elevation is not None}
+    used = False
     eqs = net.equipment
     index = {e.id: i for i, e in enumerate(eqs)}
     # the taps of one main pipe are lifted together: the main pipe stays straight
@@ -1281,6 +1299,7 @@ def _settle_lifts(net: Expanded, flags: dict[str, str], links: list[Link]) -> No
                 if q_side not in "NS" or p_side not in "WE":
                     continue
                 port = ys[p] + p_off
+                room = 1 if flag_room and items[p].geo.off_sheet else 0
                 if q_side == "N" and port <= top + 1:
                     # the pipe turns down one cell above the nozzle: the port
                     # must be two cells up for an L -- a tall item (a column
@@ -1290,8 +1309,19 @@ def _settle_lifts(net: Expanded, flags: dict[str, str], links: list[Link]) -> No
                         j, y = q, port - 2 - items[q].geo.height
                     else:
                         j, y = p, top + 2 - p_off
-                elif q_side == "S" and port >= ys[q]:
-                    j, y = (q, port + 1) if eqs[q].id not in fixed else (p, -1)
+                elif q_side == "S" and port >= ys[q] - room:
+                    # a flag one cell under a bottom nozzle (a cooling water
+                    # supply under its exchanger) needs a cell more: it moves
+                    # down, or (on its floor) the exchanger moves up
+                    low = ys[q] - 2 - p_off
+                    near = room and port == ys[q] - 1
+                    used |= bool(room)
+                    if near and eqs[p].id not in fixed and low >= base[items[p].level]:
+                        j, y = p, low
+                    elif eqs[q].id not in fixed:
+                        j, y = q, port + 1 + room
+                    else:
+                        j, y = p, -1
                 else:
                     continue
                 if eqs[j].id in fixed or y < base[items[j].level]:
@@ -1310,7 +1340,8 @@ def _settle_lifts(net: Expanded, flags: dict[str, str], links: list[Link]) -> No
                     moved |= _lift(eqs[k], elevation)
         moved |= _clear_main_pipes(eqs, items, ys, base, links, taps, fixed, alike)
         if not moved:
-            return
+            return used
+    return used
 
 
 def _clear_main_pipes(
