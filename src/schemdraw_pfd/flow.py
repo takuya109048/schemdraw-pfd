@@ -1,7 +1,7 @@
 """Left-to-right order from the direction of flow (``layout="flow"``).
 
 Every item has a level (its height on the plant: given, or worked out from
-the lines by :mod:`.levels`) and the user draws the lines; the order along X
+the drawing by :mod:`.levels`) and the user draws the lines; the order along X
 is derived from the process lines:
 
 1. **Process graph**: items are nodes, process lines (line kinds with

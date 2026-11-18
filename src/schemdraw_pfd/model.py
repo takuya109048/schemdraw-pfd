@@ -56,6 +56,7 @@ FORMAT_VERSION = 1  # version of the JSON flowsheet format written by to_dict
 MIN_GAP = 1  # cells always left between neighbouring elements / level bands
 REROUTE_ROUNDS = 3  # rip-up and reroute attempts per placement
 SWAP_ROUNDS = 2  # rebuilds with swappable ports re-sorted (see Flowsheet.build)
+QUICK_EXPAND = 3  # level search: spacings tried per levels (see _run_level_cost)
 BEND_COST = 6  # flow layout: sheet cells (width + height) one bend is worth
 KINDS = tuple(DEFAULT_LINE_STYLES)  # built-in line kinds (kept for compatibility)
 
@@ -140,14 +141,16 @@ def _pool_map(fn: Callable[..., Any], tasks: list[tuple], jobs: int | None) -> l
 
 
 def _run_level_cost(fs: Flowsheet, levels: Levels, max_expand: int) -> int | None:
-    """Cost of one sheet on the given levels: placed and routed once, in
-    the plain placement mode and without squeezing the gaps."""
+    """Cost of one sheet on the given levels: placed and routed in the
+    plain placement mode on the tightest of the first ``QUICK_EXPAND``
+    spacings that routes, without squeezing the gaps (None: none routes)."""
     sheet = copy.copy(fs)
     sheet.equipment = fs._with_levels(levels)
     sheet._in_order = sheet._flag_room = False
     sheet._quick = True
     try:
-        return sheet._level_cost(sheet._build(max_expand, compact=False))
+        d = sheet._build(min(max_expand, QUICK_EXPAND), compact=False)
+        return sheet._level_cost(d)
     except RoutingError:
         return None
 
@@ -892,7 +895,7 @@ class Flowsheet:
         # a crowded sheet (many side draws on one column) may need more room
         # than ``max_expand`` steps: keep widening until it routes at all
         k = max_expand
-        while best is None and k < 4 * max_expand:
+        while best is None and k < 4 * max_expand and not self._quick:
             trial, _ = attempt(*spread(k), True)
             if trial:
                 best, (gx, gy) = trial, spread(k)
