@@ -22,6 +22,11 @@ Node = tuple[int, int]
 DIRS = [(0, 1), (1, 0), (0, -1), (-1, 0)]  # N E S W (clockwise)
 TURN_COST = 1000
 CROSS_COST = 20
+# bit fields of a search heap entry (see Router._search); far beyond any sheet
+STATE_BITS = 32
+COUNT_BITS = 32
+COST_BITS = 40
+FLOOD_AFTER = 600  # search steps before checking the target is reachable at all
 
 
 class RoutingError(RuntimeError):
@@ -136,9 +141,20 @@ class Router:
         # per cell: the axis bit of the port whose doorstep it is (or 0)
         self.door = bytearray(w * h)
         self.steps = (1, h, -1, -h)  # index offset of each of DIRS
+        self._coords: tuple[list[int], list[int]] | None = None
 
     def _index(self, p: Node) -> int:
         return (p[0] - self.x0) * self.h + p[1] - self.y0
+
+    def _xy(self) -> tuple[list[int], list[int]]:
+        """x and y of every grid index (made once per router)."""
+        if self._coords is None:
+            h, n = self.h, len(self.blocked)
+            self._coords = (
+                [i // h + self.x0 for i in range(n)],
+                [i % h + self.y0 for i in range(n)],
+            )
+        return self._coords
 
     def reserve(self, terminals: list[Terminal]) -> None:
         """Keep the first cell outside every port (its doorstep) for that
@@ -152,6 +168,60 @@ class Router:
         for t in terminals:
             self.door[self._index(t.first)] = 1 << (t.out_dir % 2)
 
+    def _reachable(self, s: Node, sd: int, t: Node, td: int, strict: bool) -> bool:
+        """Can the search get from ``s`` (moving ``sd``) to ``t`` (arriving
+        moving ``td``) at all?  A flood over the search's own states -- (cell,
+        direction, and in strict mode the directions travelled) -- with
+        exactly its moves: no reversal in place (strict: none of a travelled
+        direction, but the arrival of an arch), no turn on a pipe or another
+        port's doorstep, no cell blocked, run along or entered on another
+        port's axis.  So it fails exactly when the search does, found out far
+        faster than by exhausting the search's heap of every state."""
+        blocked, axes, door, steps = self.blocked, self.axes, self.door, self.steps
+        si, ti = self._index(s), self._index(t)
+        if axes[ti]:
+            return False  # the search may not end on a pipe
+        arch = sd == (td + 2) % 4
+        moves = [
+            [
+                (
+                    nd,
+                    nd != d,
+                    steps[nd],
+                    1 << (nd % 2),
+                    1 << ((nd + 2) % 4),
+                    1 << nd,
+                    arch and nd == td,
+                )
+                for nd in (d, (d + 1) % 4, (d + 3) % 4)
+            ]
+            for d in range(4)
+        ]
+        start = (si * 4 + sd) * 16 + ((1 << sd) if strict else 0)
+        seen = {start}
+        todo = [start]
+        pop, push, add = todo.pop, todo.append, seen.add
+        while todo:
+            state = pop()
+            mask = state & 15
+            i, d = state >> 6, (state >> 4) & 3
+            here = axes[i] or (door[i] and i != si)
+            for nd, turn, step, axis, rev, bit, reverse_ok in moves[d]:
+                if turn and here:
+                    continue
+                if strict and mask & rev and not reverse_ok:
+                    continue
+                n = i + step
+                if blocked[n] or axes[n] & axis or (door[n] == axis and n != ti):
+                    continue
+                if n == ti and nd == td:
+                    return True
+                k = (n * 4 + nd) * 16 + ((mask | bit) if strict else 0)
+                if k not in seen:
+                    add(k)
+                    push(k)
+        return False
+
     # -- search ---------------------------------------------------------------
     def _search(self, s: Node, sd: int, t: Node, td: int, strict: bool):
         """A* over (node, direction, travelled-directions mask).
@@ -164,8 +234,7 @@ class Router:
 
         A state is packed into one int: ``(node index * 4 + dir) * 16 + mask``.
         """
-        blocked, axes, door, h = self.blocked, self.axes, self.door, self.h
-        x0, y0 = self.x0, self.y0
+        blocked, axes, door = self.blocked, self.axes, self.door
         tx, ty = t
         ti = self._index(t)
         si = self._index(s)
@@ -195,32 +264,49 @@ class Router:
             for d in range(4)
         ]
         pop, push = heapq.heappop, heapq.heappush
+        gx, gy = self._xy()
 
+        # a heap entry is one int ordered like the tuple (f, cost so far,
+        # insertion counter, state): bit fields, the counter unique -- so the
+        # entries pop in exactly the tuple order, without building tuples
+        sb, cb, gb = STATE_BITS, COUNT_BITS, COST_BITS
+        sm, gm = (1 << sb) - 1, (1 << gb) - 1
+        gs = cb + sb  # shift of the cost so far
+        fs = gb + gs  # shift of f
         start = (self._index(s) * 4 + sd) * 16 + ((1 << sd) if strict else 0)
         dist = {start: 0}
         get = dist.get
         prev: dict[int, int] = {}
-        heap = [(_estimate(s, sd, t, td), 0, 0, start)]
+        heap = [_estimate(s, sd, t, td) << fs | start]
         counter = 1
         never = 1 << 60
+        # a search that drags on is most likely bound to fail: then a flood
+        # decides that far faster (it fails exactly when this does)
+        check = FLOOD_AFTER
         while heap:
-            _, cost, _, state = pop(heap)
+            if check:
+                check -= 1
+                if not check and not self._reachable(s, sd, t, td, strict):
+                    return None
+            key = pop(heap)
+            state = key & sm
+            cost = (key >> gs) & gm
             if get(state, never) < cost:
                 continue
             mask = state & 15
-            i, d = divmod(state >> 4, 4)
+            i = state >> 6
+            d = (state >> 4) & 3
             here = axes[i]
             if i == ti and d == td and not here:
                 path = []
                 while True:
-                    xi, yi = divmod(state >> 6, h)
-                    path.append((xi + x0, yi + y0))
+                    j = state >> 6
+                    path.append((gx[j], gy[j]))
                     if state not in prev:
                         return path[::-1]
                     state = prev[state]
-            x, y = divmod(i, h)
-            x += x0
-            y += y0
+            x = gx[i]
+            y = gy[i]
             for nd, turn, step, dx, dy, rev, axis, bit, reverse_ok, bends in moves[d]:
                 if turn and (here or (door[i] and i != si)):
                     continue  # never turn on a pipe, or at another's doorstep
@@ -248,8 +334,8 @@ class Router:
                     if bends < 0:  # heading for the target: on its line?
                         on = rx * tdy - ry * tdx == 0 and rx * tdx + ry * tdy >= 0
                         bends = 0 if on else 2 * TURN_COST
-                    f = nc + abs(rx) + abs(ry) + bends
-                    push(heap, (f, nc, counter, nstate))
+                    f = nc + (rx if rx >= 0 else -rx) + (ry if ry >= 0 else -ry) + bends
+                    push(heap, f << fs | nc << gs | counter << sb | nstate)
                     counter += 1
         return None
 
