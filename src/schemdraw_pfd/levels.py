@@ -93,7 +93,7 @@ def moves(
 def search_levels(
     start: Levels,
     sets: Sequence[Sequence[str]],
-    evaluate: Callable[[list[Levels]], list[int | None]],
+    evaluate: Callable[[list[Levels], int | None], list[int | None]],
     estimate: Callable[[list[Levels]], list[int]] | None = None,
     rounds: int = MAX_ROUNDS,
 ) -> Levels:
@@ -103,7 +103,10 @@ def search_levels(
     batches of ``BATCH``: the best one of the first batch that lowers the
     cost is taken, and the next round starts from it.  ``evaluate`` returns
     the cost of each levels it gets (None: it does not route); a batch goes
-    to it in one call, so it can work them out in parallel.  The batch size
+    to it in one call, so it can work them out in parallel.  With the batch
+    comes the cost to beat (None for the start): a levels that certainly
+    costs no less may come back as None without being worked out, which
+    changes nothing, since only a lower cost is ever taken.  The batch size
     is fixed, so the result does not depend on how many processes do the
     work.
 
@@ -113,7 +116,7 @@ def search_levels(
     the cost.
     """
     current = dict(start)
-    (cost,) = evaluate([current])
+    (cost,) = evaluate([current], None)
     for _ in range(rounds):
         top = max(current.values()) + 1
         tasks: list[Levels] = []
@@ -129,7 +132,7 @@ def search_levels(
         found = None
         for k in range(0, len(tasks), BATCH):
             batch = tasks[k : k + BATCH]
-            for lv, c in zip(batch, evaluate(batch)):
+            for lv, c in zip(batch, evaluate(batch, cost)):
                 if c is not None and (cost is None or c < cost):
                     if found is None or c < found[0]:
                         found = (c, lv)

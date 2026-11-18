@@ -63,7 +63,7 @@ def test_moves_take_satellites_partners_and_copies_along():
 def test_search_walks_downhill_to_the_cheapest_levels():
     target = {"A": 2, "B": 0, "C": 3}
 
-    def evaluate(tasks):
+    def evaluate(tasks, bound):
         return [sum((lv[i] - target[i]) ** 2 for i in lv) for lv in tasks]
 
     start = {"A": 1, "B": 1, "C": 1}

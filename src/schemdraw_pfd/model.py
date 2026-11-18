@@ -45,6 +45,7 @@ from .router import (
     Route,
     Router,
     RoutingError,
+    Terminal,
     _min_bends,
     needless_uturn,
     resolve_port,
@@ -151,19 +152,59 @@ def _pool_map(fn: Callable[..., Any], tasks: list[tuple], jobs: int | None) -> l
     return [fn(*t) for t in tasks]
 
 
-def _run_level_cost(fs: Flowsheet, levels: Levels, max_expand: int) -> int | None:
+def _run_level_cost(
+    fs: Flowsheet, levels: Levels, max_expand: int, bound: int | None = None
+) -> int | None:
     """Cost of one sheet on the given levels: placed and routed in the
     plain placement mode on the tightest of the first ``QUICK_EXPAND``
-    spacings that routes, without squeezing the gaps (None: none routes)."""
+    spacings that routes, without squeezing the gaps (None: none routes).
+
+    ``bound``: the cost to beat.  When no spacing could route below it (see
+    :meth:`Flowsheet._level_floor`), None at once, without routing."""
     sheet = copy.copy(fs)
     sheet.equipment = fs._with_levels(levels)
     sheet._in_order = sheet._flag_room = False
     sheet._quick = True
+    spacings = min(max_expand, QUICK_EXPAND)
+    if bound is not None and sheet._level_floor(spacings) >= bound:
+        return None  # certainly no better: not worth routing
     try:
-        d = sheet._build(min(max_expand, QUICK_EXPAND), compact=False)
+        d = sheet._build(spacings, compact=False)
         return sheet._level_cost(d)
     except RoutingError:
         return None
+
+
+@dataclass
+class _LayoutInput:
+    """What a sheet is placed from (see ``Flowsheet._layout_input``)."""
+
+    net: Expanded
+    items: list[Item]
+    links: list[Link]
+    flow: list[FlowLink]
+    free: bool  # flow layout: packed densely
+    order: list[bool] | None  # items kept in order (see layout.place)
+    floor_x: list[int]  # tightest gap before each item
+    floor_y: list[int]  # tightest gap below each level band
+    overlap: list[bool]
+
+
+def _line_floor(s: Terminal, t: Terminal) -> tuple[int, float]:
+    """(bends, length) no route of a line between ``s`` and ``t`` can go
+    below (see ``Router.route``): out of ``s`` straight to its first free
+    cell, at least the straight distance on to ``t``'s, and in; at least the
+    bends the search's own estimate counts.  Facing ports one cell apart are
+    joined directly, so exactly that."""
+
+    def dist(a: tuple[float, float], b: tuple[float, float]) -> float:
+        return abs(b[0] - a[0]) + abs(b[1] - a[1])
+
+    if s.first == t.edge and t.first == s.edge:
+        return 0, dist(s.point, s.edge) + dist(s.edge, t.edge) + dist(t.edge, t.point)
+    bends = _min_bends(s.first, s.out_dir, t.first, (t.out_dir + 2) % 4)
+    run = dist(s.first, t.first) + 2  # + the cells from each face out
+    return bends, dist(s.point, s.edge) + run + dist(t.edge, t.point)
 
 
 @dataclass
@@ -341,8 +382,10 @@ def _settle_levels(sheets: list[Flowsheet], max_expand: int, jobs: int | None) -
         lv = start_levels(fs.equipment)
         if sets:
 
-            def evaluate(tasks: list[Levels], fs: Flowsheet = fs) -> list[int | None]:
-                work = [(fs, t, max_expand) for t in tasks]
+            def evaluate(
+                tasks: list[Levels], bound: int | None, fs: Flowsheet = fs
+            ) -> list[int | None]:
+                work = [(fs, t, max_expand, bound) for t in tasks]
                 return _pool_map(_run_level_cost, work, jobs)
 
             def estimate(tasks: list[Levels], fs: Flowsheet = fs) -> list[int]:
@@ -1013,30 +1056,11 @@ class Flowsheet:
         simple (fewest bends and crossings first), and an extra bend or
         crossing is only paid for by a clearly smaller sheet.
         """
-        net, items, links, flow = self._prepare()
-        free = self.layout == "flow"
-        # placed in order, except where they belong elsewhere: a main pipe's
-        # taps (where the main pipe needs them) and the items on a recycle
-        # (a reflux valve stands by the column it returns to)
-        order = None
-        if self._in_order:
-            back = {
-                item.id or f"{GENERATED_PREFIX}L{ci}_{k}"
-                for ci, c in enumerate(self.connections)
-                if c.recycle
-                for k, item in enumerate(c.inline)
-            }
-            order = [
-                not (e.id.startswith(TAP_PREFIX) or e.id in back) for e in net.equipment
-            ]
+        lay = self._layout_input()
+        net, items, links, flow = lay.net, lay.items, lay.links, lay.flow
+        free, order, overlap = lay.free, lay.order, lay.overlap
+        floor_x, floor_y = lay.floor_x, lay.floor_y
         sym = find_units(net)
-        levels = _band_count(net.equipment)
-        # tightest gap each element may ever have (independent of the level gaps)
-        floor_x = min_gap_x(items, place_y(items, [MIN_GAP] * levels, links, free))
-        if free:  # dense: the gap is to whatever stands on the same height
-            floor_x = [MIN_GAP] * len(items)
-        floor_y = [MIN_GAP] * levels
-        overlap = [free and not it.edge for it in items]
         weight = self.bend_cost if free else 0  # order layout: bends only
 
         # a crossing weighs like a bend: a squeeze may not buy a crossing
@@ -1145,6 +1169,70 @@ class Flowsheet:
                     undo()
                 else:
                     break
+        return best
+
+    def _layout_input(self) -> _LayoutInput:
+        """What :meth:`_build` places the sheet from (see :meth:`_prepare`),
+        with the tightest gaps it may ever use."""
+        net, items, links, flow = self._prepare()
+        free = self.layout == "flow"
+        # placed in order, except where they belong elsewhere: a main pipe's
+        # taps (where the main pipe needs them) and the items on a recycle
+        # (a reflux valve stands by the column it returns to)
+        order = None
+        if self._in_order:
+            back = {
+                item.id or f"{GENERATED_PREFIX}L{ci}_{k}"
+                for ci, c in enumerate(self.connections)
+                if c.recycle
+                for k, item in enumerate(c.inline)
+            }
+            order = [
+                not (e.id.startswith(TAP_PREFIX) or e.id in back) for e in net.equipment
+            ]
+        levels = _band_count(net.equipment)
+        # tightest gap each element may ever have (independent of the level gaps)
+        floor_x = min_gap_x(items, place_y(items, [MIN_GAP] * levels, links, free))
+        if free:  # dense: the gap is to whatever stands on the same height
+            floor_x = [MIN_GAP] * len(items)
+        floor_y = [MIN_GAP] * levels
+        overlap = [free and not it.edge for it in items]
+        return _LayoutInput(
+            net, items, links, flow, free, order, floor_x, floor_y, overlap
+        )
+
+    def _level_floor(self, spacings: int) -> int:
+        """A cost :meth:`_level_cost` cannot go below on the first
+        ``spacings`` uniform spacings of :meth:`_build`, whichever of them
+        routes and however: per line, the bends it certainly needs (from the
+        directions of its two ports, see :func:`.router._min_bends`) and the
+        straight length between its ports; no crossings.  No routing, so
+        far cheaper than a build."""
+        lay = self._layout_input()
+        best: int | None = None
+        for k in range(spacings):
+            placed = place(
+                lay.items,
+                [f + k for f in lay.floor_x],
+                [f + k for f in lay.floor_y],
+                lay.links,
+                lay.overlap,
+                lay.flow,
+                lay.free,
+                lay.order,
+            )
+            by_id = {p.id: p for p in placed}
+            bends = 0
+            length = 0.0
+            for c in lay.net.connections:
+                (a, pa), (b, pb) = c.ends
+                s, t = resolve_port(by_id[a], pa), resolve_port(by_id[b], pb)
+                bends_k, length_k = _line_floor(s, t)
+                bends += bends_k
+                length += length_k
+            cost = bends * self.bend_cost + round(length)
+            best = cost if best is None else min(best, cost)
+        assert best is not None
         return best
 
     def _prepare(self) -> tuple[Expanded, list[Item], list[Link], list[FlowLink]]:

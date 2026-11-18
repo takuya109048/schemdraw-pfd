@@ -168,6 +168,92 @@ class Router:
         for t in terminals:
             self.door[self._index(t.first)] = 1 << (t.out_dir % 2)
 
+    def _staircase(self, s: Node, sd: int, t: Node, td: int) -> bool:
+        """Can a strict search that is no arch get from ``s`` to ``t`` at all?
+
+        Such a route never moves against a direction it has used (nor against
+        ``sd``), so every move goes one of the directions it must go anyway:
+        ``sd``, ``td`` and towards ``t`` -- one per axis (see
+        :func:`_strict_possible`).  It is a staircase inside the box spanned
+        by ``s`` and ``t``.  Over the cells of that box (no directions, no
+        turn rules) this says whether a staircase gets through the cells the
+        search may enter.  A necessary condition only: False means the search
+        fails for certain, found out over a few cells instead of a whole
+        search and flood.
+        """
+        blocked, axes, door, h = self.blocked, self.axes, self.door, self.h
+        si, ti = self._index(s), self._index(t)
+        if si == ti and sd == td:
+            return True
+        if axes[ti]:
+            return False  # the search may not end on a pipe
+        dx, dy = t[0] - s[0], t[1] - s[1]
+        need = {sd, td}
+        if dx:
+            need.add(1 if dx > 0 else 3)
+        if dy:
+            need.add(0 if dy > 0 else 2)
+        if {0, 2} <= need or {1, 3} <= need:
+            return True  # not a staircase: say nothing
+        xstep = h if 1 in need else -h if 3 in need else 0
+        ystep = 1 if 0 in need else -1 if 2 in need else 0
+        nx, ny = abs(dx) + 1, abs(dy) + 1
+        # reach[a * ny + b]: the cell a steps along x and b along y from s
+        reach = bytearray(nx * ny)
+        reach[0] = 1
+        for a in range(nx):
+            col = si + a * xstep
+            row = a * ny
+            for b in range(1 if a == 0 else 0, ny):
+                n = col + b * ystep
+                if blocked[n]:
+                    continue
+                k = row + b
+                if b and reach[k - 1] and not axes[n] & 1:
+                    if door[n] != 1 or n == ti:  # a vertical step in
+                        reach[k] = 1
+                        continue
+                if a and reach[k - ny] and not axes[n] & 2:
+                    if door[n] != 2 or n == ti:  # a horizontal step in
+                        reach[k] = 1
+        # the last step goes along ``td`` into t (no pipe there, see above)
+        if blocked[ti]:
+            return False
+        last = nx * ny - 1
+        if td % 2 == 0:
+            return ny > 1 and bool(reach[last - 1])
+        return nx > 1 and bool(reach[last - ny])
+
+    def _cells_reachable(self, s: Node, t: Node, td: int) -> bool:
+        """Can any route get from ``s`` into ``t`` moving ``td``, judged by
+        the cells alone?  A flood over cells (no directions, no turn rules,
+        no travelled directions) entering only cells the search may enter
+        that way: a necessary condition for :meth:`_reachable` in either
+        mode, about a tenth of its work."""
+        blocked, axes, door, steps = self.blocked, self.axes, self.door, self.steps
+        si, ti = self._index(s), self._index(t)
+        if si == ti:
+            return True
+        if axes[ti]:
+            return False  # the search may not end on a pipe
+        seen = bytearray(len(blocked))
+        seen[si] = 1
+        todo = [si]
+        pop, push = todo.pop, todo.append
+        moves = [(nd, steps[nd], 1 << (nd % 2)) for nd in range(4)]
+        while todo:
+            i = pop()
+            for nd, step, axis in moves:
+                n = i + step
+                if blocked[n] or axes[n] & axis or (door[n] == axis and n != ti):
+                    continue
+                if n == ti and nd == td:
+                    return True
+                if not seen[n]:
+                    seen[n] = 1
+                    push(n)
+        return False
+
     def _reachable(self, s: Node, sd: int, t: Node, td: int, strict: bool) -> bool:
         """Can the search get from ``s`` (moving ``sd``) to ``t`` (arriving
         moving ``td``) at all?  A flood over the search's own states -- (cell,
@@ -242,6 +328,8 @@ class Router:
         back = (td + 2) % 4
         # out one way, in the opposite way: the arrival reversal is no U-turn
         arch = sd == back
+        if strict and not arch and not self._staircase(s, sd, t, td):
+            return None  # no staircase gets through: fails for certain
         # per direction d: the moves (straight on, then the two turns) with
         # the bends they certainly still need when not heading for the target
         moves = [
@@ -281,12 +369,16 @@ class Router:
         counter = 1
         never = 1 << 60
         # a search that drags on is most likely bound to fail: then a flood
-        # decides that far faster (it fails exactly when this does)
+        # decides that far faster (it fails exactly when this does), after
+        # a flood over cells alone, faster still, that often decides it too
         check = FLOOD_AFTER
         while heap:
             if check:
                 check -= 1
-                if not check and not self._reachable(s, sd, t, td, strict):
+                if not check and not (
+                    self._cells_reachable(s, t, td)
+                    and self._reachable(s, sd, t, td, strict)
+                ):
                     return None
             key = pop(heap)
             state = key & sm
