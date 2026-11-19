@@ -1,0 +1,13 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
+    {"id": "FV-1", "type": "valve", "level": 0, "params": {"kind": "control"}},
+    {"id": "FIC-1", "type": "instrument", "level": 1, "params": {"function": "FIC", "number": "1"}},
+    {"id": "PROD", "type": "connector", "level": 0, "params": {"text": "PROD"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "FV-1.in"},
+    {"from": "FV-1.out", "to": "PROD.tail"},
+    {"from": "FIC-1.s", "to": "FV-1.signal", "type": "signal"}
+  ]
+}

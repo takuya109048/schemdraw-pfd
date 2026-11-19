@@ -1,0 +1,15 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 1, "params": {"text": "FEED"}},
+    {"id": "D-1", "type": "vertical_drum", "level": 1},
+    {"id": "LT-1", "type": "instrument", "level": 1, "params": {"function": "LT", "number": "1"}},
+    {"id": "LIC-1", "type": "instrument", "level": 1, "params": {"function": "LIC", "number": "1", "mount": "dcs"}},
+    {"id": "PROD", "type": "connector", "level": 0, "params": {"text": "PROD"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "D-1.w_mid"},
+    {"from": "D-1.bottom", "to": "PROD.tail"},
+    {"from": "D-1.e_mid", "to": "LT-1.w", "type": "instrument"},
+    {"from": "LT-1.e", "to": "LIC-1.w", "type": "signal"}
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
+    {"id": "P-1", "type": "pump", "level": 0},
+    {"id": "PROD", "type": "connector", "level": 1, "params": {"text": "PROD"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "P-1.in"},
+    {"from": "P-1.out", "to": "PROD.tail", "inline": [{"type": "valve", "id": "HV-1", "desc": "Gate valve 50A"}]}
+  ]
+}

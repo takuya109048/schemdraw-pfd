@@ -1,0 +1,21 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 1, "params": {"text": "FEED"}},
+    {"id": "E-1", "type": "heat_exchanger", "level": 1},
+    {"id": "E-2", "type": "heat_exchanger", "level": 1},
+    {"id": "PROD", "type": "connector", "level": 1, "params": {"text": "PROD"}},
+    {"id": "H1", "type": "connector", "level": 0, "params": {"text": "H1"}},
+    {"id": "H2", "type": "connector", "level": 0, "params": {"text": "H2"}},
+    {"id": "R1", "type": "connector", "level": 2, "params": {"text": "R1"}},
+    {"id": "R2", "type": "connector", "level": 2, "params": {"text": "R2"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "E-1.tube_in"},
+    {"from": "E-1.tube_out", "to": "E-2.tube_in"},
+    {"from": "E-2.tube_out", "to": "PROD.tail"},
+    {"from": "H1.tip", "to": "E-1.shell_in_s"},
+    {"from": "H2.tip", "to": "E-2.shell_in_s"},
+    {"from": "E-1.shell_out_n", "to": "R1.tail"},
+    {"from": "E-2.shell_out_n", "to": "R2.tail"}
+  ]
+}

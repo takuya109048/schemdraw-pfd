@@ -1,0 +1,15 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 1, "params": {"text": "FEED"}},
+    {"id": "F-1", "type": "filter_housing", "level": 1},
+    {"id": "PROD", "type": "connector", "level": 1, "params": {"text": "PROD"}},
+    {"id": "VENT", "type": "connector", "level": 2, "params": {"text": "VENT"}},
+    {"id": "DRAIN", "type": "connector", "level": 0, "params": {"text": "DRAIN"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "F-1.in"},
+    {"from": "F-1.out", "to": "PROD.tail"},
+    {"from": "F-1.vent", "to": "VENT.tail"},
+    {"from": "F-1.drain", "to": "DRAIN.tail"}
+  ]
+}

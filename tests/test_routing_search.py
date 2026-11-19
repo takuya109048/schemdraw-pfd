@@ -1,6 +1,7 @@
 """Router search (A*) and rip-up & reroute."""
 
 import copy
+import json
 import random
 from pathlib import Path
 
@@ -8,9 +9,11 @@ import pytest
 
 from schemdraw_pfd import Flowsheet, RoutingError, model
 from schemdraw_pfd.levels import start_levels
+from schemdraw_pfd.netlist import Equipment
 from schemdraw_pfd.router import DIRS, Router, _estimate, _min_bends, needless_uturn
 
 EXAMPLES = Path(__file__).parent.parent / "examples"
+CASES = Path(__file__).parent / "cases"
 
 # found by fuzzing: routed in the given order, an early line takes the only
 # corridor of a later one; routing the failing line first solves it
@@ -143,3 +146,53 @@ def test_level_floor_never_exceeds_the_quick_cost():
 )
 def test_needless_uturn(points, boxes, needless):
     assert needless_uturn(points, boxes) is needless
+
+
+def _on(level: int, span: int = 1) -> Equipment:
+    return Equipment("X", "vertical_drum", level, span=span)
+
+
+@pytest.mark.parametrize(
+    ("src", "out", "dst", "into", "forced"),
+    [
+        # a pump turned upside down feeding a flag on the level above
+        (_on(0), "S", _on(1), "W", True),
+        # the same on one level: placing the items apart may avoid it
+        (_on(0), "S", _on(0), "W", False),
+        (_on(1), "S", _on(0), "W", False),  # down out, down on: no turning back
+        (_on(1), "N", _on(0), "W", True),  # up out, on to a level below
+        # a tower's top on its second level, a drum beside it on that level
+        (_on(0, span=2), "N", _on(1), "W", False),
+        (_on(1), "E", _on(0), "S", True),  # into a bottom nozzle from above
+        (_on(0), "E", _on(1), "N", True),  # into a top nozzle from below
+        (_on(0), "E", _on(1), "W", False),  # side to side: never forced
+    ],
+)
+def test_ports_facing_away_from_the_other_level_force_a_uturn(
+    src, out, dst, into, forced
+):
+    assert model._forced_back(src, out, dst, into) is forced
+
+
+def test_a_uturn_forced_by_the_levels_is_counted_but_not_warned():
+    data = json.loads((CASES / "transform" / "pump_r180.json").read_text("utf-8"))
+    d = Flowsheet.from_dict(data).build()
+    assert d.uturns == 1 and not d.warnings
+
+
+def test_flanged_nozzles_facing_on_one_row_stand_two_cells_apart():
+    from schemdraw_pfd.elements import DEFAULT_LIBRARY
+    from schemdraw_pfd.layout import Link, _link_min_x
+
+    geo = DEFAULT_LIBRARY.build("heat_exchanger")
+    plain = Link(0, "E", 2, 1, "W", 2)
+    flanged = Link(0, "E", 2, 1, "W", 2, flanged=True)
+    assert _link_min_x(plain, 0, geo, 0, 0) == geo.width + 1
+    assert _link_min_x(flanged, 0, geo, 0, 0) == geo.width + 2
+
+
+@pytest.mark.parametrize("name", ["routing/flow/n_to_s_up", "routing/flow/s_to_n_down"])
+def test_flanged_nozzles_stacked_on_two_levels_stand_two_cells_apart(name):
+    data = json.loads((CASES / f"{name}.json").read_text("utf-8"))
+    ((c, r),) = Flowsheet.from_dict(data).build().routes
+    assert r.bends == 0 and abs(r.points[1][1] - r.points[0][1]) == 2

@@ -1,0 +1,14 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 1, "params": {"text": "FEED"}},
+    {"id": "D-1", "type": "vertical_drum", "level": 1},
+    {"id": "D-2", "type": "vertical_drum", "level": 1},
+    {"id": "DRAIN", "type": "connector", "level": 0, "params": {"text": "DRAIN"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "D-1.w_mid"},
+    {"from": "D-1.e_mid", "to": "D-2.w_mid"},
+    {"from": "D-1.bottom", "to": "DRAIN.tail"},
+    {"from": "D-2.bottom", "to": "DRAIN.tail"}
+  ]
+}

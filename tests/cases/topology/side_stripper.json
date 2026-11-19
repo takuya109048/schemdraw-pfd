@@ -1,0 +1,18 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
+    {"id": "T-1", "type": "column", "level": 0, "span": 2},
+    {"id": "T-2", "type": "vertical_drum", "level": 1},
+    {"id": "P-1", "type": "pump", "level": 0},
+    {"id": "SIDE", "type": "connector", "level": 0, "params": {"text": "SIDE"}},
+    {"id": "BTM", "type": "connector", "level": 0, "params": {"text": "BTM"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "T-1.w_low"},
+    {"from": "T-1.e_mid", "to": "T-2.n1"},
+    {"from": "T-2.top", "to": "T-1.e_high", "recycle": true},
+    {"from": "T-2.bottom", "to": "P-1.in"},
+    {"from": "P-1.out", "to": "SIDE.tail"},
+    {"from": "T-1.bottom", "to": "BTM.tail"}
+  ]
+}

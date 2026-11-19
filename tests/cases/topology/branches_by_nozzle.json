@@ -1,0 +1,19 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
+    {"id": "T-1", "type": "column", "level": 0},
+    {"id": "E-1", "type": "heat_exchanger", "level": 0},
+    {"id": "E-2", "type": "heat_exchanger", "level": 0},
+    {"id": "OVHD", "type": "connector", "level": 2, "params": {"text": "OVHD"}},
+    {"id": "SIDE", "type": "connector", "level": 0, "params": {"text": "SIDE"}},
+    {"id": "BTM", "type": "connector", "level": 0, "params": {"text": "BTM"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "T-1.w_mid"},
+    {"from": "T-1.top", "to": "OVHD.tail"},
+    {"from": "T-1.e_mid", "to": "E-1.tube_in"},
+    {"from": "E-1.tube_out", "to": "SIDE.tail"},
+    {"from": "T-1.bottom", "to": "E-2.tube_in"},
+    {"from": "E-2.tube_out", "to": "BTM.tail"}
+  ]
+}

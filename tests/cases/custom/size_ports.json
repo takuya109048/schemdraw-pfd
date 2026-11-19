@@ -1,0 +1,22 @@
+{
+  "custom_elements": [
+    {
+      "name": "skid",
+      "width": 8,
+      "height": 6,
+      "shapes": [
+        {"type": "rect", "x0": 0, "y0": 0, "x1": 8, "y1": 6}
+      ],
+      "ports": {"in": {"side": "W", "offset": 1}, "out": {"side": "N", "offset": 6}}
+    }
+  ],
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
+    {"id": "X-1", "type": "skid", "level": 0},
+    {"id": "PROD", "type": "connector", "level": 0, "params": {"text": "PROD"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "X-1.in"},
+    {"from": "X-1.out", "to": "PROD.tail"}
+  ]
+}

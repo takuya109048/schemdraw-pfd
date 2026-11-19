@@ -1,0 +1,18 @@
+{
+  "elements": [
+    {"id": "F1", "type": "connector", "level": 0, "params": {"text": "F1"}},
+    {"id": "P-1", "type": "pump", "level": 0},
+    {"id": "O1", "type": "connector", "level": 1, "params": {"text": "O1"}},
+    {"id": "F2", "type": "connector", "level": 0, "params": {"text": "F2"}},
+    {"id": "P-2", "type": "pump", "level": 0},
+    {"id": "E-2", "type": "heat_exchanger", "level": 1},
+    {"id": "O2", "type": "connector", "level": 1, "params": {"text": "O2"}}
+  ],
+  "connections": [
+    {"from": "F1.tip", "to": "P-1.in"},
+    {"from": "P-1.out", "to": "O1.tail"},
+    {"from": "F2.tip", "to": "P-2.in"},
+    {"from": "P-2.out", "to": "E-2.tube_in"},
+    {"from": "E-2.tube_out", "to": "O2.tail"}
+  ]
+}

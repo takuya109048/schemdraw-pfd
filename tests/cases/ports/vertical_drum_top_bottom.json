@@ -1,0 +1,13 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 1, "params": {"text": "FEED"}},
+    {"id": "D-1", "type": "vertical_drum", "level": 1},
+    {"id": "VAP", "type": "connector", "level": 2, "params": {"text": "VAP"}},
+    {"id": "LIQ", "type": "connector", "level": 0, "params": {"text": "LIQ"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "D-1.w_mid"},
+    {"from": "D-1.top", "to": "VAP.tail"},
+    {"from": "D-1.bottom", "to": "LIQ.tail"}
+  ]
+}

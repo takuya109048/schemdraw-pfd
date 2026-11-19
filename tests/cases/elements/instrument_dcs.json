@@ -1,0 +1,16 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 1, "params": {"text": "FEED"}},
+    {"id": "D-1", "type": "vertical_drum", "level": 1},
+    {"id": "LIC-1", "type": "instrument", "level": 1, "params": {"function": "LIC", "number": "1", "mount": "dcs"}},
+    {"id": "LV-1", "type": "valve", "level": 0, "params": {"kind": "control"}},
+    {"id": "PROD", "type": "connector", "level": 0, "params": {"text": "PROD"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "D-1.w_mid"},
+    {"from": "D-1.bottom", "to": "LV-1.in"},
+    {"from": "LV-1.out", "to": "PROD.tail"},
+    {"from": "D-1.e_mid", "to": "LIC-1.w", "type": "instrument"},
+    {"from": "LIC-1.s", "to": "LV-1.signal", "type": "signal"}
+  ]
+}

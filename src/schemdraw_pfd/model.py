@@ -21,6 +21,7 @@ from .expand import GENERATED_PREFIX, TAP_PREFIX, Expanded, expand
 from .flow import plan_flow, split_rows
 from .geometry import find_crossings
 from .layout import (
+    FLANGED_RUN,
     FlowLink,
     Item,
     Link,
@@ -86,8 +87,9 @@ class Diagram:
     """A routed sheet.
 
     ``warnings``: lines that turn back with nothing in the way (needless
-    U-turns).  ``uturns``: lines that turn back at all, around equipment
-    included -- the layout keeps them as few as it can.
+    U-turns) -- not those the ports and levels force (see
+    :func:`_forced_back`).  ``uturns``: lines that turn back at all, around
+    equipment included -- the layout keeps them as few as it can.
     """
 
     placed: list[Placed]
@@ -247,6 +249,26 @@ def _turns_back(points: list[tuple[float, float]]) -> bool:
             return True
         seen.add(d)
     return False
+
+
+def _forced_back(src: Equipment, out: str, dst: Equipment, into: str) -> bool:
+    """Must a line turn back, wherever its items stand?
+
+    ``out`` / ``into``: the faces of its ports.  A port facing down while
+    the item at the other end stands on a level band above it (or facing up,
+    the other item on a band below) sends the line the wrong way first, so
+    it has to come back -- no placement avoids that, the levels and the port
+    decide it.  Such a U-turn is needed, not needless."""
+
+    def top(e: Equipment) -> int:  # highest level band the item stands in
+        return e.tier + e.span - 1
+
+    return (
+        (out == "S" and dst.tier > src.tier)
+        or (out == "N" and top(dst) < top(src))
+        or (into == "S" and src.tier > dst.tier)
+        or (into == "N" and top(src) < top(dst))
+    )
 
 
 def _reaches(s: tuple[int, int], sd: int, t: tuple[int, int], td: int) -> bool:
@@ -1257,7 +1279,8 @@ class Flowsheet:
                 [replace(e) for e in sorted(eqs, key=lambda e: pos[e.id])]
             )
             flow, flags = self._apply_flow(net)
-        links = _links(net)
+        ticks = {k for k, s in self.line_styles.items() if s.process}
+        links = _links(net, ticks)
         _settle_tees(net, links)
         if self.layout == "flow":
             self._room_used = _settle_lifts(net, flags, links, self._flag_room)
@@ -1330,6 +1353,38 @@ class Flowsheet:
                 flags[e.id] = "right" if faces.get(e.id) == "W" else "left"
         return flags
 
+    def _stacked_too_close(self, net: Expanded, placed: list[Placed]) -> list[str]:
+        """Process lines from a top nozzle straight up into a bottom nozzle
+        of an item on a level above, less than ``FLANGED_RUN`` cells apart.
+
+        Such a line is drawn straight across, a flange tick at each end, so
+        the placement does not fit: a wider gap below the upper level (the
+        next spacing tried) sets the items apart.  Items on one level are
+        left as they are (their heights within the band set the distance)."""
+        if not any(p.geo.nozzles for p in placed):
+            return []
+        by_id = {p.id: p for p in placed}
+        eqs = {e.id: e for e in net.equipment}
+        out = []
+        for c in net.connections:
+            if not self.line_styles[c.kind].process:
+                continue
+            (a, pa), (b, pb) = c.ends
+            if not (by_id[a].geo.nozzles and by_id[b].geo.nozzles):
+                continue
+            s, t = resolve_port(by_id[a], pa), resolve_port(by_id[b], pb)
+            if {s.out_dir, t.out_dir} != {0, 2} or s.point[0] != t.point[0]:
+                continue  # not a top nozzle stacked straight below a bottom one
+            lo, hi = (a, s), (b, t)
+            if s.out_dir == 2:
+                lo, hi = (b, t), (a, s)
+            low, up = eqs[lo[0]], eqs[hi[0]]
+            if up.tier < low.tier + low.span:
+                continue  # one level: the band's heights decide
+            if 0 < hi[1].point[1] - lo[1].point[1] < FLANGED_RUN:
+                out.append(f"{c.src} -> {c.dst}")
+        return out
+
     def _route_all(
         self,
         net: Expanded,
@@ -1346,6 +1401,11 @@ class Flowsheet:
         ``REROUTE_ROUNDS`` times); the best result counts.  The diagram lists
         the routes in connection order whatever order they were routed in.
         """
+        close = self._stacked_too_close(net, placed)
+        if close:
+            return None, [
+                f"{c}: nozzles stacked closer than {FLANGED_RUN}" for c in close
+            ]
         order = list(range(len(net.connections)))
         if self.layout == "flow":
             # by the flow, not by the order the lines were written: from the
@@ -1480,11 +1540,19 @@ class Flowsheet:
         if failures:
             return None, failures, failed
         boxes = [p.bbox for p in placed]
+        eqs = {e.id: e for e in net.equipment}
+
+        def needed(c: Connection) -> bool:
+            """The ports and levels force the line to turn back."""
+            (a, pa), (b, pb) = c.ends
+            out, into = by_id[a].geo.ports[pa].side, by_id[b].geo.ports[pb].side
+            return _forced_back(eqs[a], out, eqs[b], into)
+
         warnings = [
             f"{c.src} -> {c.dst}: U-turn with nothing in the way"
             for ci in sorted(turned)
-            if needless_uturn(routes[ci].points, boxes)
             for c in [net.connections[ci]]
+            if needless_uturn(routes[ci].points, boxes) and not needed(c)
         ]
         descs = {e.id: e.desc for e in net.equipment if e.desc}
         diagram = Diagram(
@@ -1665,7 +1733,9 @@ def _validate(net: Expanded) -> None:
                 raise KeyError(f"{eq}: unknown port {port!r}; known: {sorted(ports)}")
 
 
-def _links(net: Expanded) -> list[Link]:
+def _links(net: Expanded, process: AbstractSet[str]) -> list[Link]:
+    """Facing-port links of every line; ``process``: the line kinds drawn
+    with flange ticks at vessel nozzles."""
     index = {e.id: i for i, e in enumerate(net.equipment)}
     links: list[Link] = []
     for c in net.connections:
@@ -1673,8 +1743,9 @@ def _links(net: Expanded) -> list[Link]:
             ((index[eq], net.geos[eq].ports[port]) for eq, port in c.ends),
             key=lambda e: e[0],
         )
+        flanged = c.kind in process and all(net.geos[eq].nozzles for eq, _ in c.ends)
         if a != b:
-            links.append(Link(a, pa.side, pa.offset, b, pb.side, pb.offset))
+            links.append(Link(a, pa.side, pa.offset, b, pb.side, pb.offset, flanged))
     return links
 
 

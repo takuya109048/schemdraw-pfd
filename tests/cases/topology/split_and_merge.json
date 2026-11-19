@@ -1,0 +1,18 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
+    {"id": "P-1", "type": "pump", "level": 0},
+    {"id": "E-1", "type": "heat_exchanger", "level": 1},
+    {"id": "E-2", "type": "heat_exchanger", "level": 1},
+    {"id": "D-1", "type": "vertical_drum", "level": 1},
+    {"id": "PROD", "type": "connector", "level": 0, "params": {"text": "PROD"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "P-1.in"},
+    {"from": "P-1.out", "to": "E-1.tube_in"},
+    {"from": "P-1.out", "to": "E-2.tube_in"},
+    {"from": "E-1.tube_out", "to": "D-1.w_mid"},
+    {"from": "E-2.tube_out", "to": "D-1.w_mid"},
+    {"from": "D-1.bottom", "to": "PROD.tail"}
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
+    {"id": "T-1", "type": "column", "level": 0},
+    {"id": "S1", "type": "connector", "level": 0, "params": {"text": "S1"}},
+    {"id": "S2", "type": "connector", "level": 0, "params": {"text": "S2"}},
+    {"id": "S3", "type": "connector", "level": 0, "params": {"text": "S3"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "T-1.w_mid"},
+    {"from": "T-1.e_low", "to": "S1.tail"},
+    {"from": "T-1.e_mid", "to": "S2.tail"},
+    {"from": "T-1.e_high", "to": "S3.tail"}
+  ]
+}

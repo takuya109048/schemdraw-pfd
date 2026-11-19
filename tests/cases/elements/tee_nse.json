@@ -1,0 +1,13 @@
+{
+  "elements": [
+    {"id": "P-1", "type": "pump", "level": 0},
+    {"id": "T-1", "type": "tee", "level": 1, "params": {"arms": "nse"}},
+    {"id": "UP", "type": "connector", "level": 2, "params": {"text": "UP"}},
+    {"id": "SIDE", "type": "connector", "level": 1, "params": {"text": "SIDE"}}
+  ],
+  "connections": [
+    {"from": "P-1.out", "to": "T-1.s"},
+    {"from": "T-1.n", "to": "UP.tail"},
+    {"from": "T-1.e", "to": "SIDE.tail"}
+  ]
+}

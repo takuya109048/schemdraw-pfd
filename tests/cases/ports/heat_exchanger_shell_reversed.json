@@ -1,0 +1,15 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 1, "params": {"text": "FEED"}},
+    {"id": "E-1", "type": "heat_exchanger", "level": 1},
+    {"id": "PROD", "type": "connector", "level": 1, "params": {"text": "PROD"}},
+    {"id": "CIN", "type": "connector", "level": 0, "params": {"text": "CIN"}},
+    {"id": "COUT", "type": "connector", "level": 2, "params": {"text": "COUT"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "E-1.tube_in"},
+    {"from": "E-1.tube_out", "to": "PROD.tail"},
+    {"from": "CIN.tip", "to": "E-1.shell_in_s"},
+    {"from": "E-1.shell_out_n", "to": "COUT.tail"}
+  ]
+}

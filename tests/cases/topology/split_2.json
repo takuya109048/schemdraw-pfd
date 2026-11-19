@@ -1,0 +1,13 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
+    {"id": "P-1", "type": "pump", "level": 0},
+    {"id": "OUT1", "type": "connector", "level": 1, "params": {"text": "OUT1"}},
+    {"id": "OUT2", "type": "connector", "level": 1, "params": {"text": "OUT2"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "P-1.in"},
+    {"from": "P-1.out", "to": "OUT1.tail"},
+    {"from": "P-1.out", "to": "OUT2.tail"}
+  ]
+}

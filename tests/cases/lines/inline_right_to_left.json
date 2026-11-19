@@ -1,0 +1,11 @@
+{
+  "elements": [
+    {"id": "OUT", "type": "connector", "level": 0, "params": {"text": "OUT", "point": "left"}},
+    {"id": "D-1", "type": "vertical_drum", "level": 0},
+    {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED", "point": "left"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "D-1.e_mid"},
+    {"from": "D-1.w_low", "to": "OUT.tail", "inline": [{"type": "valve", "params": {"kind": "check"}}]}
+  ]
+}

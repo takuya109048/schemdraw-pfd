@@ -1,0 +1,13 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
+    {"id": "T-1", "type": "column", "level": 0},
+    {"id": "OVHD", "type": "connector", "level": 2, "params": {"text": "OVHD"}},
+    {"id": "BTM", "type": "connector", "level": 0, "params": {"text": "BTM"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "T-1.w_mid"},
+    {"from": "T-1.top", "to": "OVHD.tail"},
+    {"from": "T-1.bottom", "to": "BTM.tail"}
+  ]
+}

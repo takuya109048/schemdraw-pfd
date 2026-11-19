@@ -1,0 +1,17 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
+    {"id": "P-1", "type": "pump", "level": 0},
+    {"id": "H-1", "type": "header", "level": 0},
+    {"id": "OUT1", "type": "connector", "level": 1, "params": {"text": "OUT1"}},
+    {"id": "OUT2", "type": "connector", "level": 1, "params": {"text": "OUT2"}},
+    {"id": "OUT3", "type": "connector", "level": 1, "params": {"text": "OUT3"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "P-1.in"},
+    {"from": "P-1.out", "to": "H-1.main_w"},
+    {"from": "H-1.b0", "to": "OUT1.tail"},
+    {"from": "H-1.b1", "to": "OUT2.tail"},
+    {"from": "H-1.b2", "to": "OUT3.tail"}
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "elements": [
+    {"id": "F1", "type": "connector", "level": 1, "params": {"text": "F1"}},
+    {"id": "F2", "type": "connector", "level": 1, "params": {"text": "F2"}},
+    {"id": "F3", "type": "connector", "level": 1, "params": {"text": "F3"}},
+    {"id": "D-1", "type": "vertical_drum", "level": 1},
+    {"id": "PROD", "type": "connector", "level": 0, "params": {"text": "PROD"}}
+  ],
+  "connections": [
+    {"from": "F1.tip", "to": "D-1.w_low"},
+    {"from": "F2.tip", "to": "D-1.w_mid"},
+    {"from": "F3.tip", "to": "D-1.w_high"},
+    {"from": "D-1.bottom", "to": "PROD.tail"}
+  ]
+}

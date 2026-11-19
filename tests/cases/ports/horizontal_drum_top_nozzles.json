@@ -1,0 +1,15 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 1, "params": {"text": "FEED"}},
+    {"id": "D-1", "type": "horizontal_drum", "level": 1},
+    {"id": "V1", "type": "connector", "level": 2, "params": {"text": "V1"}},
+    {"id": "V2", "type": "connector", "level": 2, "params": {"text": "V2"}},
+    {"id": "V3", "type": "connector", "level": 2, "params": {"text": "V3"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "D-1.w"},
+    {"from": "D-1.n0", "to": "V1.tail"},
+    {"from": "D-1.n_mid", "to": "V2.tail"},
+    {"from": "D-1.n6", "to": "V3.tail"}
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
+    {"id": "FT-1", "type": "instrument", "level": 1, "params": {"function": "FT", "number": "4"}},
+    {"id": "FIC-1", "type": "instrument", "level": 1, "params": {"function": "FIC", "number": "4", "mount": "dcs"}},
+    {"id": "T-1", "type": "tee", "level": 0},
+    {"id": "PROD", "type": "connector", "level": 0, "params": {"text": "PROD"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "T-1.w"},
+    {"from": "T-1.e", "to": "PROD.tail"},
+    {"from": "T-1.n", "to": "FT-1.s", "type": "instrument"},
+    {"from": "FT-1.e", "to": "FIC-1.w", "type": "signal"}
+  ]
+}

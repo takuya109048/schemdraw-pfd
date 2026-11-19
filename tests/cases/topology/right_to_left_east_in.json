@@ -1,0 +1,11 @@
+{
+  "elements": [
+    {"id": "RET", "type": "connector", "level": 1, "params": {"text": "RET", "point": "left"}},
+    {"id": "D-1", "type": "vertical_drum", "level": 1},
+    {"id": "PROD", "type": "connector", "level": 0, "params": {"text": "PROD"}}
+  ],
+  "connections": [
+    {"from": "RET.tip", "to": "D-1.e_mid"},
+    {"from": "D-1.bottom", "to": "PROD.tail"}
+  ]
+}

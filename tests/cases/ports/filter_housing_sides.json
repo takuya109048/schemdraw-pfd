@@ -1,0 +1,15 @@
+{
+  "elements": [
+    {"id": "F1", "type": "connector", "level": 0, "params": {"text": "F1"}},
+    {"id": "F2", "type": "connector", "level": 0, "params": {"text": "F2"}},
+    {"id": "F-1", "type": "filter_housing", "level": 0},
+    {"id": "P1", "type": "connector", "level": 0, "params": {"text": "P1"}},
+    {"id": "P2", "type": "connector", "level": 0, "params": {"text": "P2"}}
+  ],
+  "connections": [
+    {"from": "F1.tip", "to": "F-1.w_low"},
+    {"from": "F2.tip", "to": "F-1.w_high"},
+    {"from": "F-1.e_low", "to": "P1.tail"},
+    {"from": "F-1.e_mid", "to": "P2.tail"}
+  ]
+}
