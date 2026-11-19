@@ -50,9 +50,17 @@ class Placed:
         return self.x, self.y, self.x + self.geo.width, self.y + self.geo.height
 
 
+FLANGED_RUN = 2  # cells of a straight line between two flanged nozzles
+
+
 @dataclass(frozen=True)
 class Link:
-    """A connection between item ``a`` (earlier in order) and ``b`` (later)."""
+    """A connection between item ``a`` (earlier in order) and ``b`` (later).
+
+    ``flanged``: a process line between two vessel nozzles, drawn with a
+    flange tick at each end.  Joined straight across, the ports stand at
+    least ``FLANGED_RUN`` cells apart, so the two ticks and the flow arrow
+    do not run into each other."""
 
     a: int
     a_side: str
@@ -60,6 +68,7 @@ class Link:
     b: int
     b_side: str
     b_off: int
+    flanged: bool = False
 
 
 def _link_min_x(link: Link, ax: int, a_geo: Geometry, ay: int, by: int) -> int | None:
@@ -73,9 +82,12 @@ def _link_min_x(link: Link, ax: int, a_geo: Geometry, ay: int, by: int) -> int |
     if link.a_side == "E":
         right = ax + a_geo.width
         if link.b_side == "W":
-            # facing ports on one row join directly across a single cell;
-            # otherwise the pipe jogs: out one cell, up/down, then one cell in
-            return right + (1 if ay + link.a_off == by + link.b_off else 3)
+            # facing ports on one row join directly across a single cell
+            # (two between flanged nozzles); otherwise the pipe jogs: out one
+            # cell, up/down, then one cell in
+            if ay + link.a_off != by + link.b_off:
+                return right + 3
+            return right + (FLANGED_RUN if link.flanged else 1)
         if link.b_side in "NS":
             # out of the face one cell, then the turn: the nozzle stands at
             # least two cells clear of the face

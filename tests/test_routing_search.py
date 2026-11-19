@@ -178,3 +178,21 @@ def test_a_uturn_forced_by_the_levels_is_counted_but_not_warned():
     data = json.loads((CASES / "transform" / "pump_r180.json").read_text("utf-8"))
     d = Flowsheet.from_dict(data).build()
     assert d.uturns == 1 and not d.warnings
+
+
+def test_flanged_nozzles_facing_on_one_row_stand_two_cells_apart():
+    from schemdraw_pfd.elements import DEFAULT_LIBRARY
+    from schemdraw_pfd.layout import Link, _link_min_x
+
+    geo = DEFAULT_LIBRARY.build("heat_exchanger")
+    plain = Link(0, "E", 2, 1, "W", 2)
+    flanged = Link(0, "E", 2, 1, "W", 2, flanged=True)
+    assert _link_min_x(plain, 0, geo, 0, 0) == geo.width + 1
+    assert _link_min_x(flanged, 0, geo, 0, 0) == geo.width + 2
+
+
+@pytest.mark.parametrize("name", ["routing/flow/n_to_s_up", "routing/flow/s_to_n_down"])
+def test_flanged_nozzles_stacked_on_two_levels_stand_two_cells_apart(name):
+    data = json.loads((CASES / f"{name}.json").read_text("utf-8"))
+    ((c, r),) = Flowsheet.from_dict(data).build().routes
+    assert r.bends == 0 and abs(r.points[1][1] - r.points[0][1]) == 2

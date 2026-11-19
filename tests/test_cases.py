@@ -26,6 +26,7 @@ from schemdraw_pfd import Diagram, Flowsheet
 from schemdraw_pfd.elements import DEFAULT_LIBRARY, CustomSpec
 from schemdraw_pfd.elements.base import LABEL_POSITIONS, ROTATIONS
 from schemdraw_pfd.elements.valve import ValveSpec
+from schemdraw_pfd.layout import FLANGED_RUN
 from schemdraw_pfd.model import (
     _CONNECTION_KEYS,
     _ELEMENT_KEYS,
@@ -104,6 +105,23 @@ def test_flow_case_ignores_the_order_of_its_lists(name):
     data["elements"].reverse()
     data["connections"].reverse()
     assert _sheet(Flowsheet.from_dict(data).build()) == _sheet(built_case(name))
+
+
+@pytest.mark.parametrize("name", _marked(VALID))
+def test_flanged_nozzles_joined_straight_stand_two_cells_apart(name):
+    """A straight line between two vessel nozzles has room for the flange
+    tick at each end and the flow arrow."""
+    d = built_case(name)
+    by_id = {p.id: p for p in d.placed}
+    for c, r in d.routes:
+        (a, _), (b, _) = c.ends
+        if d.line_styles[c.kind].process and by_id[a].geo.nozzles:
+            if by_id[b].geo.nozzles:
+                pts = r.points
+                run = sum(
+                    abs(q[0] - p[0]) + abs(q[1] - p[1]) for p, q in zip(pts, pts[1:])
+                )
+                assert run >= FLANGED_RUN, f"{c.src} -> {c.dst}"
 
 
 def _written(c: dict) -> dict:
