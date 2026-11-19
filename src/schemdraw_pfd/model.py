@@ -168,13 +168,26 @@ def _run_level_cost(
     sheet._in_order = sheet._flag_room = False
     sheet._quick = True
     spacings = min(max_expand, QUICK_EXPAND)
-    if bound is not None and sheet._level_floor(spacings) >= bound:
+    lay = sheet._layout_input()  # for the floor and the build alike
+    if bound is not None and sheet._level_floor(spacings, lay) >= bound:
         return None  # certainly no better: not worth routing
     try:
-        d = sheet._build(spacings, compact=False)
+        d = sheet._build(spacings, compact=False, lay=lay)
         return sheet._level_cost(d)
     except RoutingError:
         return None
+
+
+@dataclass
+class _Geometries:
+    """Geometries built during one build (see ``Flowsheet._geometry``): by
+    type, parameters and ports written out, and by the very parameter and
+    port objects (kept alongside) for a quick look-up."""
+
+    by_text: dict[tuple[str, str, str], Geometry] = field(default_factory=dict)
+    by_object: dict[tuple[str, int, int], tuple[Any, Any, Geometry]] = field(
+        default_factory=dict
+    )
 
 
 @dataclass
@@ -514,6 +527,11 @@ def _stack(diagrams: list[Diagram], styles: dict[str, LineStyle]) -> Diagram:
     )
 
 
+def _key(value: Any) -> str:
+    """A text equal for equal parameters (dict order aside)."""
+    return json.dumps(value, sort_keys=True, default=repr)
+
+
 def _natural(text: str) -> tuple:
     """Sort key putting numbers in order: ``P-2`` before ``P-10``."""
     return tuple(
@@ -591,6 +609,9 @@ class Flowsheet:
         # modes (None: one per CPU; 1: everything in this process)
         self.jobs: int | None = None
         self._room_used = False
+        # geometries built during a build (see _geometry); None outside a
+        # build, as the library may change
+        self._geos: _Geometries | None = None
         # flow layout: how many cells of sheet size one extra bend may cost
         self.bend_cost = BEND_COST
         self.library = ElementLibrary(parent=library or DEFAULT_LIBRARY)
@@ -720,7 +741,25 @@ class Flowsheet:
                 return self.expand().geos[eq]
             eq = found
         e: Equipment = eq
-        return _context(e.id, lambda: e.geometry(self.library))
+        return _context(e.id, lambda: self._geometry(e))
+
+    def _geometry(self, e: Equipment) -> Geometry:
+        """``e.geometry(self.library)``; during a build, items alike (same
+        type, parameters and ports) share one, built once.  Built geometries
+        are never changed afterwards."""
+        geos = self._geos
+        if geos is None:
+            return e.geometry(self.library)
+        same = geos.by_object.get((e.type, id(e.params), id(e.ports)))
+        if same is not None and same[0] is e.params and same[1] is e.ports:
+            return same[2]  # the very parameters (an item and its copies)
+        key = (e.type, _key(e.params), _key(e.ports))
+        geo = geos.by_text.get(key)
+        if geo is None:
+            geo = geos.by_text[key] = e.geometry(self.library)
+        # kept with the objects, so no other object takes their ids
+        geos.by_object[e.type, id(e.params), id(e.ports)] = (e.params, e.ports, geo)
+        return geo
 
     def expand(self, equipment: list[Equipment] | None = None) -> Expanded:
         """The flat netlist that is laid out: inline items and automatic tees
@@ -736,7 +775,7 @@ class Flowsheet:
             eqs,
             self.connections,
             self.library,
-            lambda e, build: _context(e.id, build),
+            lambda e, build: _context(e.id, lambda: self._geometry(e)),
             edges,
         )
 
@@ -760,6 +799,7 @@ class Flowsheet:
         JSON lists.
         """
         user = self.equipment, self.connections
+        self._geos = _Geometries()
         try:
             if self.layout != "flow":
                 return self._build_swapped(max_expand, compact)
@@ -774,6 +814,7 @@ class Flowsheet:
             return self._build_swapped(max_expand, compact)
         finally:
             self.equipment, self.connections = user
+            self._geos = None
 
     def _with_levels(self, levels: Levels | None = None) -> list[Equipment]:
         """The equipment with every level left out filled in (copies): from
@@ -901,6 +942,7 @@ class Flowsheet:
             sub.line_styles = self.line_styles
             sub.bend_cost = self.bend_cost
             sub.rows = "single"
+            sub._geos = self._geos
             sub.equipment = [replace(e) for e in self.equipment if e.id in r]
             subs.append(sub)
         for n, c in enumerate(self.connections):
@@ -1059,8 +1101,14 @@ class Flowsheet:
                     changed = True
         return new if changed else None
 
-    def _build(self, max_expand: int = 4, compact: bool = True) -> Diagram:
-        """Lay out and route with the ports as named.
+    def _build(
+        self,
+        max_expand: int = 4,
+        compact: bool = True,
+        lay: _LayoutInput | None = None,
+    ) -> Diagram:
+        """Lay out and route with the ports as named (placed from ``lay``,
+        or from :meth:`_layout_input`; squeezing the gaps changes it).
 
         0. Expand inline items and shared ports (:meth:`expand`).
         1. Find the smallest uniform spacing that routes every pipe in strict mode
@@ -1078,7 +1126,7 @@ class Flowsheet:
         simple (fewest bends and crossings first), and an extra bend or
         crossing is only paid for by a clearly smaller sheet.
         """
-        lay = self._layout_input()
+        lay = lay or self._layout_input()
         net, items, links, flow = lay.net, lay.items, lay.links, lay.flow
         free, order, overlap = lay.free, lay.order, lay.overlap
         floor_x, floor_y = lay.floor_x, lay.floor_y
@@ -1223,14 +1271,14 @@ class Flowsheet:
             net, items, links, flow, free, order, floor_x, floor_y, overlap
         )
 
-    def _level_floor(self, spacings: int) -> int:
+    def _level_floor(self, spacings: int, lay: _LayoutInput | None = None) -> int:
         """A cost :meth:`_level_cost` cannot go below on the first
         ``spacings`` uniform spacings of :meth:`_build`, whichever of them
         routes and however: per line, the bends it certainly needs (from the
         directions of its two ports, see :func:`.router._min_bends`) and the
         straight length between its ports; no crossings.  No routing, so
         far cheaper than a build."""
-        lay = self._layout_input()
+        lay = lay or self._layout_input()
         best: int | None = None
         for k in range(spacings):
             placed = place(
@@ -1400,6 +1448,9 @@ class Flowsheet:
         is ripped up and routed again with those lines first (up to
         ``REROUTE_ROUNDS`` times); the best result counts.  The diagram lists
         the routes in connection order whatever order they were routed in.
+
+        A line that fails even with no other line laid (see
+        ``Router.routes_alone``) routes in no order: then no reroute is tried.
         """
         close = self._stacked_too_close(net, placed)
         if close:
@@ -1424,9 +1475,10 @@ class Flowsheet:
         # compaction trials (bound given) get one reroute round: enough to
         # rescue most squeezes, without paying full rounds for hopeless ones
         rounds = REROUTE_ROUNDS if bound is None else 1
+        alone: dict[int, bool] = {}  # line -> routes with no other line laid
         for _ in range(rounds + 1):
             d, failures, problems = self._route_order(
-                net, placed, relaxed, order, bound, sym
+                net, placed, relaxed, order, bound, sym, alone
             )
             if d is not None and (best is None or _score(d) < _score(best)):
                 best = d
@@ -1434,8 +1486,8 @@ class Flowsheet:
                     break
             if first_failures is None:
                 first_failures = failures
-            if not problems:
-                break
+            if not problems or not all(alone.get(i, True) for i in problems):
+                break  # nothing to fix, or a line no order can route
             again = problems + [i for i in order if i not in problems]
             if again == order:
                 break
@@ -1452,12 +1504,18 @@ class Flowsheet:
         order: list[int],
         bound: tuple[int, int] | None,
         sym: Symmetry | None = None,
+        alone: dict[int, bool] | None = None,
     ) -> tuple[Diagram | None, list[str], list[int]]:
         """Route the lines in ``order``; also returns the problem lines.
 
         ``bound``: (U-turns, bends) of the best diagram so far.  Both only grow
         line by line, so routing stops -- returning no diagram -- as soon as
         this placement can no longer beat it, and at its first failure.
+
+        ``alone``: filled in for every line that fails: whether it routes
+        with no other line laid (see ``Router.routes_alone``).  One that
+        does not dooms the placement: the level search (whose builds report
+        no failures) stops routing at once.
 
         ``sym``: lines of repeated units (see :mod:`.symmetry`).  The first line
         of a class routed sets the shape; a corresponding line whose ends are
@@ -1528,7 +1586,12 @@ class Flowsheet:
             if r is None:
                 failures.append(f"{c.src} -> {c.dst}")
                 failed.append(ci)
-                if bound is not None:
+                if alone is not None and ci not in alone:
+                    # with nothing laid yet, this search was the one alone
+                    laid = bool(routes or ready)
+                    alone[ci] = laid and router.routes_alone(src, dst, relaxed)
+                doomed = alone is not None and not alone[ci]
+                if bound is not None or (doomed and self._quick):
                     return None, failures, failed
                 continue
             if not r.strict:
