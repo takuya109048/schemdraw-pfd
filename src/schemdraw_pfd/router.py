@@ -27,7 +27,9 @@ CROSS_COST = 20
 STATE_BITS = 32
 COUNT_BITS = 32
 COST_BITS = 40
-FLOOD_AFTER = 50  # search steps before the bends to the goal are counted
+FLOOD_AFTER = 50  # strict search steps before the bends to the goal are counted
+# a relaxed search (made when no strict route was found) counts them at once
+RELAXED_FLOOD_AFTER = 1
 
 
 class RoutingError(RuntimeError):
@@ -202,7 +204,8 @@ def _straight(enter: tuple[int, int], h: int, w: int) -> Callable[[int, int], in
 
 class _Levels(dict[int, bytes]):
     """``levels[board][cell]`` (see ``Router._bend_levels``): a board's
-    bytes made when it is first looked at -- most are never needed."""
+    bytes made when it is first looked at, so only the boards the search
+    reaches are made."""
 
     def __init__(self, make: Callable[[int], bytes]) -> None:
         super().__init__()
@@ -583,7 +586,9 @@ class Router:
 
         A search that drags on (``FLOOD_AFTER`` steps: the estimate counts
         too few bends, the way is blocked) gets the fewest bends from every
-        state to the goal and the cost of one route (:meth:`_bend_levels`).
+        state to the goal and the cost of one route (:meth:`_bend_levels`);
+        a relaxed one, made because no strict route was found, gets them at
+        once (``RELAXED_FLOOD_AFTER``).
         From then on a state is not taken up when its cost so far, its
         distance to the goal and the bends it still needs come to more than
         that route: it is on no cheapest route.  That changes nothing about
@@ -645,7 +650,7 @@ class Router:
         # (unknown until the search drags on, see _bend_levels)
         none = bytes(len(blocked))
         levels, bound = _Levels(lambda k: none), never
-        check = FLOOD_AFTER
+        check = FLOOD_AFTER if strict else RELAXED_FLOOD_AFTER
         while heap:
             if check:
                 check -= 1

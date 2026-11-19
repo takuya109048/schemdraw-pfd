@@ -193,9 +193,11 @@ def test_dropping_dearer_states_finds_the_very_same_route(monkeypatch):
         t = (rng.randrange(size), rng.randrange(size))
         sd, td = rng.randrange(4), rng.randrange(4)
         for strict in (True, False):
-            monkeypatch.setattr(router, "FLOOD_AFTER", 10**9)  # never
+            for after in ("FLOOD_AFTER", "RELAXED_FLOOD_AFTER"):
+                monkeypatch.setattr(router, after, 10**9)  # never
             plain = r._search(s, sd, t, td, strict)
-            monkeypatch.setattr(router, "FLOOD_AFTER", 2)
+            for after in ("FLOOD_AFTER", "RELAXED_FLOOD_AFTER"):
+                monkeypatch.setattr(router, after, 1)  # at once
             assert r._search(s, sd, t, td, strict) == plain
             found += plain is not None
     assert found > 150

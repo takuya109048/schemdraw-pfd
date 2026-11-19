@@ -179,15 +179,18 @@ def _run_level_cost(
 
 
 @dataclass
-class _Geometries:
-    """Geometries built during one build (see ``Flowsheet._geometry``): by
+class _BuildMemo:
+    """What one build works out once, shared by every copy of the sheet the
+    build makes: the geometries built (see ``Flowsheet._geometry``) -- by
     type, parameters and ports written out, and by the very parameter and
-    port objects (kept alongside) for a quick look-up."""
+    port objects (kept alongside) for a quick look-up -- and whether the
+    lines and ports have been checked (see ``Flowsheet._prepare``)."""
 
     by_text: dict[tuple[str, str, str], Geometry] = field(default_factory=dict)
     by_object: dict[tuple[str, int, int], tuple[Any, Any, Geometry]] = field(
         default_factory=dict
     )
+    checked: bool = False
 
 
 @dataclass
@@ -609,9 +612,9 @@ class Flowsheet:
         # modes (None: one per CPU; 1: everything in this process)
         self.jobs: int | None = None
         self._room_used = False
-        # geometries built during a build (see _geometry); None outside a
-        # build, as the library may change
-        self._geos: _Geometries | None = None
+        # worked out once per build (see _BuildMemo); None outside a build,
+        # as the library and the items may change
+        self._memo: _BuildMemo | None = None
         # flow layout: how many cells of sheet size one extra bend may cost
         self.bend_cost = BEND_COST
         self.library = ElementLibrary(parent=library or DEFAULT_LIBRARY)
@@ -747,18 +750,18 @@ class Flowsheet:
         """``e.geometry(self.library)``; during a build, items alike (same
         type, parameters and ports) share one, built once.  Built geometries
         are never changed afterwards."""
-        geos = self._geos
-        if geos is None:
+        memo = self._memo
+        if memo is None:
             return e.geometry(self.library)
-        same = geos.by_object.get((e.type, id(e.params), id(e.ports)))
+        same = memo.by_object.get((e.type, id(e.params), id(e.ports)))
         if same is not None and same[0] is e.params and same[1] is e.ports:
             return same[2]  # the very parameters (an item and its copies)
         key = (e.type, _key(e.params), _key(e.ports))
-        geo = geos.by_text.get(key)
+        geo = memo.by_text.get(key)
         if geo is None:
-            geo = geos.by_text[key] = e.geometry(self.library)
+            geo = memo.by_text[key] = e.geometry(self.library)
         # kept with the objects, so no other object takes their ids
-        geos.by_object[e.type, id(e.params), id(e.ports)] = (e.params, e.ports, geo)
+        memo.by_object[e.type, id(e.params), id(e.ports)] = (e.params, e.ports, geo)
         return geo
 
     def expand(self, equipment: list[Equipment] | None = None) -> Expanded:
@@ -799,7 +802,7 @@ class Flowsheet:
         JSON lists.
         """
         user = self.equipment, self.connections
-        self._geos = _Geometries()
+        self._memo = _BuildMemo()
         try:
             if self.layout != "flow":
                 return self._build_swapped(max_expand, compact)
@@ -814,7 +817,7 @@ class Flowsheet:
             return self._build_swapped(max_expand, compact)
         finally:
             self.equipment, self.connections = user
-            self._geos = None
+            self._memo = None
 
     def _with_levels(self, levels: Levels | None = None) -> list[Equipment]:
         """The equipment with every level left out filled in (copies): from
@@ -942,7 +945,7 @@ class Flowsheet:
             sub.line_styles = self.line_styles
             sub.bend_cost = self.bend_cost
             sub.rows = "single"
-            sub._geos = self._geos
+            sub._memo = self._memo
             sub.equipment = [replace(e) for e in self.equipment if e.id in r]
             subs.append(sub)
         for n, c in enumerate(self.connections):
@@ -1310,11 +1313,19 @@ class Flowsheet:
         items, facing-port links and (flow layout) main-flow arrows."""
         if not self.equipment:
             raise ValueError("flowsheet is empty")
-        net = self.expand()
-        _validate(net)
         flow: list[FlowLink] = []
         flags: dict[str, str] = {}
-        if self.layout == "flow":
+        if self.layout != "flow":
+            net = self.expand()
+            _validate(net)
+        else:
+            # the lines and ports checked as written (the netlist is expanded
+            # again below): whatever the levels, once per build is enough
+            memo = self._memo
+            if memo is None or not memo.checked:
+                _validate(self.expand())
+                if memo is not None:
+                    memo.checked = True
             # 1st pass on the lines as the user wrote them (inline items left
             # out: their mirroring depends on the declared order); then expand
             # in that order, so inline items face the way their line runs

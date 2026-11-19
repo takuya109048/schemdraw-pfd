@@ -268,8 +268,9 @@ def port_dx(geo: Geometry, side: str, offset: int) -> int:
 
 def _apart(ys: Sequence[int], items: Sequence[Item], i: int, j: int) -> int:
     """Vertical clearance between two items (negative when they overlap)."""
-    lo, hi = sorted((i, j), key=ys.__getitem__)
-    return ys[hi] - (ys[lo] + items[lo].geo.height)
+    if ys[i] <= ys[j]:  # the lower one first (``i`` on a tie)
+        return ys[j] - (ys[i] + items[i].geo.height)
+    return ys[i] - (ys[j] + items[j].geo.height)
 
 
 Riser = tuple[int, int, int, int]  # port dx, y from, y to, partner item
