@@ -187,19 +187,30 @@ def place_y(
             break
         settled.add(max(linked, key=lambda j: (items[j].geo.height, -j)))
         spread(from_flags=False)
-    # flags on one height stack so that their lines nest: on each edge the
-    # line from the nearest item takes the lowest flag, lines from further
-    # in go over it to the flags above (flags with no line on top)
+    # flags on one height stack so that their lines nest.  A line reaching
+    # its item from below (a pump's outlet, a side nozzle) turns off the
+    # flag's row at the item and runs down: on each edge the line from the
+    # nearest item takes the lowest flag, lines from further in go over it.
+    # A line that reaches its item's downward port (a tap on a main pipe
+    # above, a vessel's bottom) runs up from the flag's row instead: those
+    # flags stack above the others, the line from the furthest item lowest,
+    # so it passes under the nearer lines' risers.  Flags with no line on top.
     partner: dict[int, int] = {}
+    up: set[int] = set()  # flags whose line runs up to a downward port
     for lk in links:
-        partner.setdefault(lk.a, lk.b)
-        partner.setdefault(lk.b, lk.a)
+        for j, o, side in ((lk.a, lk.b, lk.b_side), (lk.b, lk.a, lk.a_side)):
+            if j not in partner:
+                partner[j] = o
+                if side == "S":
+                    up.add(j)
     for edge in ("left", "right"):
         sign = 1 if edge == "left" else -1
-        stack = sorted(
-            (j for j, it in enumerate(items) if it.edge == edge),
-            key=lambda j: (ys[j], j not in partner, sign * partner.get(j, 0), j),
-        )
+
+        def nest(j: int) -> tuple:
+            near = sign * partner.get(j, 0)
+            return (ys[j], j not in partner, j in up, -near if j in up else near, j)
+
+        stack = sorted((j for j, it in enumerate(items) if it.edge == edge), key=nest)
         for below, j in zip(stack, stack[1:]):
             ys[j] = max(ys[j], ys[below] + items[below].geo.height + 1)
         settled.update(stack)

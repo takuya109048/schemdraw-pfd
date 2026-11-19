@@ -4,6 +4,7 @@ import random
 from typing import Any
 
 import pytest
+from conftest import built_case
 
 from schemdraw_pfd import Flowsheet
 from schemdraw_pfd.render import _spread, _text_width
@@ -167,3 +168,15 @@ def test_spec_texts_never_overlap():
     assert x1 == 10.0  # the first keeps its place
     assert x2 - _text_width(t2, em) / 2 >= x1 + _text_width(t1, em) / 2  # no overlap
     assert _spread([(0.0, "A"), (50.0, "B")], em) == [(0.0, "A"), (50.0, "B")]
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "topology/split_3",  # taps above, lines down to the right edge
+        "flags/stack_right_from_taps",  # taps below a vessel's bottom
+        "flags/stack_left_into_bottoms",  # left edge, up into bottom nozzles
+    ],
+)
+def test_flags_stacked_on_an_edge_nest_their_lines(name):
+    assert built_case(name).crossings == 0
