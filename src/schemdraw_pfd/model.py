@@ -86,8 +86,9 @@ class Diagram:
     """A routed sheet.
 
     ``warnings``: lines that turn back with nothing in the way (needless
-    U-turns).  ``uturns``: lines that turn back at all, around equipment
-    included -- the layout keeps them as few as it can.
+    U-turns) -- not those the ports and levels force (see
+    :func:`_forced_back`).  ``uturns``: lines that turn back at all, around
+    equipment included -- the layout keeps them as few as it can.
     """
 
     placed: list[Placed]
@@ -247,6 +248,26 @@ def _turns_back(points: list[tuple[float, float]]) -> bool:
             return True
         seen.add(d)
     return False
+
+
+def _forced_back(src: Equipment, out: str, dst: Equipment, into: str) -> bool:
+    """Must a line turn back, wherever its items stand?
+
+    ``out`` / ``into``: the faces of its ports.  A port facing down while
+    the item at the other end stands on a level band above it (or facing up,
+    the other item on a band below) sends the line the wrong way first, so
+    it has to come back -- no placement avoids that, the levels and the port
+    decide it.  Such a U-turn is needed, not needless."""
+
+    def top(e: Equipment) -> int:  # highest level band the item stands in
+        return e.tier + e.span - 1
+
+    return (
+        (out == "S" and dst.tier > src.tier)
+        or (out == "N" and top(dst) < top(src))
+        or (into == "S" and src.tier > dst.tier)
+        or (into == "N" and top(src) < top(dst))
+    )
 
 
 def _reaches(s: tuple[int, int], sd: int, t: tuple[int, int], td: int) -> bool:
@@ -1480,11 +1501,19 @@ class Flowsheet:
         if failures:
             return None, failures, failed
         boxes = [p.bbox for p in placed]
+        eqs = {e.id: e for e in net.equipment}
+
+        def needed(c: Connection) -> bool:
+            """The ports and levels force the line to turn back."""
+            (a, pa), (b, pb) = c.ends
+            out, into = by_id[a].geo.ports[pa].side, by_id[b].geo.ports[pb].side
+            return _forced_back(eqs[a], out, eqs[b], into)
+
         warnings = [
             f"{c.src} -> {c.dst}: U-turn with nothing in the way"
             for ci in sorted(turned)
-            if needless_uturn(routes[ci].points, boxes)
             for c in [net.connections[ci]]
+            if needless_uturn(routes[ci].points, boxes) and not needed(c)
         ]
         descs = {e.id: e.desc for e in net.equipment if e.desc}
         diagram = Diagram(

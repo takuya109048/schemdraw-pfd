@@ -53,13 +53,9 @@ FLOW = [n for n in VALID if _data(n).get("layout", "flow") == "flow"]
 
 # Defects these cases found.  Each is a strict xfail: the run stays green
 # while it lasts and fails once it is fixed, so the entry can be removed.
-NO_ROUTE = {
-    "topology/merge_3": "three lines into one nozzle: the last tap is not routed",
-}
-NEEDLESS_UTURN = {
-    "transform/pump_r180": "pump turned upside down: the discharge line turns "
-    "back with nothing in the way",
-}
+# (none at the moment; e.g. ``{"topology/merge_3": "the last tap is not routed"}``)
+NO_ROUTE: dict[str, str] = {}
+NEEDLESS_UTURN: dict[str, str] = {}
 
 
 def _marked(names: list[str], uturns: bool = False) -> list:

@@ -320,10 +320,21 @@ def _auto_tees(
             port = conns[u[0]].ends[1 - u[1]][1]
             return (None,) if o is None else (o.type, port, o.level, o.elevation)
 
+        def at_edge(u: Use) -> bool:
+            """The line's other end is a flag on a sheet edge."""
+            o = other(u)
+            return o is not None and edges.get(o.id) in ("left", "right")
+
         # lines from alike items (parallel trains) -- all on one side: lines
-        # sent both ways (reflux back, product on) are no repeated units
+        # sent both ways (reflux back, product on) are no repeated units, and
+        # flags stacked on a sheet edge are no trains either (their taps keep
+        # the main pipe's order, not the order the flags are stacked in)
         one_way = len({rel(u) < 0 for u in us}) == 1
-        alike = one_way and len({far_end(u) for u in us}) == 1
+        alike = (
+            one_way
+            and not any(at_edge(u) for u in us)
+            and len({far_end(u) for u in us}) == 1
+        )
         split = roles == {0}
         refs: dict[Use, str] = {}
         made = len(trunks.get(us[0][0], []))  # main-pipe pieces made before
