@@ -180,3 +180,17 @@ def test_spec_texts_never_overlap():
 )
 def test_flags_stacked_on_an_edge_nest_their_lines(name):
     assert built_case(name).crossings == 0
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "flags/level_above",  # one flag feeds two pumps, the last straight on
+        "topology/parallel_three_pumps",
+        "topology/split_and_merge",
+        "topology/feed_main_two_columns",  # the first column stands on the pipe
+    ],
+)
+def test_each_tap_stands_by_the_item_on_its_branch(name):
+    d = built_case(name)
+    assert d.uturns == 0 and d.crossings == 0

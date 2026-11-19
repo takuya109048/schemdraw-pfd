@@ -284,17 +284,30 @@ def _auto_tees(
             pipe_h = height(owner, side, ports[pname].offset)
             pipe_h += {"N": 2, "S": -2}.get(side, 0)
 
-        def arm_of(u: Use) -> str:
+        def arm_of(u: Use, way: str, passes: bool) -> str:
             """The tap's arm the line enters by: from the band above or
             below; on the same band from the side its port faces when the
             port lies beyond the main pipe that way (a pump's outlet rises
             into the tap from below, a vessel's bottom drops in from above),
-            else across from the shared port."""
+            else across from the shared port.
+
+            ``passes``: the main pipe runs on past the tap (``way``), under
+            the item the tap stands in front of.  A vessel there whose body
+            reaches the pipe's height stands on the pipe (see
+            ``model._clear_main_pipes``), so its nozzle facing the tap lies
+            above the pipe: the line rises into it."""
             if dy(u):
                 return "n" if dy(u) > 0 else "s"
             f = faces(u)
             o = other(u)
-            if f not in ("N", "S") or o is None:
+            if o is None:
+                return across
+            if f not in ("N", "S"):
+                facing = "W" if way == "e" else "E"
+                g = geo(o)
+                if passes and f == facing and g.nozzles and pipe_h is not None:
+                    if (o.elevation or 0) + g.height >= pipe_h:
+                        return "n"
                 return across
             if pipe_h is not None:
                 port = geo(o).ports[conns[u[0]].ends[1 - u[1]][1]]
@@ -364,8 +377,8 @@ def _auto_tees(
             chain: list[Equipment] = []
             prev = start
             for k, u in enumerate(taps):
-                arm = arm_of(u)
                 end = k == len(taps) - 1 and not straight
+                arm = arm_of(u, way, passes=not end)
                 arms = back + arm if end else back + way + arm
                 tee = Equipment(next(tee_ids), "tee", level, {"arms": arms})
                 join(prev, f"{tee.id}.{back}")

@@ -8,23 +8,23 @@
    2
   ],
   [
-   "P-1",
+   "_T_FEED_tip",
    7,
+   1,
+   2,
+   2
+  ],
+  [
+   "P-1",
+   10,
    3,
    2,
    3
   ],
   [
    "_T_HDR_tail_2",
+   11,
    8,
-   8,
-   2,
-   2
-  ],
-  [
-   "_T_FEED_tip",
-   10,
-   1,
    2,
    2
   ],
@@ -61,7 +61,7 @@
      2.0
     ],
     [
-     10,
+     7,
      2
     ]
    ]
@@ -72,23 +72,15 @@
    "pipe",
    [
     [
-     11,
+     8,
      3
     ],
     [
-     11,
-     7
-    ],
-    [
-     5,
-     7
-    ],
-    [
-     5,
+     8,
      5
     ],
     [
-     7,
+     10,
      5
     ]
    ]
@@ -99,7 +91,7 @@
    "pipe",
    [
     [
-     12,
+     9,
      2
     ],
     [
@@ -129,7 +121,7 @@
    "pipe",
    [
     [
-     10,
+     13,
      9
     ],
     [
@@ -144,11 +136,11 @@
    "pipe",
    [
     [
-     9,
+     12,
      6
     ],
     [
-     9,
+     12,
      8
     ]
    ]
@@ -245,6 +237,89 @@
   ],
   [
    [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       8,
+       2
+      ],
+      [
+       7,
+       2
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       8,
+       2
+      ],
+      [
+       9,
+       2
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       8,
+       2
+      ],
+      [
+       8,
+       3
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
     "SegmentArc",
     {
      "angle": 0,
@@ -252,7 +327,7 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      8,
+      11,
       5
      ],
      "clip": null,
@@ -283,11 +358,11 @@
      "lw": null,
      "path": [
       [
-       9,
+       12,
        5
       ],
       [
-       9,
+       12,
        6
       ]
      ],
@@ -310,11 +385,11 @@
      "lw": null,
      "path": [
       [
-       7,
+       10,
        5
       ],
       [
-       8.2,
+       11.2,
        5
       ]
      ],
@@ -337,15 +412,15 @@
      "lw": null,
      "path": [
       [
-       7.8,
+       10.8,
        5.2
       ],
       [
-       8.2,
+       11.2,
        5
       ],
       [
-       7.8,
+       10.8,
        4.8
       ]
      ],
@@ -368,19 +443,19 @@
      "lw": null,
      "path": [
       [
-       7.5,
+       10.5,
        4.13
       ],
       [
-       7.1,
+       10.1,
        3.3
       ],
       [
-       8.9,
+       11.9,
        3.3
       ],
       [
-       8.5,
+       11.5,
        4.13
       ]
      ],
@@ -409,7 +484,7 @@
      "text": "P-1",
      "visible": true,
      "xy": [
-      5.983333,
+      8.983333,
       3.5
      ],
      "zorder": null
@@ -430,11 +505,11 @@
      "lw": 0.8,
      "path": [
       [
-       5.466667,
+       8.466667,
        3.155556
       ],
       [
-       6.5,
+       9.5,
        3.155556
       ]
      ],
@@ -459,11 +534,11 @@
      "lw": null,
      "path": [
       [
-       9,
+       12,
        9
       ],
       [
-       10,
+       13,
        9
       ]
      ],
@@ -486,95 +561,12 @@
      "lw": null,
      "path": [
       [
-       9,
+       12,
        9
-      ],
-      [
-       9,
-       8
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       11,
-       2
-      ],
-      [
-       10,
-       2
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       11,
-       2
       ],
       [
        12,
-       2
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       11,
-       2
-      ],
-      [
-       11,
-       3
+       8
       ]
      ],
      "visible": true,
@@ -957,7 +949,7 @@
        2.0
       ],
       [
-       10,
+       7,
        2
       ]
      ],
@@ -982,23 +974,15 @@
      "lw": 1.1,
      "path": [
       [
-       11,
+       8,
        3
       ],
       [
-       11,
-       7
-      ],
-      [
-       5,
-       7
-      ],
-      [
-       5,
+       8,
        5
       ],
       [
-       7,
+       10,
        5
       ]
      ],
@@ -1023,7 +1007,7 @@
      "lw": 1.1,
      "path": [
       [
-       12,
+       9,
        2
       ],
       [
@@ -1081,7 +1065,7 @@
      "lw": 1.1,
      "path": [
       [
-       10,
+       13,
        9
       ],
       [
@@ -1098,33 +1082,6 @@
    [
     "Segment",
     {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": "-",
-     "lw": 1.1,
-     "path": [
-      [
-       9,
-       6
-      ],
-      [
-       9,
-       6.7
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
      "arrow": "->",
      "arrowlength": 0.3,
      "arrowwidth": 0.2,
@@ -1137,11 +1094,11 @@
      "lw": 1.1,
      "path": [
       [
-       9,
-       7.3
+       12,
+       6
       ],
       [
-       9,
+       12,
        8
       ]
      ],

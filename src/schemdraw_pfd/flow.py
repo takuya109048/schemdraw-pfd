@@ -226,7 +226,10 @@ def _place_taps(
     (the riser of a main pipe running both ways) goes after the owner."""
     partner: dict[int, tuple[int, int]] = {}
     for c in conns:
-        for (t, _), (o, op) in (c.ends, c.ends[::-1]):
+        for (t, tp), (o, op) in (c.ends, c.ends[::-1]):
+            if tp not in ("n", "s"):
+                continue  # on along the main pipe (w / e): the next tap, or
+                # the item the main pipe runs straight into -- not the branch
             if t in owners and o not in owners and o in index and o != owners[t]:
                 side = geos[o].ports[op].side if op in geos[o].ports else ""
                 partner[index[t]] = (index[o], -1 if side == "W" else 1)
