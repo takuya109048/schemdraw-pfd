@@ -114,9 +114,32 @@ def search_levels(
     routing): the moves are then tried best estimate first, and a round
     gives up after ``ESTIMATED_BATCHES`` batches without a move that lowers
     the cost.
+
+    Levels met again (a move back to where an earlier round stood, two
+    moves taken in the other order) are not worked out again: the answer
+    stands, as the cost to beat only falls.
     """
+    costs: dict[tuple, int | None] = {}
+    guesses: dict[tuple, int] = {}
+
+    def known(levels: Levels) -> tuple:
+        return tuple(sorted(levels.items()))
+
+    def evaluate_new(tasks: list[Levels], bound: int | None) -> list[int | None]:
+        keys = [known(lv) for lv in tasks]
+        new = {k: lv for k, lv in zip(keys, tasks) if k not in costs}
+        costs.update(zip(new, evaluate(list(new.values()), bound) if new else []))
+        return [costs[k] for k in keys]
+
+    def estimate_new(tasks: list[Levels]) -> list[int]:
+        assert estimate is not None
+        keys = [known(lv) for lv in tasks]
+        new = {k: lv for k, lv in zip(keys, tasks) if k not in guesses}
+        guesses.update(zip(new, estimate(list(new.values())) if new else []))
+        return [guesses[k] for k in keys]
+
     current = dict(start)
-    (cost,) = evaluate([current], None)
+    (cost,) = evaluate_new([current], None)
     for _ in range(rounds):
         top = max(current.values()) + 1
         tasks: list[Levels] = []
@@ -126,13 +149,13 @@ def search_levels(
                 if all(0 <= v <= top for v in shifted.values()):
                     tasks.append({**current, **shifted})
         if estimate is not None and tasks:
-            guess = estimate(tasks)
+            guess = estimate_new(tasks)
             ranked = sorted(range(len(tasks)), key=lambda k: (guess[k], k))
             tasks = [tasks[k] for k in ranked[: ESTIMATED_BATCHES * BATCH]]
         found = None
         for k in range(0, len(tasks), BATCH):
             batch = tasks[k : k + BATCH]
-            for lv, c in zip(batch, evaluate(batch, cost)):
+            for lv, c in zip(batch, evaluate_new(batch, cost)):
                 if c is not None and (cost is None or c < cost):
                     if found is None or c < found[0]:
                         found = (c, lv)

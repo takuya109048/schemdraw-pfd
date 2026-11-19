@@ -150,7 +150,12 @@ class Connection:
 
     @property
     def ends(self) -> tuple[tuple[str, str], tuple[str, str]]:
-        return split_ref(self.src), split_ref(self.dst)
+        """``(id, port)`` of each end (split once, while src and dst stay)."""
+        held = self.__dict__.get("_ends")
+        if held is None or held[0] is not self.src or held[1] is not self.dst:
+            ends = split_ref(self.src), split_ref(self.dst)
+            held = self.__dict__["_ends"] = (self.src, self.dst, ends)
+        return held[2]
 
     def to_dict(self) -> dict[str, Any]:
         return _changed(

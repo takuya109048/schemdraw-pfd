@@ -12,8 +12,9 @@ reversals in place.
 from __future__ import annotations
 
 import heapq
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
+from functools import lru_cache
 
 from .geometry import NORMALS, ray_hit
 from .layout import Placed
@@ -26,7 +27,9 @@ CROSS_COST = 20
 STATE_BITS = 32
 COUNT_BITS = 32
 COST_BITS = 40
-FLOOD_AFTER = 600  # search steps before checking the target is reachable at all
+FLOOD_AFTER = 50  # strict search steps before the bends to the goal are counted
+# a relaxed search (made when no strict route was found) counts them at once
+RELAXED_FLOOD_AFTER = 1
 
 
 class RoutingError(RuntimeError):
@@ -53,6 +56,19 @@ class Route:
 
 
 def resolve_port(p: Placed, port_name: str) -> Terminal:
+    """Where a line meets ``p`` at its port (kept per geometry: the outline
+    is searched once, not on every placement)."""
+    near = p.geo.port_ends.get(port_name)
+    if near is None:
+        near = p.geo.port_ends[port_name] = _port_ends(p, port_name)
+    (px, py), (ex, ey), (nx, ny), out = near
+    e: Node = (ex + p.x, ey + p.y)
+    return Terminal((px + p.x, py + p.y), e, (e[0] + nx, e[1] + ny), out)
+
+
+def _port_ends(p: Placed, port_name: str) -> tuple:
+    """:func:`resolve_port` relative to ``p``'s corner: (point, edge,
+    normal, direction out)."""
     ports = p.geo.ports
     if port_name not in ports:
         raise KeyError(f"{p.id}: unknown port {port_name!r}; known: {sorted(ports)}")
@@ -67,9 +83,8 @@ def resolve_port(p: Placed, port_name: str) -> Terminal:
     t = ray_hit(p.geo.shapes, origin, (-nx, -ny))
     if t is None:
         raise ValueError(f"{p.id}.{port_name}: no outline found for this port")
-    pt = (origin[0] - nx * t + p.x, origin[1] - ny * t + p.y)
-    e: Node = (edge[0] + p.x, edge[1] + p.y)
-    return Terminal(pt, e, (e[0] + nx, e[1] + ny), DIRS.index((nx, ny)))
+    point = (origin[0] - nx * t, origin[1] - ny * t)
+    return point, edge, (nx, ny), DIRS.index((nx, ny))
 
 
 def _min_bends(p: Node, d: int, t: Node, td: int) -> int:
@@ -108,6 +123,105 @@ def _estimate(p: Node, d: int, t: Node, td: int) -> int:
     return abs(t[0] - p[0]) + abs(t[1] - p[1]) + TURN_COST * _min_bends(p, d, t, td)
 
 
+def _table(test: Callable[[int], bool]) -> bytes:
+    """Byte table: ``"1"`` for the cell values passing ``test``, else ``"0"``."""
+    return bytes(ord("1") if test(v) else ord("0") for v in range(256))
+
+
+_CLEAR = _table(lambda v: v == 0)  # not blocked / no pipe / no doorstep
+_OFF_AXIS = (_table(lambda v: not v & 1), _table(lambda v: not v & 2))  # axes
+_NOT_DOOR = (_table(lambda v: v != 1), _table(lambda v: v != 2))  # door
+
+
+def _board(cells: bytes | bytearray, table: bytes) -> int:
+    """Bit board: bit ``i`` set where ``table`` maps ``cells[i]`` to "1"."""
+    return int(cells.translate(table)[::-1], 2)
+
+
+_BYTE = bytes.maketrans(b"01", b"\0\1")
+
+
+def _cell_bytes(board: int, n: int) -> int:
+    """``board`` (of ``n`` cells) one byte per cell, 0 or 1, as an int: cell
+    ``i`` is byte ``i`` from the low end, so a shift sets another bit of
+    every byte and such ints add up cell by cell."""
+    text = bin(board)[2:].zfill(n)[::-1].encode()
+    return int.from_bytes(text.translate(_BYTE), "little")
+
+
+def _shift(cells: int, d: int, h: int) -> int:
+    """Every cell of a bit board one cell on in direction ``d``."""
+    if d == 0:
+        return cells << 1
+    if d == 1:
+        return cells << h
+    if d == 2:
+        return cells >> 1
+    return cells >> h
+
+
+def _straight(enter: tuple[int, int], h: int, w: int) -> Callable[[int, int], int]:
+    """``fill(cells, d)``: ``cells`` and every cell they reach by moving
+    straight on in direction ``d``, into cells ``enter[d % 2]`` lets in.
+
+    North (+1 along a column) is a carry: ``open + start`` clears the run of
+    open cells above each start cell and stops at its end.  The other ways
+    spread by doubling shifts (Kogge-Stone): 1, 2, 4 ... cells at a time,
+    each over the cells whose whole stretch is open.  The frame around the
+    grid is blocked, so no run passes from one column (row) to the next."""
+    north = enter[0]
+    chains: dict[int, list[tuple[int, int]]] = {}
+
+    def chain(d: int) -> list[tuple[int, int]]:
+        if d not in chains:
+            unit, span = (h, w) if d % 2 else (1, h)
+            open_, k, reach, out = enter[d % 2], unit, 0, []
+            while True:
+                out.append((k, open_))
+                reach += k // unit
+                if reach >= span:
+                    break
+                open_ &= (open_ << k) if d == 1 else (open_ >> k)
+                k *= 2
+            chains[d] = out
+        return chains[d]
+
+    def fill(cells: int, d: int) -> int:
+        if d == 0:
+            start = (cells << 1) & north
+            if start:
+                cells |= (((north + start) ^ north) & north) | start
+        elif d == 1:
+            for k, open_ in chain(1):
+                cells |= open_ & (cells << k)
+        else:
+            for k, open_ in chain(d):
+                cells |= open_ & (cells >> k)
+        return cells
+
+    return fill
+
+
+class _Levels(dict[int, bytes]):
+    """``levels[board][cell]`` (see ``Router._bend_levels``): a board's
+    bytes made when it is first looked at, so only the boards the search
+    reaches are made."""
+
+    def __init__(self, make: Callable[[int], bytes]) -> None:
+        super().__init__()
+        self.make = make
+
+    def __missing__(self, board: int) -> bytes:
+        made = self[board] = self.make(board)
+        return made
+
+
+@lru_cache(maxsize=32)
+def _grid_xy(x0: int, y0: int, h: int, n: int) -> tuple[list[int], list[int]]:
+    """x and y of every index of a grid (see Router); never changed."""
+    return [i // h + x0 for i in range(n)], [i % h + y0 for i in range(n)]
+
+
 class Router:
     """Routes lines one by one on the grid; a routed line becomes an obstacle.
 
@@ -117,6 +231,9 @@ class Router:
     axes routed lines already use at node ``i`` (bit 0 vertical, bit 1
     horizontal).
     """
+
+    # boards of what equipment and doorsteps leave open (see _open)
+    _walls: tuple[bytes, bytes, int, tuple[int, ...], int] | None = None
 
     def __init__(self, placed: list[Placed], margin: int = 3):
         boxes = [p.bbox for p in placed]
@@ -147,13 +264,9 @@ class Router:
         return (p[0] - self.x0) * self.h + p[1] - self.y0
 
     def _xy(self) -> tuple[list[int], list[int]]:
-        """x and y of every grid index (made once per router)."""
+        """x and y of every grid index (shared by routers on one grid)."""
         if self._coords is None:
-            h, n = self.h, len(self.blocked)
-            self._coords = (
-                [i // h + self.x0 for i in range(n)],
-                [i % h + self.y0 for i in range(n)],
-            )
+            self._coords = _grid_xy(self.x0, self.y0, self.h, len(self.blocked))
         return self._coords
 
     def reserve(self, terminals: list[Terminal]) -> None:
@@ -224,89 +337,240 @@ class Router:
             return ny > 1 and bool(reach[last - 1])
         return nx > 1 and bool(reach[last - ny])
 
-    def _cells_reachable(self, s: Node, t: Node, td: int) -> bool:
-        """Can any route get from ``s`` into ``t`` moving ``td``, judged by
-        the cells alone?  A flood over cells (no directions, no turn rules,
-        no travelled directions) entering only cells the search may enter
-        that way: a necessary condition for :meth:`_reachable` in either
-        mode, about a tenth of its work."""
-        blocked, axes, door, steps = self.blocked, self.axes, self.door, self.steps
+    def _reachable(
+        self,
+        s: Node,
+        sd: int,
+        t: Node,
+        td: int,
+        strict: bool,
+        axes: bytes | bytearray | None = None,
+    ) -> bool:
+        """Can the search get from ``s`` (moving ``sd``) to ``t`` (arriving
+        moving ``td``) at all?  A flood over the search's own states --
+        (cell, direction, and in strict mode the directions travelled) --
+        with exactly its moves: no reversal in place (strict: none of a
+        travelled direction, but the arrival of an arch), no turn on a pipe
+        or another port's doorstep, no cell blocked, run along or entered on
+        another port's axis.  So it fails exactly when the search does.
+
+        The states of one (direction, travelled) pair are one bit board (see
+        :func:`_board`), flooded a whole straight run at a time
+        (:func:`_straight`); a turn moves the cells it may happen on to the
+        board of the new direction.  Rounds: as many as turns, not cells.
+
+        ``axes``: the pipes laid, if not this router's (see routes_alone).
+        """
+        axes = self.axes if axes is None else axes
+        h = self.h
         si, ti = self._index(s), self._index(t)
-        if si == ti:
-            return True
         if axes[ti]:
             return False  # the search may not end on a pipe
-        seen = bytearray(len(blocked))
-        seen[si] = 1
-        todo = [si]
-        pop, push = todo.pop, todo.append
-        moves = [(nd, steps[nd], 1 << (nd % 2)) for nd in range(4)]
+        if si == ti and sd == td:
+            return True  # it starts on its goal
+        goal = 1 << ti
+        enter, turn = self._open(si, ti, axes)
+        fill = _straight(enter, h, len(self.blocked) // h)
+        arch = sd == (td + 2) % 4
+
+        def step(cells: int, d: int) -> int:
+            """One cell on in direction ``d``, where it may enter."""
+            return _shift(cells, d, h) & enter[d % 2]
+
+        reached: dict[tuple[int, int], int] = {}  # (direction, travelled)
+        todo: dict[tuple[int, int], int] = {}
+
+        def add(d: int, mask: int, cells: int) -> None:
+            cells &= ~reached.get((d, mask), 0)
+            if cells:
+                todo[d, mask] = todo.get((d, mask), 0) | cells
+
+        def turns(cells: int, d: int, mask: int) -> None:
+            for nd in ((d + 1) % 4, (d + 3) % 4):
+                if not strict:
+                    add(nd, 0, step(cells, nd))
+                elif not mask & 1 << (nd + 2) % 4 or (arch and nd == td):
+                    add(nd, mask | 1 << nd, step(cells, nd))
+
+        start = 1 << si
+        mask = (1 << sd) if strict else 0
+        add(sd, mask, step(start, sd))
+        if turn & start:
+            turns(start, sd, mask)
         while todo:
-            i = pop()
-            for nd, step, axis in moves:
-                n = i + step
-                if blocked[n] or axes[n] & axis or (door[n] == axis and n != ti):
-                    continue
-                if n == ti and nd == td:
-                    return True
-                if not seen[n]:
-                    seen[n] = 1
-                    push(n)
+            # a board reached by a move may always go straight on
+            (d, mask), cells = todo.popitem()
+            old = reached.get((d, mask), 0)
+            new = fill(cells, d) & ~old
+            if not new:
+                continue
+            reached[d, mask] = old | new
+            if d == td and new & goal:
+                return True
+            if new & turn:
+                turns(new & turn, d, mask)
         return False
 
-    def _reachable(self, s: Node, sd: int, t: Node, td: int, strict: bool) -> bool:
-        """Can the search get from ``s`` (moving ``sd``) to ``t`` (arriving
-        moving ``td``) at all?  A flood over the search's own states -- (cell,
-        direction, and in strict mode the directions travelled) -- with
-        exactly its moves: no reversal in place (strict: none of a travelled
-        direction, but the arrival of an arch), no turn on a pipe or another
-        port's doorstep, no cell blocked, run along or entered on another
-        port's axis.  So it fails exactly when the search does, found out far
-        faster than by exhausting the search's heap of every state."""
-        blocked, axes, door, steps = self.blocked, self.axes, self.door, self.steps
+    def _open(
+        self, si: int, ti: int, axes: bytes | bytearray
+    ) -> tuple[tuple[int, int], int]:
+        """Bit boards of the search's moves (see :func:`_board`): the cells a
+        move along each axis may enter (the goal ``ti`` past its doorstep
+        rule), and the cells a line may turn on (the start ``si`` too)."""
+        walls = self._walls
+        if walls is None or walls[0] != self.blocked or walls[1] != self.door:
+            # what equipment and doorsteps leave open: kept while they stay
+            walls = self._walls = (
+                bytes(self.blocked),
+                bytes(self.door),
+                _board(self.blocked, _CLEAR),
+                tuple(_board(self.door, _NOT_DOOR[a]) for a in (0, 1)),
+                _board(self.door, _CLEAR),
+            )
+        _, _, free, off_door, no_door = walls
+        goal = 1 << ti
+        vertical, horizontal = (
+            free & _board(axes, _OFF_AXIS[a]) & (off_door[a] | goal) for a in (0, 1)
+        )
+        turn = _board(axes, _CLEAR) & (no_door | 1 << si)
+        return (vertical, horizontal), turn
+
+    def _bend_levels(
+        self, s: Node, sd: int, t: Node, td: int, strict: bool
+    ) -> tuple[_Levels, int] | None:
+        """The fewest bends from every state of the search to its goal, and
+        the cost of one route with the fewest: what lets a long search drop
+        the states that can only cost more (see :meth:`_search`).  None: the
+        goal cannot be reached at all (as :meth:`_reachable` would say).
+
+        Counted back from the goal on bit boards, a level per bend: level 0
+        holds the states that run straight on into the goal, level ``k + 1``
+        those that run straight on to a cell where a turn reaches level
+        ``k`` -- until the start is reached (at level ``b``: the fewest bends
+        of any route) or nothing grows.  One board per direction and, in
+        strict mode, set of directions travelled (always the start's, never
+        two opposite ones but an arch's out and in).
+
+        Returns ``levels[direction * 16 + travelled][cell]`` -- a state's
+        level, ``b + 1`` for any above ``b``; a board's bytes are made when
+        first looked at -- and the cost (as the search counts it) of a route
+        of ``b`` bends walked from the start, down a level at every turn: no
+        cheapest route costs more.
+        """
+        axes, blocked, door, h = self.axes, self.blocked, self.door, self.h
+        n = len(blocked)
         si, ti = self._index(s), self._index(t)
         if axes[ti]:
-            return False  # the search may not end on a pipe
+            return None  # the search may not end on a pipe
+        enter, turn = self._open(si, ti, axes)
+        fill = _straight(enter, h, n // h)
+        goal, start = 1 << ti, 1 << si
         arch = sd == (td + 2) % 4
-        moves = [
-            [
-                (
-                    nd,
-                    nd != d,
-                    steps[nd],
-                    1 << (nd % 2),
-                    1 << ((nd + 2) % 4),
-                    1 << nd,
-                    arch and nd == td,
-                )
-                for nd in (d, (d + 1) % 4, (d + 3) % 4)
-            ]
+
+        def ok(mask: int) -> bool:  # a set of directions a route may travel
+            if not strict:
+                return mask == 0
+            if not mask >> sd & 1:
+                return False
+            for a in (0, 1):
+                both = mask >> a & 1 and mask >> a + 2 & 1
+                if both and not (arch and a == sd % 2):
+                    return False
+            return True
+
+        def may(mask: int, nd: int) -> bool:  # may a move go ``nd``?
+            return not mask & 1 << (nd + 2) % 4 or (arch and nd == td)
+
+        def after(mask: int, nd: int) -> int:  # the travelled set after it
+            return mask | 1 << nd if strict else 0
+
+        first = sd * 16 + (1 << sd if strict else 0)
+        boards = [
+            d * 16 + m
+            for m in range(16)
+            if ok(m)
             for d in range(4)
+            if not strict or m >> d & 1
         ]
-        start = (si * 4 + sd) * 16 + ((1 << sd) if strict else 0)
-        seen = {start}
-        todo = [start]
-        pop, push, add = todo.pop, todo.append, seen.add
-        while todo:
-            state = pop()
-            mask = state & 15
-            i, d = state >> 6, (state >> 4) & 3
-            here = axes[i] or (door[i] and i != si)
-            for nd, turn, step, axis, rev, bit, reverse_ok in moves[d]:
-                if turn and here:
-                    continue
-                if strict and mask & rev and not reverse_ok:
-                    continue
-                n = i + step
-                if blocked[n] or axes[n] & axis or (door[n] == axis and n != ti):
-                    continue
-                if n == ti and nd == td:
-                    return True
-                k = (n * 4 + nd) * 16 + ((mask | bit) if strict else 0)
-                if k not in seen:
-                    add(k)
-                    push(k)
-        return False
+        # where a state of each board may stand: entered moving its way
+        host = {k: enter[k >> 4 & 1] | (start if k == first else 0) for k in boards}
+        # per board: the boards its turns lead to, and whether it runs on
+        turns = {
+            k: [
+                (nd, nd * 16 + after(k & 15, nd))
+                for nd in ((k >> 4) + 1 & 3, (k >> 4) + 3 & 3)
+                if may(k & 15, nd) and nd * 16 + after(k & 15, nd) in host
+            ]
+            for k in boards
+        }
+        runs = {k: may(k & 15, k >> 4) for k in boards}
+
+        def back(k: int, cells: int) -> int:
+            """``cells`` and every state of board ``k`` running straight on
+            into them."""
+            if not runs[k]:
+                return cells
+            d = k >> 4
+            run = fill(cells & enter[d % 2], (d + 2) % 4)
+            return cells | (_shift(run, (d + 2) % 4, h) & host[k])
+
+        level = {k: back(k, goal & host[k]) if k >> 4 == td else 0 for k in boards}
+        counts = [level]
+        while not level[first] & start:
+            grown = {}
+            for k in boards:
+                corner = 0  # cells where a turn reaches the level below
+                for nd, to in turns[k]:
+                    if level[to]:
+                        corner |= _shift(level[to] & enter[nd % 2], (nd + 2) % 4, h)
+                grown[k] = back(k, level[k] | (corner & turn & host[k]))
+            if grown == level:
+                return None  # the start never reaches the goal
+            level = grown
+            counts.append(level)
+        b = len(counts) - 1
+        if b >= 255:
+            return _Levels(lambda k: bytes(n)), 1 << 60  # past a byte: drop none
+        top = bytes([b + 1]) * n
+        every = (1 << n) - 1  # level b + 1: every cell no level holds
+
+        def made(k: int) -> bytes:
+            if k not in host or not level[k]:
+                return top
+            # one board per bit of the level, each turned into bytes once
+            planes = [0] * (b + 1).bit_length()
+            below = 0
+            for j, cells in enumerate([c[k] for c in counts] + [every]):
+                new, below = cells & ~below, cells
+                for bit in range(len(planes)):
+                    if j >> bit & 1:
+                        planes[bit] |= new
+            value = sum(_cell_bytes(p, n) << bit for bit, p in enumerate(planes) if p)
+            return value.to_bytes(n, "little")
+
+        levels = _Levels(made)
+        # walk a route of b bends: turn down a level wherever one can
+        i, d, mask, cost = si, sd, first & 15, 0
+        while not (i == ti and d == td):
+            k = levels[d * 16 + mask][i]
+            nxt = None
+            if k and not axes[i] and not (door[i] and i != si):
+                for nd in ((d + 1) % 4, (d + 3) % 4):
+                    j, axis = i + self.steps[nd], 1 << nd % 2
+                    if not may(mask, nd) or blocked[j] or axes[j] & axis:
+                        continue
+                    if door[j] == axis and j != ti:
+                        continue
+                    if levels[nd * 16 + after(mask, nd)][j] == k - 1:
+                        nxt = j, nd, after(mask, nd), TURN_COST
+                        break
+            if nxt is None:  # straight on: the level holds
+                nxt = i + self.steps[d], d, mask, 0
+                if levels[d * 16 + mask][nxt[0]] > k:
+                    return levels, 1 << 60  # (never) no bound: drop nothing
+            i, d, mask, turned = nxt
+            cost += 1 + turned + (CROSS_COST if axes[i] else 0)
+        return levels, cost
 
     # -- search ---------------------------------------------------------------
     def _search(self, s: Node, sd: int, t: Node, td: int, strict: bool):
@@ -319,6 +583,20 @@ class Router:
         ties go to the lower cost so far, then to the earlier insertion.
 
         A state is packed into one int: ``(node index * 4 + dir) * 16 + mask``.
+
+        A search that drags on (``FLOOD_AFTER`` steps: the estimate counts
+        too few bends, the way is blocked) gets the fewest bends from every
+        state to the goal and the cost of one route (:meth:`_bend_levels`);
+        a relaxed one, made because no strict route was found, gets them at
+        once (``RELAXED_FLOOD_AFTER``).
+        From then on a state is not taken up when its cost so far, its
+        distance to the goal and the bends it still needs come to more than
+        that route: it is on no cheapest route.  That changes nothing about
+        the route found: every state on a cheapest route is still taken up
+        (at its own cost, never more than the route), by the same state
+        first, and in the same order -- the states dropped never lower the
+        cost of one on a cheapest route, and entries that would lose to it
+        are skipped as stale anyway.
         """
         blocked, axes, door = self.blocked, self.axes, self.door
         tx, ty = t
@@ -368,18 +646,19 @@ class Router:
         heap = [_estimate(s, sd, t, td) << fs | start]
         counter = 1
         never = 1 << 60
-        # a search that drags on is most likely bound to fail: then a flood
-        # decides that far faster (it fails exactly when this does), after
-        # a flood over cells alone, faster still, that often decides it too
-        check = FLOOD_AFTER
+        # bends still needed per state, and the cost no state may exceed
+        # (unknown until the search drags on, see _bend_levels)
+        none = bytes(len(blocked))
+        levels, bound = _Levels(lambda k: none), never
+        check = FLOOD_AFTER if strict else RELAXED_FLOOD_AFTER
         while heap:
             if check:
                 check -= 1
-                if not check and not (
-                    self._cells_reachable(s, t, td)
-                    and self._reachable(s, sd, t, td, strict)
-                ):
-                    return None
+                if not check:
+                    found = self._bend_levels(s, sd, t, td, strict)
+                    if found is None:
+                        return None  # no route at all
+                    levels, bound = found
             key = pop(heap)
             state = key & sm
             cost = (key >> gs) & gm
@@ -419,15 +698,20 @@ class Router:
                     nc += CROSS_COST
                 nstate = (n * 4 + nd) * 16 + ((mask | bit) if strict else 0)
                 if nc < get(nstate, never):
-                    dist[nstate] = nc
-                    prev[nstate] = state
                     rx = tx - x - dx
                     ry = ty - y - dy
+                    run = (rx if rx >= 0 else -rx) + (ry if ry >= 0 else -ry)
+                    if nc + run + TURN_COST * levels[nstate & 63][n] > bound:
+                        continue  # dearer than a route known: on no cheapest one
+                    dist[nstate] = nc
+                    prev[nstate] = state
                     if bends < 0:  # heading for the target: on its line?
                         on = rx * tdy - ry * tdx == 0 and rx * tdx + ry * tdy >= 0
                         bends = 0 if on else 2 * TURN_COST
-                    f = nc + (rx if rx >= 0 else -rx) + (ry if ry >= 0 else -ry) + bends
-                    push(heap, f << fs | nc << gs | counter << sb | nstate)
+                    push(
+                        heap,
+                        (nc + run + bends) << fs | nc << gs | counter << sb | nstate,
+                    )
                     counter += 1
         return None
 
@@ -457,6 +741,24 @@ class Router:
                 self._commit(nodes)
             return Route(_simplify(full), strict, nodes)
         return None
+
+    def routes_alone(self, src: Terminal, dst: Terminal, allow_relaxed: bool) -> bool:
+        """Would the line route with no other line laid?
+
+        Laid lines only take moves away (no running along one, turning on
+        one or ending on one), never add any: a line that does not route
+        alone routes in no order, after no rip-up.  Decided like
+        :meth:`route` decides it, the search replaced by its flood (which
+        fails exactly when it does); a relaxed route exists whenever a strict
+        one does."""
+        if src.first == dst.edge and dst.first == src.edge:
+            return True  # facing ports: joined directly
+        s, sd, t = src.first, src.out_dir, dst.first
+        td = (dst.out_dir + 2) % 4
+        if not allow_relaxed and not _strict_possible(s, sd, t, td):
+            return False
+        none = bytes(len(self.axes))
+        return self._reachable(s, sd, t, td, not allow_relaxed, axes=none)
 
     def route_together(
         self,

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from schemdraw_pfd import Flowsheet, RoutingError, model
+from schemdraw_pfd import Flowsheet, RoutingError, model, router
 from schemdraw_pfd.levels import start_levels
 from schemdraw_pfd.netlist import Equipment
 from schemdraw_pfd.router import DIRS, Router, _estimate, _min_bends, needless_uturn
@@ -73,9 +73,16 @@ def test_estimate_is_consistent():
                     assert h <= step + _estimate((x + dx, y + dy), nd, t, td)
 
 
-def _random_router(rng: random.Random, size: int = 7) -> Router:
+def _random_router(
+    rng: random.Random,
+    size: int = 7,
+    walls: float = 0.15,
+    pipes: float = 0.5,
+    doors: float = 1 / 3,
+) -> Router:
     """A router on a ``size`` x ``size`` area with random obstacles, routed
-    pipes and doorsteps (no equipment needed)."""
+    pipes and doorsteps (no equipment needed); the shares of cells blocked,
+    on a pipe and on a doorstep."""
     r = object.__new__(Router)
     r.x0 = r.y0 = -1
     r.h = h = size + 2
@@ -84,18 +91,76 @@ def _random_router(rng: random.Random, size: int = 7) -> Router:
     for i in range(n):
         x, y = divmod(i, h)
         frame = x in (0, h - 1) or y in (0, h - 1)
-        r.blocked[i] = 1 if frame or rng.random() < 0.15 else 0
-    r.axes = bytearray(rng.choice((0, 0, 0, 1, 2, 3)) for _ in range(n))
-    r.door = bytearray(rng.choice((0, 0, 0, 0, 1, 2)) for _ in range(n))
+        r.blocked[i] = 1 if frame or rng.random() < walls else 0
+    r.axes = bytearray(
+        rng.choice((1, 2, 3)) if rng.random() < pipes else 0 for _ in range(n)
+    )
+    r.door = bytearray(
+        rng.choice((1, 2)) if rng.random() < doors else 0 for _ in range(n)
+    )
     r.steps = (1, h, -1, -h)
     r._coords = None
     return r
 
 
-def test_cheap_checks_never_call_off_a_routable_line():
-    # the staircase and the cell flood are necessary conditions of the exact
-    # flood (which fails exactly when the search does): a "no" from either
-    # must never meet a "yes" from it -- and they do say "no" often
+def _flood_cell_by_cell(r: Router, s, sd: int, t, td: int, strict: bool) -> bool:
+    """The search's states flooded one by one: what ``Router._reachable``
+    (on bit boards) must answer -- whether the search gets there at all."""
+    blocked, axes, door, steps = r.blocked, r.axes, r.door, r.steps
+    si, ti = r._index(s), r._index(t)
+    if axes[ti]:
+        return False
+    if si == ti and sd == td:
+        return True  # the search starts on its goal
+    arch = sd == (td + 2) % 4
+    start = (si, sd, (1 << sd) if strict else 0)
+    seen, todo = {start}, [start]
+    while todo:
+        i, d, mask = todo.pop()
+        here = axes[i] or (door[i] and i != si)
+        for nd in (d, (d + 1) % 4, (d + 3) % 4):
+            if nd != d and here:
+                continue  # no turn on a pipe or another port's doorstep
+            if strict and mask & 1 << (nd + 2) % 4 and not (arch and nd == td):
+                continue  # against a direction travelled
+            n, axis = i + steps[nd], 1 << nd % 2
+            if blocked[n] or axes[n] & axis or (door[n] == axis and n != ti):
+                continue
+            if n == ti and nd == td:
+                return True
+            k = (n, nd, (mask | 1 << nd) if strict else 0)
+            if k not in seen:
+                seen.add(k)
+                todo.append(k)
+    return False
+
+
+def test_flood_on_bit_boards_answers_like_the_flood_cell_by_cell():
+    rng = random.Random(7)
+    answers = set()
+    for _ in range(2000):
+        size = rng.choice((3, 6, 11, 18))
+        r = _random_router(
+            rng,
+            size,
+            walls=rng.choice((0, 0.1, 0.3)),
+            pipes=rng.choice((0, 0.1, 0.4)),
+            doors=rng.choice((0, 0.05, 0.2)),
+        )
+        s = (rng.randrange(size), rng.randrange(size))
+        t = s if rng.random() < 0.05 else (rng.randrange(size), rng.randrange(size))
+        sd, td = rng.randrange(4), rng.randrange(4)
+        for strict in (True, False):
+            exact = _flood_cell_by_cell(r, s, sd, t, td, strict)
+            assert r._reachable(s, sd, t, td, strict) is exact
+            answers.add((strict, exact))
+    assert len(answers) == 4  # both answers, in both modes
+
+
+def test_staircase_never_calls_off_a_routable_line():
+    # the staircase is a necessary condition of the exact flood (which fails
+    # exactly when the search does): its "no" must never meet a "yes" from
+    # it -- and it does say "no" often
     rng = random.Random(7)
     said_no = 0
     for _ in range(3000):
@@ -103,15 +168,82 @@ def test_cheap_checks_never_call_off_a_routable_line():
         s = (rng.randrange(7), rng.randrange(7))
         t = (rng.randrange(7), rng.randrange(7))
         sd, td = rng.randrange(4), rng.randrange(4)
-        for strict in (True, False):
-            exact = r._reachable(s, sd, t, td, strict)
-            if not r._cells_reachable(s, t, td):
-                said_no += 1
-                assert not exact
-            if strict and sd != (td + 2) % 4 and not r._staircase(s, sd, t, td):
-                said_no += 1
-                assert not exact
+        if sd != (td + 2) % 4 and not r._staircase(s, sd, t, td):
+            said_no += 1
+            assert not r._reachable(s, sd, t, td, True)
     assert said_no > 1000
+
+
+def test_dropping_dearer_states_finds_the_very_same_route(monkeypatch):
+    # once a search drags on, states that cannot beat a route known are
+    # dropped (see Router._search): the route found must not change, ties
+    # (equally cheap routes, crossings) included
+    rng = random.Random(11)
+    found = 0
+    for _ in range(300):
+        size = rng.choice((4, 8, 13, 20))
+        r = _random_router(
+            rng,
+            size,
+            walls=rng.choice((0, 0.1, 0.25)),
+            pipes=rng.choice((0, 0.1, 0.3)),
+            doors=rng.choice((0, 0.05)),
+        )
+        s = (rng.randrange(size), rng.randrange(size))
+        t = (rng.randrange(size), rng.randrange(size))
+        sd, td = rng.randrange(4), rng.randrange(4)
+        for strict in (True, False):
+            for after in ("FLOOD_AFTER", "RELAXED_FLOOD_AFTER"):
+                monkeypatch.setattr(router, after, 10**9)  # never
+            plain = r._search(s, sd, t, td, strict)
+            for after in ("FLOOD_AFTER", "RELAXED_FLOOD_AFTER"):
+                monkeypatch.setattr(router, after, 1)  # at once
+            assert r._search(s, sd, t, td, strict) == plain
+            found += plain is not None
+    assert found > 150
+
+
+def test_bend_levels_count_the_fewest_bends_to_the_goal():
+    # an L around the corner of a wall: one bend from the start
+    rng = random.Random(5)
+    r = _random_router(rng, 6, walls=0, pipes=0, doors=0)
+    for y in range(0, 5):
+        r.blocked[r._index((2, y))] = 1  # a wall up the middle, open at the top
+    found = r._bend_levels((0, 0), 0, (5, 0), 2, strict=False)
+    assert found is not None
+    levels, cost = found
+    start, goal = r._index((0, 0)), r._index((5, 0))
+    assert levels[0 * 16][start] == 2  # up, across the top, down: two bends
+    assert levels[2 * 16][goal] == 0
+    assert cost == 2 * router.TURN_COST + 5 + 5 + 5
+    r.blocked[r._index((2, 5))] = 1  # the wall closed: no route
+    assert r._bend_levels((0, 0), 0, (5, 0), 2, strict=False) is None
+
+
+def test_routes_alone_tells_whether_the_line_routes_with_no_pipes_laid():
+    # what rip-up and reroute relies on: a line that does not route alone
+    # routes in no order (see Flowsheet._route_all)
+    from schemdraw_pfd.router import Terminal
+
+    def end(cell, out):
+        edge = (cell[0] - DIRS[out][0], cell[1] - DIRS[out][1])
+        return Terminal(edge, edge, cell, out)
+
+    rng = random.Random(3)
+    seen = set()
+    for _ in range(600):
+        r = _random_router(rng, 8, walls=0.2, pipes=0.3, doors=0.1)
+        a = (rng.randrange(8), rng.randrange(8))
+        b = (rng.randrange(8), rng.randrange(8))
+        src, dst = end(a, rng.randrange(4)), end(b, rng.randrange(4))
+        for relaxed in (True, False):
+            alone = r.routes_alone(src, dst, relaxed)
+            laid, r.axes = r.axes, bytearray(len(r.axes))
+            routed = r.route(src, dst, relaxed, commit=False) is not None
+            r.axes = laid
+            assert alone is routed
+            seen.add(alone)
+    assert seen == {True, False}
 
 
 def test_level_floor_never_exceeds_the_quick_cost():

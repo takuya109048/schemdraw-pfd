@@ -30,6 +30,10 @@ class Geometry:
     # groups of ports on one face that serve alike (head nozzles, header
     # branches): the layout may swap the lines among them to avoid crossings
     swappable: list[list[str]] = field(default_factory=list)
+    # where lines meet each port, relative to the corner (see router.resolve_port)
+    port_ends: dict[str, tuple] = field(
+        default_factory=dict, init=False, repr=False, compare=False
+    )
 
     def translated(self, dx: float, dy: float) -> list[Shape]:
         return [_shift(s, dx, dy) for s in self.shapes]
