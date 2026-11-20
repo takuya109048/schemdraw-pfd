@@ -1,0 +1,186 @@
+{
+ "elements": [
+  {
+   "id": "RCV",
+   "type": "connector",
+   "params": {
+    "text": "製品受入\n(製造設備から)"
+   }
+  },
+  {
+   "id": "N2",
+   "type": "connector",
+   "params": {
+    "text": "N2"
+   }
+  },
+  {
+   "id": "LOAD",
+   "type": "connector",
+   "params": {
+    "text": "ローリー\n出荷場へ"
+   }
+  },
+  {
+   "id": "TK-301",
+   "type": "vertical_drum",
+   "params": {
+    "height": 12
+   },
+   "desc": "製品タンク1号"
+  },
+  {
+   "id": "P-301",
+   "type": "pump",
+   "desc": "出荷ポンプ1号"
+  },
+  {
+   "id": "F-301",
+   "type": "filter_housing",
+   "desc": "出荷フィルター1号"
+  },
+  {
+   "id": "TK-302",
+   "type": "vertical_drum",
+   "params": {
+    "height": 12
+   },
+   "desc": "製品タンク2号"
+  },
+  {
+   "id": "P-302",
+   "type": "pump",
+   "desc": "出荷ポンプ2号"
+  },
+  {
+   "id": "F-302",
+   "type": "filter_housing",
+   "desc": "出荷フィルター2号"
+  },
+  {
+   "id": "TK-303",
+   "type": "vertical_drum",
+   "params": {
+    "height": 12
+   },
+   "desc": "製品タンク3号"
+  },
+  {
+   "id": "P-303",
+   "type": "pump",
+   "desc": "出荷ポンプ3号"
+  },
+  {
+   "id": "F-303",
+   "type": "filter_housing",
+   "desc": "出荷フィルター3号"
+  }
+ ],
+ "connections": [
+  {
+   "from": "RCV.tip",
+   "to": "TK-301.n1",
+   "inline": [
+    "valve"
+   ]
+  },
+  {
+   "from": "N2.tip",
+   "to": "TK-301.n3",
+   "type": "utility"
+  },
+  {
+   "from": "TK-301.bottom",
+   "to": "P-301.in",
+   "inline": [
+    "valve"
+   ]
+  },
+  {
+   "from": "P-301.out",
+   "to": "F-301.in",
+   "inline": [
+    {
+     "type": "valve",
+     "params": {
+      "kind": "check"
+     }
+    }
+   ]
+  },
+  {
+   "from": "F-301.out",
+   "to": "LOAD.tail"
+  },
+  {
+   "from": "RCV.tip",
+   "to": "TK-302.n1",
+   "inline": [
+    "valve"
+   ]
+  },
+  {
+   "from": "N2.tip",
+   "to": "TK-302.n3",
+   "type": "utility"
+  },
+  {
+   "from": "TK-302.bottom",
+   "to": "P-302.in",
+   "inline": [
+    "valve"
+   ]
+  },
+  {
+   "from": "P-302.out",
+   "to": "F-302.in",
+   "inline": [
+    {
+     "type": "valve",
+     "params": {
+      "kind": "check"
+     }
+    }
+   ]
+  },
+  {
+   "from": "F-302.out",
+   "to": "LOAD.tail"
+  },
+  {
+   "from": "RCV.tip",
+   "to": "TK-303.n1",
+   "inline": [
+    "valve"
+   ]
+  },
+  {
+   "from": "N2.tip",
+   "to": "TK-303.n3",
+   "type": "utility"
+  },
+  {
+   "from": "TK-303.bottom",
+   "to": "P-303.in",
+   "inline": [
+    "valve"
+   ]
+  },
+  {
+   "from": "P-303.out",
+   "to": "F-303.in",
+   "inline": [
+    {
+     "type": "valve",
+     "params": {
+      "kind": "check"
+     }
+    }
+   ]
+  },
+  {
+   "from": "F-303.out",
+   "to": "LOAD.tail"
+  }
+ ]
+}

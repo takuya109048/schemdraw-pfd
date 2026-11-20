@@ -882,8 +882,10 @@ class Flowsheet:
         A main flow running through two or more major units (columns, tall
         items) is cut where it leaves one unit for the next, and before the
         first unit when a feed train comes before it (see
-        :func:`.flow.split_rows`).  Items joined only to inline items (a
-        controller on an inline valve) go with the line carrying them.
+        :func:`.flow.split_rows`).  Items reached only by utility lines (a
+        steam or condensate flag) go with the items they serve, and items
+        joined only to inline items (a controller on an inline valve) go with
+        the line carrying them.
         """
         eqs, conns = self.equipment, self.connections
         geos = {e.id: self.geometry(e) for e in eqs}
@@ -894,6 +896,18 @@ class Flowsheet:
         if len(rows) < 2:
             return []
         row = {eqs[i].id: k for k, r in enumerate(rows) for i in r}
+        main = self._process_kinds()
+        for e in eqs:  # only utility lines (a steam or condensate flag): go
+            # with the items they serve, not past a cut of the flow order
+            links = [
+                (c.kind, o)
+                for c in conns
+                for (a, _), (o, _) in (c.ends, c.ends[::-1])
+                if a == e.id
+            ]
+            served = {row[o] for k, o in links if o in row}
+            if links and all(k not in main for k, _ in links) and len(served) == 1:
+                row[e.id] = served.pop()
         hosts = self._inline_rows(row)
         for e in eqs:  # every line on an inline item: go with that line
             others = [

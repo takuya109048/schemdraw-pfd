@@ -1,0 +1,579 @@
+{
+ "elements": [
+  {
+   "id": "FEED",
+   "type": "connector",
+   "params": {
+    "text": "改質油\nBTX留分"
+   }
+  },
+  {
+   "id": "TK-201",
+   "type": "vertical_drum",
+   "desc": "フィードタンク"
+  },
+  {
+   "id": "P-201",
+   "type": "pump",
+   "desc": "フィードポンプ"
+  },
+  {
+   "id": "FIC-201",
+   "type": "instrument",
+   "params": {
+    "function": "FIC",
+    "number": "201",
+    "mount": "dcs"
+   }
+  },
+  {
+   "id": "E-201",
+   "type": "heat_exchanger",
+   "desc": "フィード予熱器"
+  },
+  {
+   "id": "LPS-201",
+   "type": "connector",
+   "params": {
+    "text": "LPS"
+   }
+  },
+  {
+   "id": "SC-201",
+   "type": "connector",
+   "params": {
+    "text": "SC"
+   }
+  },
+  {
+   "id": "T-210",
+   "type": "column",
+   "desc": "ベンゼン塔"
+  },
+  {
+   "id": "E-211",
+   "type": "heat_exchanger",
+   "desc": "ベンゼン塔コンデンサー"
+  },
+  {
+   "id": "V-211",
+   "type": "horizontal_drum",
+   "desc": "ベンゼン塔還流槽"
+  },
+  {
+   "id": "P-211",
+   "type": "pump",
+   "desc": "ベンゼン塔還流ポンプ"
+  },
+  {
+   "id": "PRD-21",
+   "type": "connector",
+   "params": {
+    "text": "ベンゼン\n製品タンクへ"
+   }
+  },
+  {
+   "id": "CWS-21",
+   "type": "connector",
+   "params": {
+    "text": "CWS"
+   }
+  },
+  {
+   "id": "CWR-21",
+   "type": "connector",
+   "params": {
+    "text": "CWR"
+   }
+  },
+  {
+   "id": "E-212",
+   "type": "heat_exchanger",
+   "params": {
+    "orientation": "vertical"
+   },
+   "desc": "ベンゼン塔リボイラー"
+  },
+  {
+   "id": "HPS-21",
+   "type": "connector",
+   "params": {
+    "text": "HPS"
+   }
+  },
+  {
+   "id": "HSC-21",
+   "type": "connector",
+   "params": {
+    "text": "SC"
+   }
+  },
+  {
+   "id": "P-212",
+   "type": "pump",
+   "desc": "ベンゼン塔缶出しポンプ"
+  },
+  {
+   "id": "T-220",
+   "type": "column",
+   "desc": "トルエン塔"
+  },
+  {
+   "id": "FIC-221",
+   "type": "instrument",
+   "params": {
+    "function": "FIC",
+    "number": "221",
+    "mount": "dcs"
+   }
+  },
+  {
+   "id": "E-221",
+   "type": "heat_exchanger",
+   "desc": "トルエン塔コンデンサー"
+  },
+  {
+   "id": "V-221",
+   "type": "horizontal_drum",
+   "desc": "トルエン塔還流槽"
+  },
+  {
+   "id": "P-221",
+   "type": "pump",
+   "desc": "トルエン塔還流ポンプ"
+  },
+  {
+   "id": "PRD-22",
+   "type": "connector",
+   "params": {
+    "text": "トルエン\n製品タンクへ"
+   }
+  },
+  {
+   "id": "CWS-22",
+   "type": "connector",
+   "params": {
+    "text": "CWS"
+   }
+  },
+  {
+   "id": "CWR-22",
+   "type": "connector",
+   "params": {
+    "text": "CWR"
+   }
+  },
+  {
+   "id": "E-222",
+   "type": "heat_exchanger",
+   "params": {
+    "orientation": "vertical"
+   },
+   "desc": "トルエン塔リボイラー"
+  },
+  {
+   "id": "HPS-22",
+   "type": "connector",
+   "params": {
+    "text": "HPS"
+   }
+  },
+  {
+   "id": "HSC-22",
+   "type": "connector",
+   "params": {
+    "text": "SC"
+   }
+  },
+  {
+   "id": "P-222",
+   "type": "pump",
+   "desc": "トルエン塔缶出しポンプ"
+  },
+  {
+   "id": "T-230",
+   "type": "column",
+   "desc": "キシレン塔"
+  },
+  {
+   "id": "FIC-231",
+   "type": "instrument",
+   "params": {
+    "function": "FIC",
+    "number": "231",
+    "mount": "dcs"
+   }
+  },
+  {
+   "id": "E-231",
+   "type": "heat_exchanger",
+   "desc": "キシレン塔コンデンサー"
+  },
+  {
+   "id": "V-231",
+   "type": "horizontal_drum",
+   "desc": "キシレン塔還流槽"
+  },
+  {
+   "id": "P-231",
+   "type": "pump",
+   "desc": "キシレン塔還流ポンプ"
+  },
+  {
+   "id": "PRD-23",
+   "type": "connector",
+   "params": {
+    "text": "混合キシレン\n製品タンクへ"
+   }
+  },
+  {
+   "id": "CWS-23",
+   "type": "connector",
+   "params": {
+    "text": "CWS"
+   }
+  },
+  {
+   "id": "CWR-23",
+   "type": "connector",
+   "params": {
+    "text": "CWR"
+   }
+  },
+  {
+   "id": "E-232",
+   "type": "heat_exchanger",
+   "params": {
+    "orientation": "vertical"
+   },
+   "desc": "キシレン塔リボイラー"
+  },
+  {
+   "id": "HPS-23",
+   "type": "connector",
+   "params": {
+    "text": "HPS"
+   }
+  },
+  {
+   "id": "HSC-23",
+   "type": "connector",
+   "params": {
+    "text": "SC"
+   }
+  },
+  {
+   "id": "P-232",
+   "type": "pump",
+   "desc": "キシレン塔缶出しポンプ"
+  },
+  {
+   "id": "E-202",
+   "type": "heat_exchanger",
+   "desc": "重質分クーラー"
+  },
+  {
+   "id": "HEAVY",
+   "type": "connector",
+   "params": {
+    "text": "C9+重質分\n燃料油へ"
+   }
+  },
+  {
+   "id": "CWS-202",
+   "type": "connector",
+   "params": {
+    "text": "CWS"
+   }
+  },
+  {
+   "id": "CWR-202",
+   "type": "connector",
+   "params": {
+    "text": "CWR"
+   }
+  }
+ ],
+ "connections": [
+  {
+   "from": "FEED.tip",
+   "to": "TK-201.n1"
+  },
+  {
+   "from": "TK-201.bottom",
+   "to": "P-201.in"
+  },
+  {
+   "from": "P-201.out",
+   "to": "E-201.tube_in",
+   "inline": [
+    {
+     "type": "valve",
+     "id": "FV-201",
+     "params": {
+      "kind": "control"
+     }
+    }
+   ]
+  },
+  {
+   "from": "FIC-201.s",
+   "to": "FV-201.signal",
+   "type": "signal"
+  },
+  {
+   "from": "LPS-201.tip",
+   "to": "E-201.shell_in",
+   "type": "utility"
+  },
+  {
+   "from": "E-201.shell_out",
+   "to": "SC-201.tail",
+   "type": "utility"
+  },
+  {
+   "from": "E-201.tube_out",
+   "to": "T-210.w8"
+  },
+  {
+   "from": "T-210.top",
+   "to": "E-211.tube_in"
+  },
+  {
+   "from": "E-211.tube_out",
+   "to": "V-211.n1"
+  },
+  {
+   "from": "V-211.s_mid",
+   "to": "P-211.in"
+  },
+  {
+   "from": "P-211.out",
+   "to": "T-210.e15",
+   "recycle": true,
+   "inline": [
+    {
+     "type": "valve",
+     "id": "FV-212",
+     "params": {
+      "kind": "control"
+     }
+    }
+   ]
+  },
+  {
+   "from": "P-211.out",
+   "to": "PRD-21.tail"
+  },
+  {
+   "from": "CWS-21.tip",
+   "to": "E-211.shell_in_s",
+   "type": "utility"
+  },
+  {
+   "from": "E-211.shell_out_n",
+   "to": "CWR-21.tail",
+   "type": "utility"
+  },
+  {
+   "from": "T-210.s0",
+   "to": "E-212.tube_in"
+  },
+  {
+   "from": "E-212.tube_out",
+   "to": "T-210.e2"
+  },
+  {
+   "from": "HPS-21.tip",
+   "to": "E-212.shell_out",
+   "type": "utility"
+  },
+  {
+   "from": "E-212.shell_in",
+   "to": "HSC-21.tail",
+   "type": "utility"
+  },
+  {
+   "from": "T-210.s2",
+   "to": "P-212.in"
+  },
+  {
+   "from": "P-212.out",
+   "to": "T-220.w8",
+   "inline": [
+    {
+     "type": "valve",
+     "id": "FV-221",
+     "params": {
+      "kind": "control"
+     }
+    }
+   ]
+  },
+  {
+   "from": "FIC-221.s",
+   "to": "FV-221.signal",
+   "type": "signal"
+  },
+  {
+   "from": "T-220.top",
+   "to": "E-221.tube_in"
+  },
+  {
+   "from": "E-221.tube_out",
+   "to": "V-221.n1"
+  },
+  {
+   "from": "V-221.s_mid",
+   "to": "P-221.in"
+  },
+  {
+   "from": "P-221.out",
+   "to": "T-220.e15",
+   "recycle": true,
+   "inline": [
+    {
+     "type": "valve",
+     "id": "FV-222",
+     "params": {
+      "kind": "control"
+     }
+    }
+   ]
+  },
+  {
+   "from": "P-221.out",
+   "to": "PRD-22.tail"
+  },
+  {
+   "from": "CWS-22.tip",
+   "to": "E-221.shell_in_s",
+   "type": "utility"
+  },
+  {
+   "from": "E-221.shell_out_n",
+   "to": "CWR-22.tail",
+   "type": "utility"
+  },
+  {
+   "from": "T-220.s0",
+   "to": "E-222.tube_in"
+  },
+  {
+   "from": "E-222.tube_out",
+   "to": "T-220.e2"
+  },
+  {
+   "from": "HPS-22.tip",
+   "to": "E-222.shell_out",
+   "type": "utility"
+  },
+  {
+   "from": "E-222.shell_in",
+   "to": "HSC-22.tail",
+   "type": "utility"
+  },
+  {
+   "from": "T-220.s2",
+   "to": "P-222.in"
+  },
+  {
+   "from": "P-222.out",
+   "to": "T-230.w8",
+   "inline": [
+    {
+     "type": "valve",
+     "id": "FV-231",
+     "params": {
+      "kind": "control"
+     }
+    }
+   ]
+  },
+  {
+   "from": "FIC-231.s",
+   "to": "FV-231.signal",
+   "type": "signal"
+  },
+  {
+   "from": "T-230.top",
+   "to": "E-231.tube_in"
+  },
+  {
+   "from": "E-231.tube_out",
+   "to": "V-231.n1"
+  },
+  {
+   "from": "V-231.s_mid",
+   "to": "P-231.in"
+  },
+  {
+   "from": "P-231.out",
+   "to": "T-230.e15",
+   "recycle": true,
+   "inline": [
+    {
+     "type": "valve",
+     "id": "FV-232",
+     "params": {
+      "kind": "control"
+     }
+    }
+   ]
+  },
+  {
+   "from": "P-231.out",
+   "to": "PRD-23.tail"
+  },
+  {
+   "from": "CWS-23.tip",
+   "to": "E-231.shell_in_s",
+   "type": "utility"
+  },
+  {
+   "from": "E-231.shell_out_n",
+   "to": "CWR-23.tail",
+   "type": "utility"
+  },
+  {
+   "from": "T-230.s0",
+   "to": "E-232.tube_in"
+  },
+  {
+   "from": "E-232.tube_out",
+   "to": "T-230.e2"
+  },
+  {
+   "from": "HPS-23.tip",
+   "to": "E-232.shell_out",
+   "type": "utility"
+  },
+  {
+   "from": "E-232.shell_in",
+   "to": "HSC-23.tail",
+   "type": "utility"
+  },
+  {
+   "from": "T-230.s2",
+   "to": "P-232.in"
+  },
+  {
+   "from": "P-232.out",
+   "to": "E-202.tube_in"
+  },
+  {
+   "from": "E-202.tube_out",
+   "to": "HEAVY.tail"
+  },
+  {
+   "from": "CWS-202.tip",
+   "to": "E-202.shell_in_s",
+   "type": "utility"
+  },
+  {
+   "from": "E-202.shell_out_n",
+   "to": "CWR-202.tail",
+   "type": "utility"
+  }
+ ]
+}

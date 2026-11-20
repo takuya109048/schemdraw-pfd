@@ -16,7 +16,7 @@ NS = {
     "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
 }
 X = f"{{{NS['xdr']}}}"
-EXAMPLE = "examples/parallel_trains.json"
+EXAMPLE = "examples/loading_station.json"
 
 
 @pytest.fixture(scope="module")
@@ -160,7 +160,7 @@ def test_arcs_and_circles_are_excel_arcs_and_ovals(book):
             prst = _attr(_find(sp, ".//a:prstGeom"), "prst")
             assert prst == ("ellipse" if i.full else "arc")
             count += 1
-    assert count == len(shapes) > 0  # tank heads, filter domes, pump casings
+    assert count == len(shapes) > 0  # tank heads, pump casings
 
 
 def test_a_vessel_head_arc_runs_over_the_top():
@@ -179,7 +179,7 @@ def test_a_vessel_head_arc_runs_over_the_top():
 def test_parts_are_grouped_per_element_and_per_line(book):
     _, root, sc = book
     groups = {_name(g): g for g in root.iter(f"{X}grpSp")}
-    tank = groups["T-101"]
+    tank = groups["TK-301"]
     lines = list(tank.iter(f"{X}cxnSp"))
     ovals = [
         sp for sp in tank.iter(f"{X}sp") if sp.find(".//a:prstGeom[@prst='arc']", NS) is not None
@@ -189,7 +189,7 @@ def test_parts_are_grouped_per_element_and_per_line(book):
         sp for sp in tank.iter(f"{X}sp") if _find(sp, ".//xdr:cNvSpPr").get("txBox")
     ]
     assert len(texts) == 1  # its tag
-    route = next(n for n in groups if n.startswith("T-101.bottom"))
+    route = next(n for n in groups if n.startswith("TK-301.bottom"))
     pieces = list(groups[route].iter(f"{X}cxnSp"))
     assert len(pieces) >= 2  # a bend: two straight pieces (and the nozzle tick)
 
@@ -224,7 +224,7 @@ def test_texts_are_text_boxes(book):
         for i in g.items
         if isinstance(i, Text)
     ]
-    assert boxes == texts and "T-101" in boxes
+    assert boxes == texts and "TK-301" in boxes
 
 
 def test_frame_is_one_rectangle(book):

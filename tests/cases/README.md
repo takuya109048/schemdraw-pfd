@@ -11,7 +11,7 @@
 | `ports/` | 各エレメントのポートの系列すべて（`top`/`bottom`、鏡板の `n<i>`/`s<i>`、胴の `w<i>`/`e<i>` と `_low`/`_mid`/`_high`、熱交換器の胴側の逆流ポート、フィルターの `vent`/`drain`、ヘッダーの `main_e`/`m<i>`、計器の四方） |
 | `transform/` | `rotation`（0/90/180/270）× `mirror`。ポンプは8通りすべて、熱交換器・横型ドラム・弁・塔はいくつか |
 | `lines/` | 線種（`pipe`/`utility`/`signal`/`instrument`、独自の線種、既定の線種の上書き）、インライン機器（文字列・辞書、`id`/`params`/`level`/`elevation`/`desc`/`in`/`out`、複数、右から左、後で宣言される id への接続）、`anchor`（`auto`/`src`/`dst`）、リサイクル（明示・自動検出・インライン弁付き） |
-| `layout/` | `layout`（省略/`flow`/`order`、`order` で逆順）、`version`、`level`（省略・一部だけ・ポンプを上げる）、`elevation`、`span`、`desc`、追加ポート `ports`、段への折り返し（`rows` の `auto`/`single`、予熱列、段をまたぐ調節計、`span` の機器） |
+| `layout/` | `layout`（省略/`flow`/`order`、`order` で逆順）、`version`、`level`（省略・一部だけ・ポンプを上げる）、`elevation`、`span`、`desc`、追加ポート `ports`、段への折り返し（`rows` の `auto`/`single`、予熱列、段をまたぐ調節計、予熱器のユーティリティのフラグ、`span` の機器） |
 | `topology/` | 配管のつながり方（直列、分岐・合流 2本と3本、分かれて合流、ノズルごとの枝、並列系列、ループ、還流、サイドストリッパー、右から左、ドラムの下のポンプ、交差、つながっていない2系統、機器の迂回） |
 | `flags/` | 図面端のフラグ（左端・右端、左向き、`edge` の指定、`local` の `true`/`false`/`auto` と `order` での `local`、左右に積む、2行の文字、長さ、文字なし、2本が1つのフラグへ、上の段のフラグ） |
 | `custom/` | `custom_elements`（図形 `rect`/`polyline`/`ellipse`/`arc`、`boundary`/`fill`/`pipe`/`closed`、`label_pos` 5種、`nozzles`、`texts`、寸法とポート、インライン、回転、ヘッダーの枝管に載せる） |
@@ -48,7 +48,7 @@
 | `topology/split_3` | ポンプの吐出から3本に分岐して右端のフラグへ送ると、主管の切り込み点から下りる配管が交差した。右端のフラグを「近い機器ほど下」に積んでいたが、上から下りてくる配管では逆になる。下向きのポートへの配管のフラグは遠いものほど下に積むようにした（`flags/stack_left_into_bottoms` は左端で同じことを確かめる） |
 | `flags/level_above` ほか4例 | 共通のフラグから並列のポンプ2台へ分配すると、手前のポンプ用の切り込み点が奥のポンプ（主管がまっすぐ入る端の機器）の前に置かれ、手前のポンプへの配管が U ターンして交差していた。切り込み点の位置は枝の腕（上下）につながる機器だけで決めるようにした。同じ原因の `topology/parallel_two`・`parallel_three_pumps`・`split_and_merge` も U ターンがなくなった |
 | `topology/feed_main_two_columns` | ポンプから2基の塔の側面へ送ると、手前の塔は主管の上に持ち上がるのに、切り込み点の腕が下向きで、U ターンしていた。主管が下を通る容器のノズルへは腕を上向きにした（折れ 8→2、U ターン 2→0） |
-| `routing/flow/n_to_s_up` ほか10例 | ノズルどうしを1セルでまっすぐつなぐと、両端のフランジの印と矢印が重なっていた。直結するノズルどうしは2セル以上離すようにした（横は隙間を2セル、上下に重なるときは段の間を広げる）。作例では `crude_distillation`・`distillation`・`hda_benzene` の直列の熱交換器など |
+| `routing/flow/n_to_s_up` ほか10例 | ノズルどうしを1セルでまっすぐつなぐと、両端のフランジの印と矢印が重なっていた。直結するノズルどうしは2セル以上離すようにした（横は隙間を2セル、上下に重なるときは段の間を広げる）。当時の作例でも、直列の熱交換器などで起きていた |
 
 ## 例の足し方
 

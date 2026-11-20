@@ -2,9 +2,9 @@
 
 **機器の種類と配管のつながりを JSON に書くだけで、PFD（プロセスフロー図）／P&ID 風の図を自動で描く**ツール。描画には [SchemDraw](https://schemdraw.readthedocs.io/) を使う。
 
-![HDA ベンゼン製造プロセスの自動生成例](examples/hda_benzene.png)
+![溶剤回収設備の自動生成例](examples/solvent_recovery.png)
 
-*`examples/hda_benzene.json` から自動で描いた図（機器32・交差6・警告0）。並び順・段・座標は書いていない*
+*`examples/solvent_recovery.json` から自動で描いた溶剤回収設備（蒸留塔・コンデンサー・還流槽・リボイラーと3つの制御ループ）。JSON には機器の種類と配管のつながりしか書いていない（並び順・段・座標なし）*
 
 ## できること
 
@@ -32,38 +32,40 @@ uv sync
 
 ### JSON から描く
 
-`examples/header_loop.json`:
+`examples/feed_heating.json`（原料タンク → ポンプ → スチーム加熱器。ポンプの吐出の一部はタンクへ戻す）:
 
 ```json
 {
-  "layout": "flow",
   "elements": [
-    {"id": "D-1", "type": "vertical_drum", "desc": "Feed drum"},
-    {"id": "P-1", "type": "pump", "desc": "Feed pump"},
-    {"id": "H-1", "type": "header", "params": {"branches": 2}},
-    {"id": "E-1", "type": "heat_exchanger",
-     "params": {"orientation": "vertical", "rotation": 180},
-     "desc": "Vertical exchanger"},
-    {"id": "P-2", "type": "pump", "desc": "Transfer pump"},
-    {"id": "D-2", "type": "vertical_drum", "desc": "Product drum"}
+    {"id": "FEED", "type": "connector", "params": {"text": "原料"}},
+    {"id": "TK-1", "type": "vertical_drum", "desc": "原料タンク"},
+    {"id": "P-1", "type": "pump", "desc": "原料ポンプ"},
+    {"id": "E-1", "type": "heat_exchanger", "desc": "原料加熱器"},
+    {"id": "STM", "type": "connector", "params": {"text": "スチーム"}},
+    {"id": "DRN", "type": "connector", "params": {"text": "ドレン"}},
+    {"id": "OUT", "type": "connector", "params": {"text": "反応工程へ"}}
   ],
   "connections": [
-    {"from": "D-1.bottom", "to": "P-1.in"},
-    {"from": "P-1.out", "to": "H-1.main_w"},
-    {"from": "H-1.b0", "to": "D-1.n3", "recycle": true},
-    {"from": "H-1.b1", "to": "E-1.tube_in"},
-    {"from": "E-1.tube_out", "to": "P-2.in"},
-    {"from": "P-2.out", "to": "D-2.w_mid"},
-    {"from": "D-2.bottom", "to": "D-1.n1", "recycle": true}
+    {"from": "FEED.tip", "to": "TK-1.n1"},
+    {"from": "TK-1.bottom", "to": "P-1.in"},
+    {"from": "P-1.out", "to": "E-1.tube_in"},
+    {"from": "P-1.out", "to": "TK-1.n3", "recycle": true, "inline": ["valve"]},
+    {"from": "E-1.tube_out", "to": "OUT.tail"},
+    {"from": "STM.tip", "to": "E-1.shell_in", "type": "utility"},
+    {"from": "E-1.shell_out", "to": "DRN.tail", "type": "utility"}
   ]
 }
 ```
 
 ```bash
-uv run pfd examples/header_loop.json -o out.png     # 拡張子で svg / png / pdf / xlsx
+uv run pfd examples/feed_heating.json -o out.png     # 拡張子で svg / png / pdf / xlsx
 ```
 
-<img src="examples/header_loop.png" alt="header_loop.json の出力" width="480">
+<img src="examples/feed_heating.png" alt="feed_heating.json の出力" width="560">
+
+- `"recycle": true` の線はタンクへ戻る線として扱われ、並びを決めるときは無視される
+- `"type": "utility"` の線（スチーム・ドレン）のフラグは、図面端ではなく加熱器のすぐ横に置かれる
+- 1つのポート（`P-1.out`）に2本つなぐと、分岐点が自動で入る
 
 ### CLI
 
@@ -118,7 +120,7 @@ fs.to_json("out.json")  # JSON と同じ形式で保存（from_json で読み戻
 
 - 全エレメント共通: `rotation`（0/90/180/270、反時計回り）と `mirror`（左右反転。回転より先に適用）
 - 大きさの目安: ポンプ 2x3 ≒ 弁 2x2 < 熱交換器 12x4 < 縦型ドラム 6x10（`width`/`height`/`length`/`diameter` で変更可）。座標・大きさはすべて整数グリッド
-- 圧縮機・加熱炉・反応器などの標準にない機器は、JSON の `custom_elements` で定義する（`examples/hda_benzene.json` に例）
+- 冷却塔・ストレーナー・圧縮機などの標準にない機器は、JSON の `custom_elements` で定義する（`examples/cooling_water.json` に冷却塔と Y 形ストレーナーの例）
 - タグは下線付き、槽類のノズルにはフランジ線、全体に枠線（`frame=False` で無効）
 - `desc`: 機器の仕様。図の上段（回転機は下段）にタグと並べて表示
 - `elevation`: 段の中での高さ。省略時は、接続相手の向かい合うポートと一直線になる高さに自動でそろえる
@@ -130,11 +132,16 @@ fs.to_json("out.json")  # JSON と同じ形式で保存（from_json で読み戻
 - **インライン機器**: 弁や流量計は、配管の `inline` に書けば配管の上に並ぶ（配置順に並べなくてよい）
 
   ```python
-  fs.connect("P1.out", "C1.w8", inline=[
-      "valve",  # id 省略: タグなし
-      {"type": "valve", "id": "FV-1", "params": {"kind": "control"}},
-  ])
-  fs.connect("FIC-1.e", "FV-1.signal", kind="signal")  # インライン機器の id も接続先にできる
+  fs.connect(
+      "P1.out",
+      "C1.w8",
+      inline=[
+          "valve",  # id 省略: タグなし
+          {"type": "valve", "id": "FV-1", "params": {"kind": "control"}},
+      ],
+  )
+  # インライン機器の id も接続先にできる
+  fs.connect("FIC-1.e", "FV-1.signal", kind="signal")
   ```
 
 - **自動主管**: 1つのポートを複数の配管で共有すると、主管が延びて各配管が順番に切り込む（分岐点 tee は自動生成。id は `_` で始まり、タグは描かない）
@@ -190,24 +197,19 @@ fs.to_json("out.json")  # JSON と同じ形式で保存（from_json で読み戻
 
 ## 作例
 
-`examples/` の JSON と、それぞれの出力画像（`.png`）。
+`examples/` の JSON と、それぞれの出力画像（`.png`）。どれも機器の種類と配管のつながりだけを書いていて、並び順・段（`level`）・座標は書いていない。
 
 | ファイル | 内容 | 結果 |
 |---|---|---|
-| [`hda_benzene`](examples/hda_benzene.png) | トルエンの水素化脱アルキル (HDA) によるベンゼン製造。Turton ら *Analysis, Synthesis and Design of Chemical Processes* の例題の構成を再構成 | 機器32・交差6・警告0 |
-| [`tennessee_eastman`](examples/tennessee_eastman.png) | Tennessee Eastman プロセス（Downs & Vogel 1993 の制御ベンチマーク）の主要ユニットを再構成 | 機器28・交差10・警告0 |
-| [`crude_distillation`](examples/crude_distillation.png) | 原油の常圧・減圧蒸留装置（予熱列・脱塩器・プレフラッシュ・加熱炉・常圧塔とオーバーヘッド／ポンプアラウンド／サイドストリッパー・減圧塔）。予熱／常圧塔／減圧塔の3段に自動で折り返す | 機器85・3段・交差9・警告0 |
-| [`parallel_trains`](examples/parallel_trains.png) | タンク→ポンプ→ヘッダー→フィルターの3系列並列。供給主管から各タンクへ供給し、各ヘッダーの枝管が共通主管へ合流 | 機器14・交差2・警告0 |
-| [`column_trains`](examples/column_trains.png) | 蒸留塔＋ボトムポンプの3系列並列。供給主管で各塔へ分配し、塔頂・ボトムはそれぞれ共通主管へ合流 | 機器10・交差5・警告0 |
-| [`header_loop`](examples/header_loop.png) | ドラム→ポンプ→ヘッダー→熱交換器→ドラムのループ（クイックスタートの例） | 機器6・交差0・警告0 |
-| [`pid_c201`](examples/pid_c201.png) | 上記の P&ID 解説記事の記載例（蒸留塔 C-201 まわり）を組み直したもの。還流槽（漏斗形）・スチームトラップ・排水ファンネルは `custom_elements`、リボイラーは縦置きの `heat_exchanger`。ポンプ A/B の並列は `tee` で分岐・合流し、吸込主管をポンプより低く通して U ターンなしで配線 | `order` レイアウト |
-| [`pid_c201_inline`](examples/pid_c201_inline.png) | `pid_c201` の弁をすべてインラインに書き換えたもの。`--layout flow` で描くと [`pid_c201_flow.png`](examples/pid_c201_flow.png)（曲がり 30→24、幅 116→63） | |
-| [`distillation`](examples/distillation.png) | 蒸留塔まわりの P&ID 風の小さな例（塔・槽・ポンプ・弁・計器・フラグ） | `order` レイアウト |
-| [`sample`](examples/sample.png) | 独自エレメント（`custom_elements`）とヘッダーの枝管機器の小さな例 | `order` レイアウト |
+| [`feed_heating`](examples/feed_heating.png) | 原料タンク → 原料ポンプ → スチーム加熱器 → 反応工程へ。ポンプの吐出の一部をタンクへ戻す（クイックスタートの例） | 機器7・交差0・警告0 |
+| [`solvent_recovery`](examples/solvent_recovery.png) | 使用済み溶剤の蒸留回収。フィード予熱器・回収塔・塔頂コンデンサー・還流槽・縦置きリボイラー・回収溶剤クーラー。流量（FIC）・液面（LIC）・温度（TIC）の制御ループは、調節弁をインラインに書き、調節計から信号線でつなぐ | 機器24＋インライン調節弁4・交差9・警告0 |
+| [`btx_fractionation`](examples/btx_fractionation.png) | 改質油の BTX 留分をベンゼン塔 → トルエン塔 → キシレン塔の順に精留。主流が3基の塔を通るので、予熱／各塔の4段に自動で折り返す（段をまたぐ配管は「to / from」のフラグの対） | 機器46＋インライン調節弁6・4段・交差15・警告0 |
+| [`loading_station`](examples/loading_station.png) | 製品タンク3基 → 出荷ポンプ → 出荷フィルターの3系列並列のローリー出荷設備。受入・N2・出荷の3本の共通主管は自動で入る。[Excel 出力の例](examples/loading_station.xlsx)も置いている | 機器12＋インライン弁9・交差2・警告0 |
+| [`cooling_water`](examples/cooling_water.png) | 冷却水の循環系統。冷却塔と Y 形ストレーナーは `custom_elements` で定義。常用・予備のポンプ2台からヘッダーで3台のクーラーへ送り、戻りは冷却塔へ合流 | 機器10＋インライン弁6・交差3・警告0 |
 
-機器の数はインライン機器を含み、自動で入る分岐点（tee）は含まない。ベンチマーク2つの接続関係は、公開されている図そのものではなく、各文献の機器リスト・物質収支表から組み直したもの（ユーティリティや計装は簡略化）。
+<img src="examples/btx_fractionation.png" alt="BTX 精留の自動生成例（4段に折り返し）" width="420">
 
-<img src="examples/crude_distillation.png" alt="原油蒸留装置の自動生成例（3段に折り返し）" width="720">
+*`btx_fractionation.json`: 3基の塔を通る主流を4段に折り返した図*
 
 ## 開発
 
