@@ -1,4 +1,4 @@
-"""Command line: ``uv run pfd spec.json -o out.svg``."""
+"""Command line: ``pfd spec.json -o out.svg``."""
 
 from __future__ import annotations
 

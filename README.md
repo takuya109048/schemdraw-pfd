@@ -18,13 +18,17 @@
 
 ## インストール
 
-Python 3.12 以上と [uv](https://docs.astral.sh/uv/) が必要。
+Python 3.12 以上が必要。
 
 ```bash
 git clone https://github.com/takuya109048/schemdraw-pfd.git
 cd schemdraw-pfd
-uv sync
+python -m venv .venv
+source .venv/bin/activate      # Windows: .venv\Scripts\activate
+pip install -e ".[dev]"        # 使うだけなら pip install -e .
 ```
+
+以下のコマンドは、この仮想環境を有効にした状態で実行する。
 
 図の文字は、日本語フォントの候補（Yu Gothic, Meiryo, MS Gothic, Noto Sans CJK JP, IPAexGothic）のうち、入っている最初のものを使う。作例の画像は Noto Sans CJK JP で描いている。
 
@@ -58,7 +62,7 @@ uv sync
 ```
 
 ```bash
-uv run pfd examples/feed_heating.json -o out.png     # 拡張子で svg / png / pdf / xlsx
+pfd examples/feed_heating.json -o out.png     # 拡張子で svg / png / pdf / xlsx
 ```
 
 <img src="examples/feed_heating.png" alt="feed_heating.json の出力" width="560">
@@ -70,9 +74,9 @@ uv run pfd examples/feed_heating.json -o out.png     # 拡張子で svg / png / 
 ### CLI
 
 ```bash
-uv run pfd SPEC.json -o out.svg        # 図を描く
-uv run pfd --list-elements             # 標準エレメントの一覧（SPEC を渡すと独自エレメントも）
-uv run pfd --describe valve            # エレメントのパラメータ・ポートの説明
+pfd SPEC.json -o out.svg        # 図を描く
+pfd --list-elements             # 標準エレメントの一覧（SPEC を渡すと独自エレメントも）
+pfd --describe valve            # エレメントのパラメータ・ポートの説明
 ```
 
 | オプション | 内容 |
@@ -214,11 +218,11 @@ fs.to_json("out.json")  # JSON と同じ形式で保存（from_json で読み戻
 ## 開発
 
 ```bash
-uv run pytest                          # テスト（作例のレイアウトはスナップショットで回帰チェック）
-uv run ruff check . ; uv run ruff format --check .
-uv run pyrefly check
+pytest                          # テスト（作例のレイアウトはスナップショットで回帰チェック）
+ruff check . ; ruff format --check .
+pyrefly check
 ```
 
-- レイアウト・配線を意図的に変えたときは、スナップショットを更新する: `PFD_UPDATE_SNAPSHOTS=1 uv run pytest tests/test_snapshots.py tests/test_cases.py`
+- レイアウト・配線を意図的に変えたときは、スナップショットを更新する: `PFD_UPDATE_SNAPSHOTS=1 pytest tests/test_snapshots.py tests/test_cases.py`
 - 作例とは別に、観点ごとの小さな例（機器2〜8個）を `tests/cases/` に置いている。全エレメント・全ポート・全パラメータ値・全 JSON キー・ポートの向きの総当たりを、どれかの例が必ず使っていることをテストで確かめる（[tests/cases/README.md](tests/cases/README.md)）
 - ソースの構成・設計上の決まり・配線探索の高速化と性能は [docs/internals.md](docs/internals.md)
