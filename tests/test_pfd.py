@@ -363,7 +363,11 @@ def test_filter_housing_ports_on_shell():
     geo = get_element("filter_housing").build({})
     assert {"in", "out", "vent", "drain"} <= set(geo.ports)
     assert geo.ports["in"].side == "W" and geo.ports["out"].side == "E"
-    assert geo.ports["in"].offset < geo.ports["out"].offset  # in low, out high
+    # raw liquid in above the partition, filtrate out of the chamber below
+    assert geo.ports["in"].offset > geo.ports["out"].offset
+    assert geo.ports["drain"].side == "S" and geo.ports["vent"].side == "N"
+    with pytest.raises(ValueError, match="height must be >= 9"):
+        get_element("filter_housing").build({"height": 8})
     fs = Flowsheet()
     fs.add("pump", "P")
     fs.add("filter_housing", "F", level=1)

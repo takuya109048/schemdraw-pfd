@@ -160,7 +160,7 @@ def test_arcs_and_circles_are_excel_arcs_and_ovals(book):
             prst = _attr(_find(sp, ".//a:prstGeom"), "prst")
             assert prst == ("ellipse" if i.full else "arc")
             count += 1
-    assert count == len(shapes) > 0  # tank heads, pump casings
+    assert count == len(shapes) > 0  # tank and filter heads, pump casings
 
 
 def test_a_vessel_head_arc_runs_over_the_top():

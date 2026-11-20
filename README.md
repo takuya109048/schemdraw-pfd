@@ -112,7 +112,7 @@ fs.to_json("out.json")  # JSON と同じ形式で保存（from_json で読み戻
 | `vertical_drum` / `column` | 丸鏡板の槽 / 充填層(×印)付きの塔 | `width`, `height`, `beds` / `top`, `bottom`, `n<i>`, `s<i>`（上下の鏡板のノズル。左から順、中央が `top`/`bottom`。複数のラインを別々のノズルから入れられる）, `w<i>`, `e<i>` |
 | `horizontal_drum` | 横型槽 | `length`, `diameter` / `w`, `e`, `n<i>`, `s<i>` |
 | `heat_exchanger` | 丸い管箱の多管式熱交換器 | `orientation`(`vertical` で縦置き) / `tube_in/out`, `shell_in/out` |
-| `filter_housing` | カートリッジフィルターハウジング（上下のフランジ板のあいだに直胴、上フランジの中央に首とキャップ、内部に底板から立つカートリッジ。カートリッジは幅2セルにつき1本で、胴の高さの2/3） | `width`(既定4), `height`(既定9。胴が2/3、首が残り) / `in`(西側面・下寄り), `out`(東側面・上寄り), `vent`(首の頂部), `drain`(底板の中央), `w<i>`, `e<i>` |
+| `filter_housing` | 脚付きのカートリッジフィルターハウジング（勝和技研 SL シリーズの外形図が参考）。円筒の胴に皿形の下鏡、V バンドで留める皿形の蓋。胴の下寄りの仕切り板で、上の原液室（仕切り板の上にカートリッジが立つ。幅2セルにつき1本）と下のろ液室に分かれる | `width`(既定4), `height`(既定10、9以上。脚2・下鏡1・ろ液室2・原液室・蓋1) / `in`(西側面・仕切り板のすぐ上), `out`(東側面・ろ液室), `vent`(蓋の頂部), `drain`(下鏡の底。脚のあいだ), `w<i>`, `e<i>` |
 | `instrument` | 計器。`mount`: `field`(丸=現場計器) / `dcs`(四角の中に丸) | `function`("FIC"等), `number` / `n`,`s`,`e`,`w` |
 | `tee` | 配管の分岐点（計器の取り出しにも使う。黒丸なし） | `arms`("wen"等) |
 | `connector` | 図面間接続の五角形フラグ | `text`, `point`(`right`/`left`) / `tip`, `tail` |
