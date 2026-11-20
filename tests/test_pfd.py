@@ -317,8 +317,7 @@ def test_render(tmp_path):
 
 
 def test_crossing_breaks_the_line_without_a_loop():
-    from schemdraw.segments import Segment, SegmentArc
-
+    from schemdraw_pfd._vendor.schemdraw.segments import Segment, SegmentArc
     from schemdraw_pfd.render import _line_segments
     from schemdraw_pfd.style import LineStyle
 

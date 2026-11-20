@@ -25,18 +25,18 @@ from pathlib import Path
 from typing import Any
 
 import matplotlib
-import schemdraw
 from matplotlib import font_manager
-from schemdraw import elements as elm
-from schemdraw.segments import (
+
+from ._vendor import schemdraw
+from ._vendor.schemdraw import elements as elm
+from ._vendor.schemdraw.segments import (
     Segment,
     SegmentArc,
     SegmentCircle,
     SegmentPoly,
     SegmentText,
 )
-from schemdraw.types import Halign, Valign
-
+from ._vendor.schemdraw.types import Halign, Valign
 from .expand import GENERATED_PREFIX
 from .geometry import Polyline, Shape, find_crossings  # noqa: F401 (re-exported)
 from .layout import Placed

@@ -18,6 +18,7 @@
 | `model.py` | `Flowsheet`（追加・接続・順序変更・JSON 読み書き・バージョン確認）、展開→配置→配線→隙間ごとの圧縮→入れ替え可能なノズル・枝管の割り当て直し |
 | `xlsx.py` | Excel 出力: すべて Excel の図形を部品ごとに（直線・円弧・楕円、矢印付きの直線、テキストボックス）、機器・ラインごとにグループ化。DrawingML を直接書く |
 | `render.py` | SchemDraw への描画（`Theme` と線種スタイルに従う）、配管交差の上下表現 |
+| `_vendor/` | 同梱した外部パッケージ。SchemDraw 0.23 を `_vendor/schemdraw/` に取り込んでおり、`from ._vendor import schemdraw` で使う（PyPI の `schemdraw` には依存しない）。出どころ・手を入れた箇所・更新手順は `_vendor/README.md` |
 
 ## 設計上の決まり
 

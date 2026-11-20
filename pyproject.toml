@@ -6,7 +6,6 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "matplotlib>=3.11.2",
-    "schemdraw>=0.23",
 ]
 
 [build-system]
@@ -25,6 +24,7 @@ pfd = "schemdraw_pfd.cli:main"
 
 [tool.ruff]
 line-length = 88
+extend-exclude = ["src/schemdraw_pfd/_vendor"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
@@ -32,4 +32,5 @@ ignore = ["E501"]
 
 [tool.pyrefly]
 project-includes = ["src", "tests"]
+project-excludes = ["src/schemdraw_pfd/_vendor/**"]
 search-path = ["src", "tests"]
