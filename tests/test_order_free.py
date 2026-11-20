@@ -40,8 +40,8 @@ def test_shuffled_json_draws_the_same_sheet(name):
 
 
 def test_reversed_lists_draw_the_same_sheet():
-    data = json.loads(Path("examples/column_trains.json").read_text("utf-8"))
-    expected = _sheet(built("column_trains"))
+    data = json.loads(Path("examples/loading_station.json").read_text("utf-8"))
+    expected = _sheet(built("loading_station"))
     data["elements"].reverse()
     data["connections"].reverse()
     assert _sheet(Flowsheet.from_dict(data).build()) == expected
@@ -56,10 +56,11 @@ def test_json_lays_out_by_the_flow_unless_told_otherwise():
 
 
 def test_builds_in_worker_processes_match_one_process():
-    # column_trains has a feed pump with three branches: two placement modes
-    one = Flowsheet.from_json("examples/column_trains.json")
+    # the loading station's receipt flag has three branches: two placement
+    # modes
+    one = Flowsheet.from_json("examples/loading_station.json")
     one.jobs = 1
-    many = Flowsheet.from_json("examples/column_trains.json")
+    many = Flowsheet.from_json("examples/loading_station.json")
     many.jobs = 2
     assert len(one._modes()) == 2
     assert _sheet(one.build()) == _sheet(many.build())

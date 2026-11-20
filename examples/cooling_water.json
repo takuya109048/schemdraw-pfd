@@ -1,0 +1,370 @@
+{
+ "custom_elements": [
+  {
+   "name": "cooling_tower",
+   "width": 10,
+   "height": 14,
+   "shapes": [
+    {
+     "type": "polyline",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       10,
+       0
+      ],
+      [
+       10,
+       3
+      ],
+      [
+       9,
+       11
+      ],
+      [
+       1,
+       11
+      ],
+      [
+       0,
+       3
+      ]
+     ],
+     "closed": true
+    },
+    {
+     "type": "polyline",
+     "points": [
+      [
+       0,
+       3
+      ],
+      [
+       10,
+       3
+      ]
+     ],
+     "boundary": false
+    },
+    {
+     "type": "polyline",
+     "points": [
+      [
+       1.5,
+       6
+      ],
+      [
+       8.5,
+       6
+      ],
+      [
+       8,
+       9
+      ],
+      [
+       2,
+       9
+      ]
+     ],
+     "closed": true,
+     "boundary": false
+    },
+    {
+     "type": "polyline",
+     "points": [
+      [
+       1.5,
+       6
+      ],
+      [
+       8,
+       9
+      ]
+     ],
+     "boundary": false
+    },
+    {
+     "type": "polyline",
+     "points": [
+      [
+       8.5,
+       6
+      ],
+      [
+       2,
+       9
+      ]
+     ],
+     "boundary": false
+    },
+    {
+     "type": "polyline",
+     "points": [
+      [
+       2,
+       10
+      ],
+      [
+       8,
+       10
+      ]
+     ],
+     "boundary": false
+    },
+    {
+     "type": "polyline",
+     "points": [
+      [
+       3,
+       11
+      ],
+      [
+       3,
+       14
+      ],
+      [
+       7,
+       14
+      ],
+      [
+       7,
+       11
+      ]
+     ]
+    },
+    {
+     "type": "ellipse",
+     "cx": 5,
+     "cy": 12.5,
+     "rx": 1.6,
+     "ry": 0.5,
+     "boundary": false
+    }
+   ],
+   "ports": {
+    "in": {
+     "side": "E",
+     "offset": 10
+    },
+    "out": {
+     "side": "E",
+     "offset": 1
+    },
+    "makeup": {
+     "side": "W",
+     "offset": 2
+    },
+    "blowdown": {
+     "side": "S",
+     "offset": 5
+    }
+   },
+   "label_pos": "below",
+   "nozzles": true
+  },
+  {
+   "name": "y_strainer",
+   "width": 2,
+   "height": 2,
+   "shapes": [
+    {
+     "type": "polyline",
+     "points": [
+      [
+       0,
+       1
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "pipe": true
+    },
+    {
+     "type": "polyline",
+     "points": [
+      [
+       0.6,
+       1
+      ],
+      [
+       1.4,
+       0.2
+      ],
+      [
+       1.8,
+       0.6
+      ],
+      [
+       1.0,
+       1.4
+      ]
+     ],
+     "boundary": false
+    }
+   ],
+   "ports": {
+    "in": {
+     "side": "W",
+     "offset": 1
+    },
+    "out": {
+     "side": "E",
+     "offset": 1
+    }
+   },
+   "label_pos": "above"
+  }
+ ],
+ "elements": [
+  {
+   "id": "MU",
+   "type": "connector",
+   "params": {
+    "text": "工業用水\n(補給水)"
+   }
+  },
+  {
+   "id": "CT-401",
+   "type": "cooling_tower",
+   "desc": "冷却塔"
+  },
+  {
+   "id": "ST-401",
+   "type": "y_strainer"
+  },
+  {
+   "id": "P-401A",
+   "type": "pump",
+   "desc": "冷却水ポンプ(常用)"
+  },
+  {
+   "id": "P-401B",
+   "type": "pump",
+   "desc": "冷却水ポンプ(予備)"
+  },
+  {
+   "id": "SH-401",
+   "type": "header",
+   "params": {
+    "branches": 3
+   }
+  },
+  {
+   "id": "E-411",
+   "type": "heat_exchanger",
+   "desc": "反応器冷却器"
+  },
+  {
+   "id": "E-412",
+   "type": "heat_exchanger",
+   "desc": "圧縮機インタークーラー"
+  },
+  {
+   "id": "E-413",
+   "type": "heat_exchanger",
+   "desc": "製品クーラー"
+  },
+  {
+   "id": "BD",
+   "type": "connector",
+   "params": {
+    "text": "ブロー水\n排水処理へ"
+   }
+  }
+ ],
+ "connections": [
+  {
+   "from": "MU.tip",
+   "to": "CT-401.makeup",
+   "inline": [
+    {
+     "type": "valve",
+     "id": "LV-401",
+     "params": {
+      "kind": "control"
+     }
+    }
+   ]
+  },
+  {
+   "from": "CT-401.out",
+   "to": "ST-401.in"
+  },
+  {
+   "from": "ST-401.out",
+   "to": "P-401A.in",
+   "inline": [
+    "valve"
+   ]
+  },
+  {
+   "from": "ST-401.out",
+   "to": "P-401B.in",
+   "inline": [
+    "valve"
+   ]
+  },
+  {
+   "from": "P-401A.out",
+   "to": "SH-401.main_w",
+   "inline": [
+    {
+     "type": "valve",
+     "params": {
+      "kind": "check",
+      "orientation": "vertical"
+     }
+    }
+   ]
+  },
+  {
+   "from": "P-401B.out",
+   "to": "SH-401.main_w",
+   "inline": [
+    {
+     "type": "valve",
+     "params": {
+      "kind": "check",
+      "orientation": "vertical"
+     }
+    }
+   ]
+  },
+  {
+   "from": "SH-401.b0",
+   "to": "E-411.shell_in_s"
+  },
+  {
+   "from": "SH-401.b1",
+   "to": "E-412.shell_in_s"
+  },
+  {
+   "from": "SH-401.b2",
+   "to": "E-413.shell_in_s"
+  },
+  {
+   "from": "E-411.shell_out_n",
+   "to": "CT-401.in"
+  },
+  {
+   "from": "E-412.shell_out_n",
+   "to": "CT-401.in"
+  },
+  {
+   "from": "E-413.shell_out_n",
+   "to": "CT-401.in"
+  },
+  {
+   "from": "CT-401.blowdown",
+   "to": "BD.tail",
+   "inline": [
+    "valve"
+   ]
+  }
+ ]
+}

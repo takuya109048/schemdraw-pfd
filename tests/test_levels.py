@@ -88,7 +88,7 @@ def test_given_levels_are_kept():
 
 
 def test_levels_do_not_depend_on_the_order_of_the_lists():
-    data = json.loads(Path("examples/header_loop.json").read_text("utf-8"))
+    data = json.loads(Path("examples/cooling_water.json").read_text("utf-8"))
     want = _placed_levels(Flowsheet.from_dict(data))
     rng = random.Random(7)
     for _ in range(2):

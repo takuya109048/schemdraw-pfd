@@ -120,10 +120,10 @@ def test_signal_lines_and_port_alignment():
     assert d.routes[0][0].kind == "signal"
 
 
-def test_distillation_example_builds_strictly():
-    d = Flowsheet.from_json("examples/distillation.json").build()
+def test_solvent_recovery_example_builds_strictly():
+    d = Flowsheet.from_json("examples/solvent_recovery.json").build()
     assert not d.warnings
-    assert d.descs["C-201"].startswith("蒸留塔")
+    assert d.descs["T-101"] == "溶剤回収塔"
 
 
 def test_drum_head_and_wall_points():
@@ -222,7 +222,7 @@ def test_edge_flags_share_a_column_and_stack():
 
 
 def test_everything_is_on_the_grid():
-    d = Flowsheet.from_json("examples/sample.json").build()
+    d = Flowsheet.from_json("examples/cooling_water.json").build()
     for p in d.placed:
         assert all(isinstance(v, int) for v in p.bbox)
     for _, r in d.routes:
@@ -240,7 +240,7 @@ def _directions(points):
 
 
 def test_routes_have_no_u_or_i_turns_and_enter_perpendicular():
-    d = Flowsheet.from_json("examples/sample.json").build()
+    d = Flowsheet.from_json("examples/feed_heating.json").build()
     assert not d.warnings
     by = {p.id: p for p in d.placed}
     for c, r in d.routes:
@@ -309,10 +309,10 @@ def test_crossings_are_detected():
 
 
 def test_render(tmp_path):
-    fs = Flowsheet.from_json("examples/sample.json")
+    fs = Flowsheet.from_json("examples/cooling_water.json")
     out = tmp_path / "x.svg"
     d = fs.render(out)
-    assert find_crossings([r.points for _, r in d.routes])  # sample has a crossing
+    assert find_crossings([r.points for _, r in d.routes])  # it has crossings
     assert out.stat().st_size > 1000
 
 
@@ -328,21 +328,24 @@ def test_crossing_breaks_the_line_without_a_loop():
     assert segs[0].path[-1] == (2, 0.7) and segs[1].path[0] == (2, 1.3)
 
 
-def test_reference_pid_reproduction_routes_strictly():
-    # the P&ID example sheet: 40 elements, 44 lines, custom + vertical equipment
-    fs = Flowsheet.from_json("examples/pid_c201.json")
+def test_process_sheet_in_the_written_order_routes_strictly():
+    # the solvent recovery sheet laid out in the order its items are listed:
+    # inline control valves, a shared discharge, a vertical reboiler
+    fs = Flowsheet.from_json("examples/solvent_recovery.json")
+    fs.layout = "order"
     d = fs.build(compact=False)
     assert not d.warnings
-    assert len(d.routes) == len(fs.connections) == 44
+    assert len(d.routes) == len(fs.expand().connections) == 32
     by = {p.id: p for p in d.placed}
     equipment = [p for p in d.placed if not p.geo.off_sheet]
     for a, b in zip(equipment, equipment[1:]):
-        assert b.x >= a.x + a.geo.width
+        assert b.x >= a.x + a.geo.width  # a column of its own, in order
     flags = [p for p in d.placed if p.geo.off_sheet]
     assert len({p.x for p in flags}) == 2  # one column per sheet edge
-    # valve train in front of the column sits on one straight line
-    assert by["GV1"].y == by["FV-201"].y == by["GV2"].y
-    assert by["E-202"].geo.height > by["E-202"].geo.width  # stands vertically
+    # the feed control valve stands level with the preheater's tube inlet
+    e = by["E-101"]
+    assert by["FV-101"].y + 1 == e.y + e.geo.ports["tube_in"].offset
+    assert by["E-104"].geo.height > by["E-104"].geo.width  # stands vertically
 
 
 def test_vertical_drum_has_nozzles_across_both_heads():

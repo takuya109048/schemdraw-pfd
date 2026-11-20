@@ -247,7 +247,7 @@ def test_routes_alone_tells_whether_the_line_routes_with_no_pipes_laid():
 
 
 def test_level_floor_never_exceeds_the_quick_cost():
-    fs = Flowsheet.from_json(EXAMPLES / "parallel_trains.json")
+    fs = Flowsheet.from_json(EXAMPLES / "cooling_water.json")
     fs.jobs = 1
     sheet = copy.copy(fs)
     sheet.equipment = fs._with_levels()

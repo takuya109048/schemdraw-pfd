@@ -1,7 +1,7 @@
 """Inline items on lines and automatic tees on shared ports."""
 
-import json
-from pathlib import Path
+import copy
+from typing import Any
 
 import pytest
 
@@ -234,46 +234,69 @@ def test_riser_enters_the_middle_of_a_main_pipe_running_both_ways():
     assert max(r.bends for _, r in d.routes) == 1  # every line an I or an L
 
 
+# a mixing tank circulated through a header: one branch back into its own
+# top, one into the top of a day tank whose bottom returns to the mixing tank
+MIXING: dict[str, list[dict[str, Any]]] = {
+    "elements": [
+        {"id": "TK-A", "type": "vertical_drum", "desc": "Mixing tank"},
+        {"id": "P-A", "type": "pump", "desc": "Circulation pump"},
+        {"id": "H-A", "type": "header", "params": {"branches": 2}},
+        {"id": "TK-B", "type": "vertical_drum", "desc": "Day tank"},
+        {"id": "P-B", "type": "pump", "desc": "Dosing pump"},
+        {"id": "OUT", "type": "connector", "params": {"text": "to dosing"}},
+    ],
+    "connections": [
+        {"from": "TK-A.bottom", "to": "P-A.in"},
+        {"from": "P-A.out", "to": "H-A.main_w"},
+        {"from": "H-A.b0", "to": "TK-A.n3", "recycle": True},
+        {"from": "H-A.b1", "to": "TK-B.n1"},
+        {"from": "TK-B.bottom", "to": "P-B.in"},
+        {"from": "P-B.out", "to": "OUT.tail"},
+        {"from": "TK-B.s0", "to": "TK-A.n1", "recycle": True},
+    ],
+}
+
+
 def test_header_branches_arch_over_into_top_nozzles():
     # branches rise from the header and drop into the tops: an arch, no warning
-    d = Flowsheet.from_json("examples/header_loop.json").build()
-    assert not [w for w in d.warnings if w.startswith("H-1.")]
-    arches = [r for c, r in d.routes if c.src.startswith("H-1.b")]
+    d = Flowsheet.from_dict(MIXING).build()
+    assert not [w for w in d.warnings if w.startswith("H-A.")]
+    arches = [r for c, r in d.routes if c.src.startswith("H-A.b")]
     assert [r.bends for r in arches] == [2, 2]
     for r in arches:
         (_, y0), (_, y1), (_, y2) = r.points[0], r.points[1], r.points[-1]
         assert y1 > y0 and y1 > y2  # up, over, down
 
 
-def _loop(d1_branch: str, d1_return: str) -> Flowsheet:
-    """The header_loop example, D-2 raised a level, with the two lines into
-    D-1 on given ports."""
-    data = json.loads(Path("examples/header_loop.json").read_text("utf-8"))
+def _loop(a_branch: str, a_return: str) -> Flowsheet:
+    """The mixing sheet, the day tank raised a level, with the two lines into
+    the mixing tank on given ports."""
+    data = copy.deepcopy(MIXING)
     for e in data["elements"]:
-        if e["id"] == "D-2":
-            e["level"] = 2  # a gravity return: the drum stands higher
+        if e["id"] == "TK-B":
+            e["level"] = 2  # a gravity return: the day tank stands higher
     for c in data["connections"]:
-        if c["from"] == "H-1.b0":
-            c["to"] = f"D-1.{d1_branch}"
-        if c["from"] == "D-2.bottom":
-            c["to"] = f"D-1.{d1_return}"
+        if c["from"] == "H-A.b0":
+            c["to"] = f"TK-A.{a_branch}"
+        if c["from"] == "TK-B.s0":
+            c["to"] = f"TK-A.{a_return}"
     return Flowsheet.from_dict(data)
 
 
 def test_merging_recycles_run_back_on_the_main_pipe():
-    # a branch and a gravity return both end on D-1's top: the main pipe into
-    # the top runs back, the lines flow forwards into it
+    # a branch and a gravity return both end on TK-A's top: the main pipe
+    # into the top runs back, the lines flow forwards into it
     fs = _loop("top", "top")
     net = fs.expand()
     back = {(c.src, c.dst) for c in net.connections if c.recycle}
-    assert back == {("_T_D-1_top.w", "D-1.top")}
+    assert back == {("_T_TK-A_top.w", "TK-A.top")}
     d = fs.build()
     assert not d.warnings
     by = {p.id: p for p in d.placed}
-    tap = next(r for c, r in d.routes if c.src == "H-1.b0")
+    tap = next(r for c, r in d.routes if c.src == "H-A.b0")
     assert tap.bends == 0  # the branch rises straight into the main pipe
-    assert d.crossings == 1  # only P-2's riser passes behind the main pipe
-    assert by["D-2"].y > by["E-1"].bbox[3]  # the return drum stands higher
+    assert d.crossings == 1  # only the riser to TK-B passes behind it
+    assert by["TK-B"].y > by["TK-A"].bbox[3]  # the day tank stands higher
 
 
 def test_lines_reach_a_drum_head_through_nozzles_of_their_own():
@@ -282,18 +305,18 @@ def test_lines_reach_a_drum_head_through_nozzles_of_their_own():
     assert not [e for e in net.equipment if e.type == "tee"]  # nothing merges
     d = fs.build()
     assert not d.warnings
-    ends = {c.dst: r.points[-1] for c, r in d.routes if c.dst.startswith("D-1.n")}
-    (x1, y1), (x3, y3) = ends["D-1.n1"], ends["D-1.n3"]
+    ends = {c.dst: r.points[-1] for c, r in d.routes if c.dst.startswith("TK-A.n")}
+    (x1, y1), (x3, y3) = ends["TK-A.n1"], ends["TK-A.n3"]
     assert x1 < x3 and y1 == y3  # two nozzles side by side on the top head
-    assert d.crossings == 1  # nested arches: only P-2's riser crosses a line
+    assert d.crossings == 1  # nested arches: only the riser to TK-B crosses
 
 
 def test_tank_bottom_to_tank_top_on_one_level_keeps_the_tank_on_its_floor():
-    # D-2 beside D-1: its bottom feeds D-1's top, so the line has to go down
-    # and back up around the equipment (a U, but no warning) -- and D-2 is not
-    # lifted for it
-    d = Flowsheet.from_json("examples/header_loop.json").build()
+    # TK-B beside TK-A: its bottom feeds TK-A's top, so the line has to go
+    # down and back up around the equipment (a U, but no warning) -- and
+    # TK-B is not lifted for it
+    d = Flowsheet.from_dict(MIXING).build()
     by = {p.id: p for p in d.placed}
-    assert by["D-2"].y == by["D-1"].y
+    assert by["TK-B"].y == by["TK-A"].y
     assert d.uturns == 1 and not d.warnings
     assert d.crossings == 0

@@ -1,0 +1,20 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "params": {"text": "原料"}},
+    {"id": "TK-1", "type": "vertical_drum", "desc": "原料タンク"},
+    {"id": "P-1", "type": "pump", "desc": "原料ポンプ"},
+    {"id": "E-1", "type": "heat_exchanger", "desc": "原料加熱器"},
+    {"id": "STM", "type": "connector", "params": {"text": "スチーム"}},
+    {"id": "DRN", "type": "connector", "params": {"text": "ドレン"}},
+    {"id": "OUT", "type": "connector", "params": {"text": "反応工程へ"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "TK-1.n1"},
+    {"from": "TK-1.bottom", "to": "P-1.in"},
+    {"from": "P-1.out", "to": "E-1.tube_in"},
+    {"from": "P-1.out", "to": "TK-1.n3", "recycle": true, "inline": ["valve"]},
+    {"from": "E-1.tube_out", "to": "OUT.tail"},
+    {"from": "STM.tip", "to": "E-1.shell_in", "type": "utility"},
+    {"from": "E-1.shell_out", "to": "DRN.tail", "type": "utility"}
+  ]
+}

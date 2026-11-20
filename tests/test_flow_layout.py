@@ -83,28 +83,30 @@ def test_flags_go_to_the_edge_their_port_faces():
 
 
 def test_build_does_not_change_the_users_items():
-    fs = Flowsheet.from_json("examples/hda_benzene.json")
+    fs = Flowsheet.from_json("examples/solvent_recovery.json")
     before = fs.to_dict()
     fs.build(compact=False)
     assert fs.to_dict() == before  # heights are settled on copies
 
 
 def test_layout_is_part_of_the_json():
-    fs = Flowsheet.from_json("examples/tennessee_eastman.json")
+    fs = Flowsheet.from_json("examples/btx_fractionation.json")
     assert fs.layout == "flow"
     assert Flowsheet.from_dict(fs.to_dict()).layout == "flow"
     with pytest.raises(ValueError, match="layout"):
         Flowsheet(layout="grid")
 
 
-def test_reference_sheet_in_flow_layout_is_tighter():
-    order = Flowsheet.from_json("examples/pid_c201_inline.json")
-    flow = Flowsheet.from_json("examples/pid_c201_inline.json")
-    flow.layout = "flow"
+def test_flow_layout_is_tighter_than_the_written_order():
+    # the solvent recovery sheet drawn in the order its items are listed,
+    # and from the direction of flow
+    order = Flowsheet.from_json("examples/solvent_recovery.json")
+    order.layout = "order"
+    flow = Flowsheet.from_json("examples/solvent_recovery.json")
     a, b = order.build(), flow.build()
-    assert not b.warnings
-    assert b.size[0] < a.size[0] * 0.7
-    assert b.bends <= a.bends
+    assert not a.warnings and not b.warnings
+    assert b.size[0] < a.size[0]
+    assert b.bends < a.bends * 0.6
 
 
 def _utility_sheet(layout: str, **flag) -> Flowsheet:
@@ -145,18 +147,16 @@ def test_local_flags_can_be_forced_either_way():
     assert by["CWS"].x < by["OUT"].x  # placed in its declared position
 
 
-@pytest.mark.parametrize(
-    ("name", "max_warnings"), [("hda_benzene", 7), ("tennessee_eastman", 5)]
-)
-def test_complex_reference_processes_route(name, max_warnings):
-    # benchmark flowsheets written with levels only (no order, no coordinates)
+@pytest.mark.parametrize("name", ["solvent_recovery", "loading_station"])
+def test_process_sheets_route_whatever_the_declared_order(name):
+    # process sheets written with types and lines only (no order, no levels)
     results = []
     for seed in (None, 5):
         fs = Flowsheet.from_json(f"examples/{name}.json")
         if seed is not None:
             random.Random(seed).shuffle(fs.equipment)
         d = fs.build(compact=False)
-        assert len(d.warnings) <= max_warnings
+        assert not d.warnings
         results.append((len(d.warnings), d.bends))
     assert results[0] == results[1]  # independent of the declared order
 

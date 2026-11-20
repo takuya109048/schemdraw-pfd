@@ -28,10 +28,10 @@ def _point(geo, port):
 
 # -- element library ---------------------------------------------------------
 def test_json_custom_elements_stay_in_their_flowsheet():
-    fs = Flowsheet.from_json("examples/pid_c201.json")
-    assert "hopper_drum" in fs.library
-    assert "hopper_drum" not in DEFAULT_LIBRARY
-    assert "hopper_drum" not in Flowsheet().library
+    fs = Flowsheet.from_json("examples/cooling_water.json")
+    assert "cooling_tower" in fs.library
+    assert "cooling_tower" not in DEFAULT_LIBRARY
+    assert "cooling_tower" not in Flowsheet().library
 
 
 def test_nested_elements_come_from_the_flowsheet_library():
@@ -84,15 +84,14 @@ def test_custom_line_kind_and_theme(tmp_path):
 
 # -- JSON format -------------------------------------------------------------
 def test_json_round_trip_keeps_the_layout(tmp_path):
-    fs = Flowsheet.from_json("examples/pid_c201.json")
+    fs = Flowsheet.from_json("examples/cooling_water.json")
     path = tmp_path / "rt.json"
     fs.to_json(path)
     data = json.loads(path.read_text("utf-8"))
     assert data["version"] == 1
     assert {c["name"] for c in data["custom_elements"]} == {
-        "hopper_drum",
-        "steam_trap",
-        "funnel",
+        "cooling_tower",
+        "y_strainer",
     }
     again = Flowsheet.from_json(path)
     a, b = fs.build(compact=False), again.build(compact=False)
@@ -127,8 +126,8 @@ def test_json_errors_say_where():
 
 # -- cli -----------------------------------------------------------------------
 def test_cli_lists_and_describes_elements(capsys):
-    assert main(["--list-elements", "examples/pid_c201.json"]) == 0
+    assert main(["--list-elements", "examples/cooling_water.json"]) == 0
     listing = capsys.readouterr().out
-    assert "hopper_drum" in listing and "valve" in listing
+    assert "cooling_tower" in listing and "valve" in listing
     assert main(["--describe", "valve"]) == 0
     assert "control" in capsys.readouterr().out
