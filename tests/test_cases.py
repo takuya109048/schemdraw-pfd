@@ -10,7 +10,7 @@ port, parameter value or key fails here until a case uses it.
 
 Regenerate the snapshots after an intended change with::
 
-    PFD_UPDATE_SNAPSHOTS=1 uv run pytest tests/test_cases.py
+    PFD_UPDATE_SNAPSHOTS=1 pytest tests/test_cases.py
 """
 
 import json

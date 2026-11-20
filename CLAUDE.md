@@ -1,65 +1,63 @@
 # Python Project Rules
 
-<!-- Generated from pydevtools.com, the Python Developer Tooling Handbook -->
-<!-- Last verified against: uv 0.13.8, ruff 0.17.5, pyrefly 1.4.1, ty 0.0.102, pytest 9.2.0, prek 0.5.10, pre-commit 4.7.0 -->
-<!-- Full explanations: https://pydevtools.com/handbook/explanation/modern-python-project-setup-guide-for-ai-assistants/ -->
-
 ## Manage packages
 
-This project uses uv. Do not use pip, pip-tools, poetry, or conda.
+This project uses pip and the standard-library `venv`. Do not use uv, pip-tools,
+poetry, or conda. There is no lockfile.
 
-- Add runtime dependency: `uv add <package>` (writes to the `project.dependencies` array)
-- Add dev dependency: `uv add --dev <package>` (writes to `[dependency-groups]` per PEP 735)
-- Remove dependency: `uv remove <package>`
-- Sync environment from lockfile: `uv sync`
-- Regenerate lockfile from constraints: `uv lock`
-- Upgrade locked versions: `uv lock --upgrade`
-- Commit `uv.lock` to version control (current uv guidance is to commit it for applications, CLIs, and libraries)
+- Create the environment: `python -m venv .venv`
+- Activate it: `source .venv/bin/activate` (Windows: `.venv\Scripts\activate`)
+- Install the project and dev tools (editable): `pip install -e ".[dev]"`
+- Runtime dependencies live in `[project] dependencies` in `pyproject.toml`
+- Dev tools (pytest, ruff, pyrefly) live in `[project.optional-dependencies] dev`
+- After changing dependencies in `pyproject.toml`, re-run `pip install -e ".[dev]"`
+- SchemDraw is vendored in `src/schemdraw_pfd/_vendor/schemdraw/`; do not add
+  `schemdraw` as a dependency. See `src/schemdraw_pfd/_vendor/README.md`.
 
 ## Run code
 
-Always use `uv run` to execute Python code and tools. Never call `python`, `pytest`, `ruff`, or other tools directly. They may not resolve to the project's virtual environment.
+Run everything inside the activated `.venv`, or call the tools through
+`.venv/bin/` (for example `.venv/bin/pytest`). Do not install packages globally.
 
-- Run a script: `uv run python script.py`
-- Run a module: `uv run python -m module_name`
-- Run a tool: `uv run pytest`, `uv run ruff check .`
-- One-off tool (not a project dependency): `uvx <tool>`
+- Run a script: `python script.py`
+- Run a module: `python -m module_name`
+- Run the CLI: `pfd SPEC.json -o out.svg`
 
 ## Create new projects
 
-- Application or CLI package: `uv init project-name`
-- Library without a console script: `uv init --lib project-name`
-- Internal script or non-package project: `uv init --no-package project-name`
-- Always use `pyproject.toml` for metadata (PEP 621). Never create `setup.py`, `setup.cfg`, or `requirements.txt`.
+- Always use `pyproject.toml` for metadata (PEP 621). Never create `setup.py`,
+  `setup.cfg`, or `requirements.txt`.
+- Build backend: setuptools (`setuptools.build_meta`)
 
 ## Test code
 
 - Framework: pytest
-- Run tests: `uv run pytest`
+- Run tests: `pytest`
 - Test files go in `tests/` at the project root
 - Test file naming: `test_*.py`
 - Test function naming: `test_*`
 - No `__init__.py` needed in `tests/`
-- Coverage: `uv add --dev coverage`, then `uv run coverage run -m pytest` and `uv run coverage report`
+- Update layout snapshots after an intended change:
+  `PFD_UPDATE_SNAPSHOTS=1 pytest tests/test_snapshots.py tests/test_cases.py`
 
 ## Configure continuous integration
 
-Use `astral-sh/setup-uv@v10.3.3` in GitHub Actions. Let uv install Python and sync the locked environment; do not add a separate `actions/setup-python` step unless the workflow has a specific non-uv requirement.
+Use `actions/setup-python` in GitHub Actions, then `pip install -e ".[dev]"`.
 
 ## Lint and format code
 
 - Tool: ruff (handles both linting and formatting)
-- Lint: `uv run ruff check .`
-- Lint and auto-fix: `uv run ruff check --fix .`
-- Format: `uv run ruff format .`
-- Check formatting: `uv run ruff format --check .`
+- Lint: `ruff check .`
+- Lint and auto-fix: `ruff check --fix .`
+- Format: `ruff format .`
+- Check formatting: `ruff format --check .`
 - Configuration lives in `pyproject.toml` under `[tool.ruff]`
 
 ## Check types
 
-- Tool: pyrefly (preferred), ty, or mypy
-- Run: `uv run pyrefly check`, `uv run ty check`, or `uv run mypy .`
-- Configuration lives in `pyproject.toml` under `[tool.pyrefly]`, `[tool.ty]`, or `[tool.mypy]`
+- Tool: pyrefly
+- Run: `pyrefly check`
+- Configuration lives in `pyproject.toml` under `[tool.pyrefly]`
 
 ## Follow code style
 
@@ -67,18 +65,9 @@ Use `astral-sh/setup-uv@v10.3.3` in GitHub Actions. Let uv install Python and sy
 - Import sorting is handled by ruff (`isort` rules enabled via `select = ["I"]`)
 - Do not add `# type: ignore` comments without an error code
 
-## Install pre-commit hooks
-
-- Tool: prek (preferred) or pre-commit
-- Install prek hooks: `uvx prek install`
-- Install pre-commit hooks: `uvx pre-commit install`
-- Do not install pre-commit or prek with pip. Use `uvx`.
-
 ## Avoid these practices
 
-- Do not create or activate virtual environments manually. uv manages `.venv/` automatically.
-- Do not install packages globally or with `pip install`.
-- Do not create `requirements.txt` for dependency management. Use `pyproject.toml` and `uv.lock`.
+- Do not use uv (`uv`, `uvx`, `uv.lock`, `uv_build`).
+- Do not install packages globally or outside `.venv`.
+- Do not create `requirements.txt` for dependency management. Use `pyproject.toml`.
 - Do not run `python setup.py` commands.
-- Do not add dependencies to pyproject.toml by hand. Use `uv add`.
-- If you must edit pyproject.toml directly, write dev dependencies under `[dependency-groups]` (PEP 735), not the legacy `[tool.uv.dev-dependencies]` table.

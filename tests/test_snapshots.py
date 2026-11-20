@@ -3,7 +3,7 @@ must not change.
 
 Regenerate after an intended layout/routing/drawing change with::
 
-    PFD_UPDATE_SNAPSHOTS=1 uv run pytest tests/test_snapshots.py tests/test_cases.py
+    PFD_UPDATE_SNAPSHOTS=1 pytest tests/test_snapshots.py tests/test_cases.py
 """
 
 from pathlib import Path
