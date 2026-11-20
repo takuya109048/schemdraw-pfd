@@ -22,6 +22,8 @@ Run everything inside the activated `.venv`, or call the tools through
 - Run a script: `python script.py`
 - Run a module: `python -m module_name`
 - Run the CLI: `pfd SPEC.json -o out.svg`
+- Build the single-file bundle: `python tools/build_single.py` (writes
+  `dist/pfd.py`, a generated file; never edit it or commit it)
 
 ## Create new projects
 

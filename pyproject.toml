@@ -34,6 +34,6 @@ select = ["E", "F", "I"]
 ignore = ["E501"]
 
 [tool.pyrefly]
-project-includes = ["src", "tests"]
+project-includes = ["src", "tests", "tools"]
 project-excludes = ["src/schemdraw_pfd/_vendor/**"]
 search-path = ["src", "tests"]
