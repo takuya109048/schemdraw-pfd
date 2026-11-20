@@ -27,7 +27,7 @@ pfd = "schemdraw_pfd.cli:main"
 
 [tool.ruff]
 line-length = 88
-extend-exclude = ["src/schemdraw_pfd/_vendor"]
+extend-exclude = ["src/schemdraw_pfd/_vendor", "docs/gpt"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
