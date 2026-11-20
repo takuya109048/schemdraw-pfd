@@ -7,10 +7,10 @@ from functools import cache
 from pathlib import Path
 
 import pytest
-import schemdraw
 
 import schemdraw_pfd.render as render
 from schemdraw_pfd import Diagram, Flowsheet
+from schemdraw_pfd._vendor import schemdraw
 
 CASES = Path(__file__).parent / "cases"
 

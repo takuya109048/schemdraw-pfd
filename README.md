@@ -1,6 +1,6 @@
 # schemdraw-pfd
 
-**機器の種類と配管のつながりを JSON に書くだけで、PFD（プロセスフロー図）／P&ID 風の図を自動で描く**ツール。描画には [SchemDraw](https://schemdraw.readthedocs.io/) を使う。
+**機器の種類と配管のつながりを JSON に書くだけで、PFD（プロセスフロー図）／P&ID 風の図を自動で描く**ツール。描画には [SchemDraw](https://schemdraw.readthedocs.io/) を使う（0.23 をパッケージ内に同梱。別途インストールは不要）。
 
 ![溶剤回収設備の自動生成例](examples/solvent_recovery.png)
 
