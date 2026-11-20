@@ -30,6 +30,22 @@ pip install -e ".[dev]"        # 使うだけなら pip install -e .
 
 以下のコマンドは、この仮想環境を有効にした状態で実行する。
 
+### 単一ファイル版（`pfd.py`）
+
+パッケージをインストールせずに使いたいときは、全モジュール（同梱の SchemDraw を含む）を1つのファイルにまとめた `pfd.py` を作れる。
+
+```bash
+python tools/build_single.py              # dist/pfd.py を作る（-o で出力先を変更）
+```
+
+できた `pfd.py` は、matplotlib さえ入っていればどこにでもコピーして使える（`pip install matplotlib`）。
+
+```bash
+python pfd.py SPEC.json -o out.svg        # pfd コマンドと同じオプション
+```
+
+Python から使うときは、`pfd.py` を import パスに置いて `import pfd` してから `from schemdraw_pfd import Flowsheet` とする。`pfd.py` は生成物なので直接編集せず、ソースを変えたら作り直す。
+
 図の文字は、日本語フォントの候補（Yu Gothic, Meiryo, MS Gothic, Noto Sans CJK JP, IPAexGothic）のうち、入っている最初のものを使う。作例の画像は Noto Sans CJK JP で描いている。
 
 ## クイックスタート
@@ -225,4 +241,5 @@ pyrefly check
 
 - レイアウト・配線を意図的に変えたときは、スナップショットを更新する: `PFD_UPDATE_SNAPSHOTS=1 pytest tests/test_snapshots.py tests/test_cases.py`
 - 作例とは別に、観点ごとの小さな例（機器2〜8個）を `tests/cases/` に置いている。全エレメント・全ポート・全パラメータ値・全 JSON キー・ポートの向きの総当たりを、どれかの例が必ず使っていることをテストで確かめる（[tests/cases/README.md](tests/cases/README.md)）
+- 単一ファイル版は `tools/build_single.py` が `src/schemdraw_pfd/` から作る。ソースを圧縮して埋め込み、先頭の import フックがメモリから読み込むので、コードの書き換えはしない。SchemDraw のうち使わないサブパッケージ（logic, dsp, flow, parsing, pictorial）は省く。`tests/test_single_file.py` が、全モジュールの import と、全ケースのレイアウト・配線がパッケージ版と一致することを確かめる
 - ソースの構成・設計上の決まり・配線探索の高速化と性能は [docs/internals.md](docs/internals.md)
