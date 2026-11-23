@@ -26,6 +26,7 @@ pub mod netlist;
 pub mod pool;
 pub mod pyjson;
 pub mod pyval;
+pub mod raster;
 pub mod render;
 pub mod revise;
 pub mod router;

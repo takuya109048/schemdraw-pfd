@@ -18,7 +18,7 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
-  -o, --output OUTPUT   svg/xlsx output path (default: pfd.svg)
+  -o, --output OUTPUT   svg/png/pdf/xlsx output path (default: pfd.svg)
   --no-labels
   --no-frame            omit the sheet border
   --fontsize FONTSIZE   tag/spec font size (points, default 20)
@@ -193,8 +193,9 @@ fn run(args: Args) -> Result<(), String> {
     }
     let output = args.output.unwrap_or_else(|| "pfd.svg".into());
     let lower = output.to_lowercase();
-    if !lower.ends_with(".svg") && !lower.ends_with(".xlsx") {
-        return Err(format!("{output}: the Rust port writes .svg and .xlsx"));
+    let ext = lower.rsplit('.').next().unwrap_or("").to_string();
+    if !["svg", "xlsx", "png", "pdf"].contains(&ext.as_str()) {
+        return Err(format!("{output}: write .svg, .png, .pdf or .xlsx"));
     }
     let diagram = fs
         .build_until(4, true, args.revision.as_deref())
@@ -209,10 +210,17 @@ fn run(args: Args) -> Result<(), String> {
         args.since.as_deref(),
     )
     .map_err(|e| e.to_string())?;
-    if lower.ends_with(".xlsx") {
-        pfd::xlsx::write_xlsx(&sc, &output).map_err(|e| e.to_string())?;
-    } else {
-        std::fs::write(&output, pfd::svg::to_svg(&sc)).map_err(|e| format!("{output}: {e}"))?;
+    let bytes = match ext.as_str() {
+        "xlsx" => {
+            pfd::xlsx::write_xlsx(&sc, &output).map_err(|e| e.to_string())?;
+            None
+        }
+        "png" => Some(pfd::raster::to_png(&sc).map_err(|e| e.to_string())?),
+        "pdf" => Some(pfd::raster::to_pdf(&sc).map_err(|e| e.to_string())?),
+        _ => Some(pfd::svg::to_svg(&sc).into_bytes()),
+    };
+    if let Some(b) = bytes {
+        std::fs::write(&output, b).map_err(|e| format!("{output}: {e}"))?;
     }
     if let Some(path) = &args.snapshot {
         let snap =
