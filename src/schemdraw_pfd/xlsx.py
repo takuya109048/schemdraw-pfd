@@ -138,6 +138,9 @@ class _Writer:
         self.next_id = 2
         self.font = sc.font or sc.theme.fonts[0]
         self._pitch: dict[float, float] = {}
+        # the group being written: a revision's colour (RRGGBB), dashed
+        self.color = "000000"
+        self.dashed = False
 
     def pitch(self, fontsize: float) -> float:
         """Line pitch (points) of a text block as SchemDraw draws it: line
@@ -150,6 +153,10 @@ class _Writer:
             self._pitch[fontsize] = h
         return self._pitch[fontsize]
 
+    def tint(self, fill: str | None) -> str | None:
+        """A solid part of a symbol, in the group's colour."""
+        return fill and ("#" + self.color if self.color != "000000" else fill)
+
     def _id(self) -> int:
         self.next_id += 1
         return self.next_id - 1
@@ -159,13 +166,14 @@ class _Writer:
         self, lw: float, ls: str = "-", head: bool = False, tail: bool = False
     ) -> str:
         tip = '<a:{}End type="triangle" w="lg" len="lg"/>'
+        dash = DASH.get("--" if self.dashed else ls, "solid")
         ends = (tip.format("head") if head else "") + (
             tip.format("tail") if tail else ""
         )
         return (
             f'<a:ln w="{round(lw * PT)}" cap="rnd">'
-            '<a:solidFill><a:srgbClr val="000000"/></a:solidFill>'
-            f'<a:prstDash val="{DASH.get(ls, "solid")}"/><a:round/>{ends}</a:ln>'
+            f'<a:solidFill><a:srgbClr val="{self.color}"/></a:solidFill>'
+            f'<a:prstDash val="{dash}"/><a:round/>{ends}</a:ln>'
         )
 
     def _cnv(self, name: str, descr: str) -> str:
@@ -233,7 +241,7 @@ class _Writer:
                 f'<a:gd name="adj1" fmla="val {adj1}"/>'
                 f'<a:gd name="adj2" fmla="val {adj2}"/></a:avLst></a:prstGeom>'
             )
-        paint = _paint(e.fill if e.full else None)
+        paint = _paint(self.tint(e.fill) if e.full else None)
         xml = (
             f"<xdr:sp><xdr:nvSpPr>{self._cnv(name, descr)}<xdr:cNvSpPr/></xdr:nvSpPr>"
             f"<xdr:spPr>{box.xfrm()}{geom}{paint}"
@@ -256,7 +264,7 @@ class _Writer:
             "<a:custGeom><a:avLst/><a:gdLst/><a:ahLst/><a:cxnLst/>"
             '<a:rect l="0" t="0" r="r" b="b"/><a:pathLst>'
             f'<a:path w="{max(box.cx, 1)}" h="{max(box.cy, 1)}">{pts}<a:close/>'
-            f"</a:path></a:pathLst></a:custGeom>{_paint(poly.fill)}"
+            f"</a:path></a:pathLst></a:custGeom>{_paint(self.tint(poly.fill))}"
             f"{self._ln(self.sc.theme.equipment_lw)}</xdr:spPr></xdr:sp>"
         )
         return xml, box
@@ -305,9 +313,10 @@ class _Writer:
         anchor = {"top": "t", "bottom": "b"}.get(t.va, "ctr")
         algn = {"left": "l", "right": "r"}.get(t.ha, "ctr")
         font = escape(self.font)
+        color = _hex(t.color) if t.color else self.color
         run = (
             f'<a:rPr lang="ja-JP" altLang="en-US" sz="{round(t.fontsize * 100)}">'
-            '<a:solidFill><a:srgbClr val="000000"/></a:solidFill>'
+            f'<a:solidFill><a:srgbClr val="{color}"/></a:solidFill>'
             f'<a:latin typeface="{font}"/><a:ea typeface="{font}"/>'
             f'<a:cs typeface="{font}"/></a:rPr>'
         )
@@ -333,6 +342,14 @@ class _Writer:
     def group(self, g: Group) -> list[str]:
         """Anchors for one scene group: a group shape for equipment (outline,
         texts, tag) and for a line (pieces, ticks); loose items for the sheet."""
+        self.color = _hex(g.color) if g.color else "000000"
+        self.dashed = g.dashed
+        try:
+            return self._group(g)
+        finally:
+            self.color, self.dashed = "000000", False
+
+    def _group(self, g: Group) -> list[str]:
         parts: list[tuple[str, _Box]] = []
         if g.kind == "equipment":
             shapes = [i for i in g.items if isinstance(i, (Polyline, Ellipse))]
@@ -367,6 +384,10 @@ class _Writer:
             + "</xdr:grpSp>"
         )
         return [_anchor(xml, box)]
+
+
+def _hex(color: str) -> str:
+    return to_hex(color)[1:].upper()
 
 
 def _paint(fill: str | None) -> str:

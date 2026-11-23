@@ -165,3 +165,40 @@ class Connection:
             ("anchor", self.anchor, "auto"),
             ("recycle", self.recycle, False),
         )
+
+
+REVISION_COLORS = ("red", "blue", "green", "magenta", "darkorange", "purple")
+
+
+@dataclass
+class Revision:
+    """A change drawn onto a finished sheet (see :mod:`.revise`).
+
+    The sheet before it keeps its look: the items and lines it adds are
+    placed and routed around what is there (moving whole parts of the sheet
+    apart where room is short), and what it ``remove``-s is taken away.
+    ``color``: how its changes are drawn (None: by its place in the list,
+    see ``REVISION_COLORS``).  ``remove``: element ids; ``remove_lines``:
+    lines as ``(from, to)``, as they were written."""
+
+    id: str
+    color: str | None = None
+    note: str = ""
+    equipment: list[Equipment] = field(default_factory=list)
+    connections: list[Connection] = field(default_factory=list)
+    remove: list[str] = field(default_factory=list)
+    remove_lines: list[tuple[str, str]] = field(default_factory=list)
+
+    def to_dict(self) -> dict[str, Any]:
+        d: dict[str, Any] = _changed(
+            {"id": self.id}, ("color", self.color, None), ("note", self.note, "")
+        )
+        if self.remove or self.remove_lines:
+            d["remove"] = list(self.remove) + [
+                {"from": a, "to": b} for a, b in self.remove_lines
+            ]
+        if self.equipment:
+            d["elements"] = [e.to_dict() for e in self.equipment]
+        if self.connections:
+            d["connections"] = [c.to_dict() for c in self.connections]
+        return d

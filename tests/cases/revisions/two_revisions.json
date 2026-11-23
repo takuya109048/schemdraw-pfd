@@ -1,0 +1,28 @@
+{
+  "elements": [
+    {"id": "IN", "type": "connector", "params": {"text": "IN"}},
+    {"id": "TK-1", "type": "vertical_drum"},
+    {"id": "P-1", "type": "pump"},
+    {"id": "OUT", "type": "connector", "params": {"text": "OUT"}}
+  ],
+  "connections": [
+    {"from": "IN.tip", "to": "TK-1.n1"},
+    {"from": "TK-1.bottom", "to": "P-1.in"},
+    {"from": "P-1.out", "to": "OUT.tail"}
+  ],
+  "revisions": [
+    {
+      "id": "R1",
+      "elements": [{"id": "E-1", "type": "heat_exchanger"}],
+      "connections": [{"from": "P-1.out", "to": "E-1.tube_in"}, {"from": "E-1.tube_out", "to": "TK-1.n3"}]
+    },
+    {
+      "id": "R2",
+      "color": "#008080",
+      "note": "E-1 の戻りを撤去、計器を追加",
+      "remove": [{"from": "E-1.tube_out", "to": "TK-1.n3"}],
+      "elements": [{"id": "PI-1", "type": "instrument", "params": {"function": "PI"}}],
+      "connections": [{"from": "E-1.tube_out", "to": "PI-1.s", "type": "instrument"}]
+    }
+  ]
+}
