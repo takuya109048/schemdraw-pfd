@@ -19,6 +19,7 @@ from typing import Any
 from .elements import DEFAULT_LIBRARY, CustomSpec, ElementLibrary, Geometry
 from .expand import GENERATED_PREFIX, TAP_PREFIX, Expanded, expand
 from .flow import plan_flow, split_rows
+from .freeze import fingerprint, from_data, to_data
 from .geometry import find_crossings
 from .layout import (
     FLANGED_RUN,
@@ -35,6 +36,7 @@ from .layout import (
 from .levels import Levels, moves, search_levels, start_levels
 from .netlist import (
     ANCHORS,
+    Change,
     Connection,
     Equipment,
     InlineItem,
@@ -42,7 +44,7 @@ from .netlist import (
     check_id,
     split_ref,
 )
-from .revise import Context, Ghost, RevisionInfo, apply_revision
+from .revise import Context, Ghost, RevisionInfo, account_revision, apply_revision
 from .router import (
     DIRS,
     Route,
@@ -80,9 +82,17 @@ _ELEMENT_KEYS = {"id", "type", "level", "params", "ports", "desc", "elevation", 
 _CONNECTION_KEYS = {"from", "to", "type", "inline", "anchor", "recycle"}
 _TOP_KEYS = set(
     "version layout rows custom_elements line_kinds elements connections "
-    "revisions".split()
+    "revisions frozen".split()
 )
-_REVISION_KEYS = {"id", "color", "note", "elements", "connections", "remove"}
+_REVISION_KEYS = {
+    "id",
+    "color",
+    "note",
+    "elements",
+    "connections",
+    "remove",
+    "change",
+}
 HIGHLIGHTS = ("all", "latest", "none")  # which revisions are drawn in colour
 LAYOUTS = ("order", "flow")
 ROW_MODES = ("auto", "single")
@@ -115,6 +125,11 @@ class Diagram:
     added: dict[str, str] = field(default_factory=dict)
     ghosts: list[Ghost] = field(default_factory=list)
     hosts: dict[str, str] = field(default_factory=dict)
+    # items put where an item the same revision removed stood: (revision,
+    # new, old); items a revision changed (``Flowsheet.change``): (revision,
+    # item)
+    replaced: list[tuple[str, str, str]] = field(default_factory=list)
+    changed: list[tuple[str, str]] = field(default_factory=list)
 
     @property
     def bends(self) -> int:
@@ -637,6 +652,8 @@ class Flowsheet:
         # changes drawn onto the built sheet, in order (see :meth:`revise`)
         self.revisions: list[Revision] = []
         self._revision: Revision | None = None  # where add / connect go
+        # the sheet as built through some revision, kept (see :meth:`freeze`)
+        self.frozen: dict[str, Any] | None = None
 
     # -- editing --------------------------------------------------------------
     def ids(self) -> set[str]:
@@ -647,6 +664,41 @@ class Flowsheet:
             out |= {e.id for e in r.equipment}
             out |= {i.id for c in r.connections for i in c.inline if i.id}
         return out
+
+    def _live_ids(self) -> set[str]:
+        """Ids on the sheet once the revisions so far are applied: an id
+        removed (with the named inline items on its lines) is free again."""
+        live = {e.id for e in self.equipment}
+        lines = list(self.connections)
+        live |= {i.id for c in lines for i in c.inline if i.id}
+        for r in self.revisions:
+            gone = set(r.remove)
+            for c in lines:
+                ends = {e for e, _ in c.ends}
+                if ends & gone or (c.src, c.dst) in r.remove_lines:
+                    gone |= {i.id for i in c.inline if i.id}
+            live -= gone
+            lines = [c for c in lines if not {e for e, _ in c.ends} & gone]
+            live |= {e.id for e in r.equipment}
+            live |= {i.id for c in r.connections for i in c.inline if i.id}
+            lines += r.connections
+        return live
+
+    def change(
+        self, id: str, type: str | None = None, desc: str | None = None, **params: Any
+    ) -> Change:
+        """Change an item on the sheet in the current revision: its type,
+        parameters (merged into its own) or description.  It stays where it
+        stands if it still fits its lines there; else it is put anew there
+        or nearby with its lines."""
+        rev = self._current("change")
+        if type is not None:
+            self.library.get(type)
+        if id not in self._live_ids():
+            raise KeyError(f"change: no item {id!r} on the sheet")
+        ch = Change(id, type, dict(params), desc)
+        rev.changes.append(ch)
+        return ch
 
     def revise(self, id: str, color: str | None = None, note: str = "") -> Revision:
         """Start a revision: what is added, connected, removed and
@@ -715,7 +767,7 @@ class Flowsheet:
             raise ValueError("span must be >= 1")
         id = id or f"{type}{len(self.equipment) + 1}"
         check_id(id)
-        _check_new_id(id, self.ids())
+        _check_new_id(id, self._live_ids() if self._revision else self.ids())
         eq = Equipment(
             id, type, level, params, dict(ports or {}), desc, elevation, span
         )
@@ -762,11 +814,13 @@ class Flowsheet:
             raise ValueError(f"anchor must be one of {ANCHORS}, got {anchor!r}")
         items = [InlineItem.parse(v) for v in inline or ()]
         known = self.ids()
+        live = self._live_ids() if self._revision else known
         for item in items:
             self.library.get(item.type)
             if item.id is not None:
-                _check_new_id(item.id, known)
+                _check_new_id(item.id, live)
                 known.add(item.id)
+                live.add(item.id)
         for ref in (src, dst):
             i, _ = split_ref(ref)
             if i not in known:
@@ -845,13 +899,16 @@ class Flowsheet:
         """The sheet as written (:meth:`_build_base`), then every revision
         drawn onto it in order (see :mod:`.revise`) -- up to and including
         revision ``until`` (``"base"``: none)."""
-        if until is not None and until != "base":
-            if all(r.id != until for r in self.revisions):
-                known = ["base"] + [r.id for r in self.revisions]
-                raise ValueError(f"unknown revision {until!r}; known: {known}")
-        d = self._build_base(max_expand, compact)
-        if until == "base" or not self.revisions:
-            return d
+        if until is not None and until not in ["base"] + [r.id for r in self.revisions]:
+            known = ["base"] + [r.id for r in self.revisions]
+            raise ValueError(f"unknown revision {until!r}; known: {known}")
+        ids = ["base"] + [r.id for r in self.revisions]
+        last = ids.index(until) if until is not None else len(ids) - 1
+        d, start, stale = self._frozen(last)
+        if d is None:
+            d = self._build_base(max_expand, compact)
+            if stale:
+                d.warnings.append(stale)
         ctx = Context(
             self.library,
             lambda e: _context(e.id, lambda: e.geometry(self.library)),
@@ -863,12 +920,73 @@ class Flowsheet:
                 for i in c.inline
                 if i.id
             },
+            {e.id: replace(e) for e in self.equipment}
+            | {
+                i.id: Equipment(i.id, i.type, None, dict(i.params), {}, i.desc)
+                for c in self.connections
+                for i in c.inline
+                if i.id
+            },
         )
-        for k, rev in enumerate(self.revisions):
+        for k, rev in enumerate(self.revisions[:last]):
+            if k < start:  # on the frozen sheet already
+                account_revision(rev, ctx)
+                continue
             d = _context(f"revision {rev.id}", lambda: apply_revision(d, rev, k, ctx))
-            if rev.id == until:
-                break
         return d
+
+    # -- frozen sheet -----------------------------------------------------------
+    def _source(self, through: str) -> dict[str, Any]:
+        """What a sheet frozen through revision ``through`` is built from."""
+        d = self.to_dict()
+        d.pop("frozen", None)
+        ids = [r.id for r in self.revisions]
+        k = ids.index(through) + 1 if through in ids else 0
+        d["revisions"] = d.get("revisions", [])[:k]
+        if self.layout == "flow":  # the order they are written in is no matter
+            for key in ("elements", "connections"):
+                d[key] = sorted(d[key], key=lambda v: json.dumps(v, sort_keys=True))
+        return d
+
+    def freeze(self, until: str | None = None) -> Diagram:
+        """Keep the sheet as built through revision ``until`` (default: the
+        last one): later builds read it back instead of laying it out (see
+        :mod:`.freeze`), and :meth:`to_dict` writes it out."""
+        d = self.build(until=until)
+        through = until or (self.revisions[-1].id if self.revisions else "base")
+        self.frozen = {
+            "through": through,
+            "fingerprint": fingerprint(self._source(through)),
+            "sheet": to_data(d),
+        }
+        return d
+
+    def _frozen(self, last: int) -> tuple[Diagram | None, int, str]:
+        """The frozen sheet if it can serve a build through revision number
+        ``last`` (0: the base): the sheet, the revisions on it, and why it
+        could not (``""`` if it could, or there is none)."""
+        if not self.frozen:
+            return None, 0, ""
+        through = self.frozen["through"]
+        ids = ["base"] + [r.id for r in self.revisions]
+        if through not in ids:
+            return (
+                None,
+                0,
+                f"frozen sheet: no revision {through!r} any more; laid out anew",
+            )
+        k = ids.index(through)
+        if k > last:  # an earlier stage than the one frozen: laid out
+            return None, 0, ""
+        if self.frozen.get("fingerprint") != fingerprint(self._source(through)):
+            return (
+                None,
+                0,
+                f"frozen sheet (through {through}) is out of date: what it was "
+                "built from has changed; laid out anew",
+            )
+        sheet = from_data(self.frozen["sheet"], self.library, self.line_styles)
+        return sheet, k, ""
 
     def _build_base(self, max_expand: int = 4, compact: bool = True) -> Diagram:
         """Lay out and route (:meth:`_build`), then let swappable ports trade
@@ -1788,6 +1906,12 @@ class Flowsheet:
         for i, r in enumerate(d.get("revisions", [])):
             _context(f"revisions[{i}] ({r.get('id', '?')})", lambda: fs._revise_dict(r))
         fs._revision = None
+        frozen = d.get("frozen")
+        if frozen is not None:
+            keys = {"through", "fingerprint", "sheet"}
+            if not isinstance(frozen, dict) or set(frozen) != keys:
+                raise ValueError(f"frozen: must have exactly the keys {sorted(keys)}")
+            fs.frozen = frozen
         return fs
 
     def _revise_dict(self, r: dict) -> None:
@@ -1804,6 +1928,9 @@ class Flowsheet:
                 raise ValueError(
                     f"remove: {x!r} must be an id or {{'from': ..., 'to': ...}}"
                 )
+        for i, ch in enumerate(r.get("change", [])):
+            where = f"change[{i}] ({ch.get('id', '?')})"
+            _context(where, lambda: self._change_dict(ch))
         for i, e in enumerate(r.get("elements", [])):
             _context(f"elements[{i}] ({e.get('id', '?')})", lambda: self._add_dict(e))
         pending = list(enumerate(r.get("connections", [])))
@@ -1819,6 +1946,12 @@ class Flowsheet:
                 where = f"connections[{i}] ({c.get('from')} -> {c.get('to')})"
                 _context(where, lambda: self._connect_dict(c))
             pending = retry
+
+    def _change_dict(self, ch: dict) -> None:
+        unknown = set(ch) - set(Change.KEYS)
+        if unknown:
+            raise ValueError(f"unknown keys {sorted(unknown)}")
+        self.change(ch["id"], ch.get("type"), ch.get("desc"), **ch.get("params", {}))
 
     def _add_dict(self, e: dict) -> None:
         unknown = set(e) - _ELEMENT_KEYS
@@ -1877,6 +2010,8 @@ class Flowsheet:
         d["connections"] = [c.to_dict() for c in self.connections]
         if self.revisions:
             d["revisions"] = [r.to_dict() for r in self.revisions]
+        if self.frozen:
+            d["frozen"] = self.frozen
         return d
 
     @classmethod

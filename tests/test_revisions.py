@@ -18,7 +18,15 @@ from schemdraw_pfd.revise import line_key
 
 NAMES = sorted(p.stem for p in (CASES / "revisions").glob("*.json"))
 # cases that fit their changes in without moving the sheet apart
-UNMOVED = ["add_spare_pump", "remove_inline", "remove_item", "remove_line"]
+UNMOVED = [
+    "add_spare_pump",
+    "remove_inline",
+    "remove_item",
+    "remove_line",
+    "replace_in_place",
+    "reuse_id",
+    "change_in_place",
+]
 
 
 def _fs(name: str) -> Flowsheet:
@@ -244,3 +252,279 @@ def test_remove_and_disconnect_need_a_revision():
 def test_unknown_revision_to_build_until():
     with pytest.raises(ValueError, match="unknown revision 'R9'"):
         _fs("remove_line").build(until="R9")
+
+
+def test_a_replacement_stands_where_the_old_item_stood():
+    """Removed and added in one revision, alike and joined to the same
+    items: the new pump takes the old one's place, again and again, and
+    its lines run the way the old ones ran."""
+    stages = _stages("replace_in_place")
+    pumps = [next(p for p in d.placed if p.type == "pump") for d in stages]
+    assert [p.id for p in pumps] == ["P-1", "P-1N", "P-1R"]
+    assert len({(p.x, p.y) for p in pumps}) == 1
+    assert stages[-1].replaced == [("R1", "P-1N", "P-1"), ("R2", "P-1R", "P-1N")]
+    for d in stages:
+        assert [_dirs(r.points) for c, r in d.routes if "TK-1.bottom" in c.src] == [
+            _dirs(r.points) for c, r in stages[0].routes if "TK-1.bottom" in c.src
+        ]
+
+
+def test_a_replaced_item_is_named_in_the_legend_not_drawn_under_the_new():
+    d = _fs("replace_in_place").build()
+    groups = scene(d).groups
+    assert not any(g.id.startswith("P-1 (removed)") for g in groups)
+    sheet = [g for g in groups if g.kind == "sheet"][0]
+    legend = [i.text for i in sheet.items if isinstance(i, Text) and i.color]
+    assert legend == ["R1: ポンプ更新 (P-1 → P-1N)", "R2: 再更新 (P-1N → P-1R)"]
+
+
+def test_since_draws_the_earlier_revisions_as_settled():
+    d = _fs("two_revisions").build()
+    since = _colors_since(d, "R2")
+    assert since["E-1"] == {(None, False)}  # R1: settled, plain
+    assert since["PI-1"] == {("#008080", False)}
+    assert "E-1.tube_out -> TK-1.n3 (removed)" in since  # R2 removed it
+    assert _colors_since(d, "base") == _colors(d, "all")
+    with pytest.raises(ValueError, match="unknown revision 'R9'"):
+        scene(d, since="R9")
+
+
+def _colors_since(d: Diagram, since: str) -> dict[str, set]:
+    out: dict[str, set] = {}
+    for g in scene(d, since=since).groups:
+        if g.kind != "sheet":
+            out.setdefault(g.id, set()).add((g.color, g.dashed))
+    return out
+
+
+def test_cli_revision_options(tmp_path):
+    from schemdraw_pfd.cli import main
+
+    spec = CASES / "revisions" / "two_revisions.json"
+    for args in (
+        ["--revision", "base"],
+        ["--revision", "R1", "--highlight", "latest"],
+        ["--since", "R2"],
+        ["--highlight", "none"],
+    ):
+        out = tmp_path / f"{'_'.join(args)}.svg"
+        assert main([str(spec), "-o", str(out), "-j", "1", *args]) == 0
+        assert out.exists()
+
+
+def test_a_removed_id_may_be_used_again():
+    base, after = _stages("reuse_id")
+    old = next(p for p in base.placed if p.id == "P-1")
+    new = next(p for p in after.placed if p.id == "P-1")
+    assert (new.x, new.y) == (old.x, old.y)
+    assert after.added["P-1"] == "R1" and after.descs["P-1"] == "新ポンプ"
+    sheet = [g for g in scene(after).groups if g.kind == "sheet"][0]
+    legend = [i.text for i in sheet.items if isinstance(i, Text) and i.ha == "left"]
+    assert legend == ["R1: 同じタグで取替 (P-1 取替)"]
+    assert not any(g.id == "P-1 (removed)" for g in scene(after).groups)
+
+
+def test_an_id_on_the_sheet_may_not_be_used_again():
+    fs = _fs("reuse_id")
+    fs.revise("R2")
+    with pytest.raises(ValueError, match="duplicate id 'P-1'"):
+        fs.add("pump", "P-1")
+    fs.remove("P-1")
+    fs.add("pump", "P-1")  # removed in this revision: free again
+    fs.connect("TK-1.bottom", "P-1.in")
+    fs.connect("P-1.out", "OUT.tail")
+    d = fs.build()
+    assert [p.id for p in d.placed].count("P-1") == 1
+
+
+def test_a_change_that_fits_stays_in_place():
+    """A gate valve made a globe valve, a pump's description: drawn in the
+    revision's colour where they stand; their lines do not change."""
+    base, after = _stages("change_in_place")
+    assert [(p.id, p.x, p.y) for p in after.placed] == [
+        (p.id, p.x, p.y) for p in base.placed
+    ]
+    assert [r.points for _, r in after.routes] == [r.points for _, r in base.routes]
+    assert after.changed == [("R1", "V-1"), ("R1", "P-1")]
+    assert after.added == {"V-1": "R1", "P-1": "R1"}
+    assert after.descs["P-1"] == "原料ポンプ（更新）"
+    valve = next(p for p in after.placed if p.id == "V-1")
+    assert any(getattr(s, "fill", None) for s in valve.geo.shapes)  # the dot
+    colors = _colors(after, "all")
+    assert colors["V-1"] == {("red", False)}
+    assert colors["P-1.out -> V-1.in"] == {(None, False)}
+
+
+def test_a_change_that_grows_grows_where_it_stands():
+    """A tank made a taller column: what lies above it moves up by the
+    growth, the column stands on the tank's place, its lines are laid again
+    in the revision's colour and its old outline is not drawn."""
+    base, after = _stages("change_resize")
+    was = {p.id: p for p in base.placed}
+    now = {p.id: p for p in after.placed}
+    tk = now["TK-1"]
+    assert tk.type == "column" and (tk.x, tk.y) == (was["TK-1"].x, was["TK-1"].y)
+    grow = tk.geo.height - was["TK-1"].geo.height
+    assert now["IN"].y == was["IN"].y + grow
+    assert (now["P-1"].x, now["P-1"].y) == (was["P-1"].x, was["P-1"].y)
+    assert after.changed == [("R1", "TK-1")]
+    lines = [line_key(c) for c, _ in after.routes if "TK-1" in line_key(c)]
+    assert lines and all(after.added[k] == "R1" for k in lines)
+    groups = scene(after).groups
+    assert not any(g.id.endswith("(removed)") for g in groups)
+
+
+def test_python_change():
+    fs = _fs("change_in_place")
+    fs.revise("R2")
+    fs.change("V-1", kind="check")
+    fs.change("P-1", desc="")
+    assert fs.to_dict()["revisions"][-1] == {
+        "id": "R2",
+        "change": [
+            {"id": "V-1", "params": {"kind": "check"}},
+            {"id": "P-1", "desc": ""},
+        ],
+    }
+    d = fs.build()
+    assert "P-1" not in d.descs
+    with pytest.raises(KeyError, match="no item 'X'"):
+        fs.change("X", desc="?")
+
+
+# -- frozen sheet ------------------------------------------------------------------
+def _sheet_of(d: Diagram) -> tuple:
+    return (
+        [(p.id, p.type, p.x, p.y, p.geo.width, p.geo.height) for p in d.placed],
+        [(c.src, c.dst, c.kind, [tuple(q) for q in r.points]) for c, r in d.routes],
+        d.added,
+        [(g.rev, g.placed and g.placed.id) for g in d.ghosts],
+        d.descs,
+    )
+
+
+@pytest.mark.parametrize("name", NAMES)
+def test_a_frozen_sheet_reads_back_as_it_was(name, tmp_path):
+    fs = _fs(name)
+    built = fs.freeze()
+    path = tmp_path / "frozen.json"
+    fs.to_json(path)
+    back = Flowsheet.from_json(path)
+    assert back.frozen == fs.frozen
+    assert _sheet_of(back.build()) == _sheet_of(built)
+
+
+def test_a_frozen_sheet_is_not_laid_out_again(monkeypatch):
+    fs = _fs("two_revisions")
+    fs.freeze()
+
+    def no_layout(*_a, **_k):
+        raise AssertionError("laid out again")
+
+    monkeypatch.setattr(Flowsheet, "_build_base", no_layout)
+    fs.build()  # read back
+    fs.build(until="R2")
+
+
+def test_revisions_after_the_frozen_one_are_drawn_onto_it(monkeypatch):
+    """Frozen through R1; R2 is drawn onto the frozen sheet, which stays as
+    it was even when the layout would now come out otherwise."""
+    fs = _fs("two_revisions")
+    frozen = fs.freeze(until="R1")
+    assert fs.frozen is not None and fs.frozen["through"] == "R1"
+    shifted = json.loads(json.dumps(fs.frozen))
+    for item in shifted["sheet"]["items"]:  # a sheet the layout would not make
+        item[4] += 100
+    for line in shifted["sheet"]["lines"]:
+        line[3] = [[x + 100, y] for x, y in line[3]]
+    fs.frozen = shifted
+    after = fs.build()
+    assert after.warnings == []
+    tk = next(p for p in after.placed if p.id == "TK-1")
+    was = next(p for p in frozen.placed if p.id == "TK-1")
+    assert (tk.x, tk.y) == (was.x + 100, was.y)
+    assert after.added["PI-1"] == "R2"
+    # an earlier stage than the frozen one is laid out as written
+    assert _sheet_of(fs.build(until="base")) == _sheet_of(
+        _fs("two_revisions").build(until="base")
+    )
+
+
+def test_a_frozen_sheet_out_of_date_is_laid_out_anew():
+    fs = _fs("two_revisions")
+    fs.freeze(until="R1")
+    fs.equipment[0].params["text"] = "IN-2"  # what it was built from changed
+    d = fs.build()
+    assert any("out of date" in w for w in d.warnings)
+    fs.frozen = dict(fs.frozen or {}, through="R9")
+    assert any("no revision 'R9'" in w for w in fs.build().warnings)
+
+
+def test_cli_freeze(tmp_path, monkeypatch):
+    from schemdraw_pfd.cli import main
+
+    monkeypatch.chdir(tmp_path)
+    spec = CASES / "revisions" / "two_revisions.json"
+    out = tmp_path / "frozen.json"
+    assert main([str(spec), "--freeze", str(out), "--revision", "R1", "-j", "1"]) == 0
+    data = json.loads(out.read_text("utf-8"))
+    assert data["frozen"]["through"] == "R1"
+    assert not (tmp_path / "pfd.svg").exists()
+
+
+ALL_CASES = sorted(
+    p.relative_to(CASES).with_suffix("").as_posix()
+    for p in CASES.rglob("*.json")
+    if "invalid" not in p.parts
+)
+
+
+@pytest.mark.parametrize("name", ALL_CASES)
+def test_every_sheet_can_be_frozen(name):
+    """Every item is built from a recipe that reads back the same shape."""
+    from conftest import built_case
+
+    from schemdraw_pfd.freeze import from_data, to_data
+
+    d = built_case(name)
+    fs = Flowsheet.from_json(CASES / f"{name}.json")
+    back = from_data(json.loads(json.dumps(to_data(d))), fs.library, fs.line_styles)
+
+    def shapes(x: Diagram) -> list:
+        return [
+            (p.id, p.x, p.y, p.geo.width, p.geo.height, p.geo.shapes, p.geo.ports)
+            for p in x.placed
+        ]
+
+    assert shapes(back) == shapes(d)
+    assert [r.points for _, r in back.routes] == [r.points for _, r in d.routes]
+
+
+def test_a_line_that_routes_nowhere_becomes_a_pair_of_flags(monkeypatch):
+    """(As between the rows of a folded sheet.)  Forced here: the line from
+    P-1 to the added exchanger finds no way."""
+    from schemdraw_pfd.revise import _Sheet
+
+    route = _Sheet.route
+
+    def blocked(self, router, c):
+        if (c.src, c.dst) == ("P-1.out", "E-1.tube_in"):
+            return None
+        return route(self, router, c)
+
+    monkeypatch.setattr(_Sheet, "route", blocked)
+    d = _fs("two_revisions").build(until="R1")
+    flags = {p.id: p for p in d.placed if p.id.startswith(("_RO", "_RI"))}
+    assert len(flags) == 2
+    keys = [line_key(c) for c, _ in d.routes]
+    out = next(i for i in flags if i.startswith("_RO"))
+    back = next(i for i in flags if i.startswith("_RI"))
+    # P-1.out carries a line: the "to" half taps it
+    assert any(k.startswith("_J") and k.endswith(f"-> {out}.tail") for k in keys)
+    assert f"{back}.tip -> E-1.tube_in" in keys
+    # the pair goes as one when the line is removed
+    fs = _fs("two_revisions")
+    fs.revise("R3")
+    fs.disconnect("P-1.out", "E-1.tube_in")
+    d = fs.build()
+    assert not any(p.id.startswith(("_RO", "_RI")) for p in d.placed)

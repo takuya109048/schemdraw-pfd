@@ -34,6 +34,11 @@ class Geometry:
     port_ends: dict[str, tuple] = field(
         default_factory=dict, init=False, repr=False, compare=False
     )
+    # what it was built from -- (type, parameters, extra ports) -- so a laid
+    # out sheet can be written down and read back (see :mod:`..freeze`)
+    recipe: tuple[str, dict[str, Any], dict[str, Any]] | None = field(
+        default=None, repr=False, compare=False
+    )
 
     def translated(self, dx: float, dy: float) -> list[Shape]:
         return [_shift(s, dx, dy) for s in self.shapes]
@@ -190,14 +195,17 @@ class ElementLibrary:
         Elements nested inside this one (e.g. valves on header branches) are
         looked up in this library too.
         """
-        params = dict(params or {})
+        given = dict(params or {})
+        params = dict(given)
         common = {k: params.pop(k) for k in TRANSFORM_PARAMS if k in params}
         token = _ACTIVE.set(self)
         try:
             geo = self.get(name).build(params)
         finally:
             _ACTIVE.reset(token)
-        return transform(geo, **common)
+        geo = transform(geo, **common)
+        geo.recipe = (name, given, {})
+        return geo
 
 
 DEFAULT_LIBRARY = ElementLibrary()

@@ -1,0 +1,21 @@
+{
+  "elements": [
+    {"id": "IN", "type": "connector", "params": {"text": "IN"}},
+    {"id": "P-1", "type": "pump", "desc": "原料ポンプ"},
+    {"id": "E-1", "type": "heat_exchanger"}
+  ],
+  "connections": [
+    {"from": "IN.tip", "to": "P-1.in"},
+    {"from": "P-1.out", "to": "E-1.tube_in", "inline": [{"type": "valve", "id": "V-1"}]}
+  ],
+  "revisions": [
+    {
+      "id": "R1",
+      "note": "弁を玉形弁に、ポンプの仕様を変更",
+      "change": [
+        {"id": "V-1", "params": {"kind": "globe"}},
+        {"id": "P-1", "desc": "原料ポンプ（更新）"}
+      ]
+    }
+  ]
+}

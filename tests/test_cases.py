@@ -35,7 +35,7 @@ from schemdraw_pfd.model import (
     LAYOUTS,
     ROW_MODES,
 )
-from schemdraw_pfd.netlist import ANCHORS, InlineItem
+from schemdraw_pfd.netlist import ANCHORS, Change, InlineItem
 from schemdraw_pfd.router import RoutingError
 from schemdraw_pfd.style import DEFAULT_LINE_STYLES, LineStyle
 
@@ -184,7 +184,11 @@ INVALID = {
     "invalid/unknown_top_key": (ValueError, "unknown top-level keys ['order']"),
     "invalid/unknown_type": (KeyError, "unknown element type 'compressor'"),
     "invalid/zero_span": (ValueError, "span must be >= 1"),
+    "invalid/frozen_missing_keys": (ValueError, "frozen: must have exactly the keys"),
     "invalid/revision_bad_remove": (ValueError, "must be an id or"),
+    "invalid/revision_change_lost_port": (KeyError, "has no port 'bottom'"),
+    "invalid/revision_change_unknown": (KeyError, "change: no item 'X'"),
+    "invalid/revision_change_unknown_key": (ValueError, "unknown keys ['kind']"),
     "invalid/revision_duplicate_element": (ValueError, "duplicate id 'A'"),
     "invalid/revision_duplicate_id": (ValueError, "revision id 'R1' is taken"),
     "invalid/revision_remove_no_line": (KeyError, "no line A.in -> F.tail"),
@@ -262,6 +266,8 @@ def _features(data: dict) -> set[str]:
         out |= {f"revision_key:{k}" for k in r}
         for x in r.get("remove", []):
             out.add("remove:" + ("item" if isinstance(x, str) else "line"))
+        for ch in r.get("change", []):
+            out |= {f"change_key:{k}" for k in ch}
     out.add(f"layout:{data.get('layout', 'omitted')}")
     out.add(f"rows:{data.get('rows', 'auto')}")
     layout = data.get("layout", "flow")
@@ -347,6 +353,7 @@ def _required() -> set[str]:
     req |= {f"top_key:{k}" for k in _TOP_KEYS}
     req |= {f"revision_key:{k}" for k in _REVISION_KEYS}
     req |= {"remove:item", "remove:line"}
+    req |= {f"change_key:{k}" for k in Change.KEYS}
     req |= {f"layout:{v}" for v in (*LAYOUTS, "omitted")}
     req |= {f"rows:{v}" for v in ROW_MODES}
     req |= {f"line_style_key:{f.name}" for f in fields(LineStyle)}

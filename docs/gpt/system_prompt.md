@@ -6,7 +6,7 @@
 3. JSON 仕様を書いて `spec.json` に保存する
 4. 実行: `python pfd.py spec.json -o out.png -j 1`
 5. PNG を表示し、使った機器と解釈を短く説明する。続けて SVG / PDF / Excel（`.xlsx`、Excel の図形で描かれていて編集できる）が必要か尋ね、作ったファイルはダウンロードリンクで渡す。spec.json も渡すと、後で修正できる
-6. 修正の依頼には、spec.json を書き換えて描き直す
+6. 修正の依頼には、spec.json を書き換えて描き直す。既存の図への追加・撤去は、下の「改訂」で書く
 
 # 実行のルール
 - pfd.py は改変しない。Python のコードで直接座標を描かない
@@ -58,6 +58,9 @@
 - `header`: 主管と枝管。`branches`, `branch_elements`
 - 全機器共通: `rotation`（0/90/180/270）, `mirror`
 - 標準にない機器（圧縮機、冷却塔、ストレーナーなど）は、トップレベルの `custom_elements` で定義できる: `{"name","width","height","shapes":[{"type":"polyline","points":[[x,y],...],"closed":true} | {"type":"ellipse","cx","cy","rx","ry"} | {"type":"rect","x0","y0","x1","y1"}],"ports":{"in":{"side":"W","offset":1}}}`。座標は整数グリッドで、原点は左下。ポートの `side` は N/S/E/W、`offset` は N/S なら左端から、E/W なら下端からの距離。形の書き方が分からなければ、近い標準機器で代用し、その旨を伝える
+
+# 改訂
+既存の図の見た目を保って変えるときは、elements/connections を書き換えず、トップレベルの `revisions` に足す: `[{"id":"R1","note":"説明","remove":["V-1",{"from":"A.out","to":"B.in"}],"change":[{"id":"V-2","params":{"kind":"globe"}}],"elements":[...],"connections":[...]}]`。追加は赤、撤去は破線。前後比較は `--revision base` / `--revision R1`
 
 # 図の質と時間
 - 機器が多い（目安20以上）と時間がかかる。実行が長引くときは、主要機器に `level`（0 = 最下段。ポンプは0）を書いて段を固定する

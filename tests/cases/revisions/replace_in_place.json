@@ -1,0 +1,31 @@
+{
+  "elements": [
+    {"id": "IN", "type": "connector", "params": {"text": "IN"}},
+    {"id": "TK-1", "type": "vertical_drum"},
+    {"id": "P-1", "type": "pump"},
+    {"id": "E-1", "type": "heat_exchanger"},
+    {"id": "OUT", "type": "connector", "params": {"text": "OUT"}}
+  ],
+  "connections": [
+    {"from": "IN.tip", "to": "TK-1.n1"},
+    {"from": "TK-1.bottom", "to": "P-1.in"},
+    {"from": "P-1.out", "to": "E-1.tube_in"},
+    {"from": "E-1.tube_out", "to": "OUT.tail"}
+  ],
+  "revisions": [
+    {
+      "id": "R1",
+      "note": "ポンプ更新",
+      "remove": ["P-1"],
+      "elements": [{"id": "P-1N", "type": "pump", "desc": "更新ポンプ"}],
+      "connections": [{"from": "TK-1.bottom", "to": "P-1N.in"}, {"from": "P-1N.out", "to": "E-1.tube_in"}]
+    },
+    {
+      "id": "R2",
+      "note": "再更新",
+      "remove": ["P-1N"],
+      "elements": [{"id": "P-1R", "type": "pump"}],
+      "connections": [{"from": "TK-1.bottom", "to": "P-1R.in"}, {"from": "P-1R.out", "to": "E-1.tube_in"}]
+    }
+  ]
+}

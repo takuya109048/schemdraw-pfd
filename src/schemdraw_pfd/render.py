@@ -250,12 +250,21 @@ def _nozzle_tick(a: Point, b: Point) -> Stroke:
     return Stroke(((cx - 0.3 * dy, cy - 0.3 * dx), (cx + 0.3 * dy, cy + 0.3 * dx)))
 
 
-def _colors(diagram: Diagram, highlight: str) -> dict[str, str]:
-    """Revision id -> colour of the revisions drawn in colour: ``all``,
-    only the ``latest`` one, or ``none``."""
+def _colors(
+    diagram: Diagram, highlight: str, since: str | None = None
+) -> dict[str, str]:
+    """Revision id -> colour of the revisions drawn in colour: from revision
+    ``since`` on (default: the first; ``"base"``: the first), ``all`` of
+    them, only the ``latest`` one, or ``none``."""
     if highlight not in HIGHLIGHTS:
         raise ValueError(f"highlight must be one of {HIGHLIGHTS}, got {highlight!r}")
     revs = diagram.revisions
+    if since is not None and since != "base":
+        ids = [r.id for r in revs]
+        if since not in ids:
+            known = ["base", *ids]
+            raise ValueError(f"unknown revision {since!r}; known: {known}")
+        revs = revs[ids.index(since) :]
     if highlight == "none" or not revs:
         return {}
     if highlight == "latest":
@@ -270,15 +279,18 @@ def scene(
     frame: bool = True,
     theme: Theme | None = None,
     highlight: str = "all",
+    since: str | None = None,
 ) -> Scene:
     """Everything :func:`draw` puts on the sheet, in drawing order.
 
     ``highlight``: which revisions are drawn in their colour (``all``,
     ``latest`` or ``none``; the others are drawn like the rest of the
     sheet); what a coloured revision took away is drawn dashed in its
-    colour, what the others took away is left out."""
+    colour, what the others took away is left out.  ``since``: only the
+    revisions from this one on count as changes (the ones before it are
+    drawn as settled: plain, what they took away left out)."""
     theme = theme or DEFAULT_THEME
-    colors = _colors(diagram, highlight)
+    colors = _colors(diagram, highlight, since)
     added = diagram.added
     if fontsize is not None:
         theme = replace(theme, fontsize=fontsize)
@@ -329,9 +341,11 @@ def scene(
         groups.append(Group("line", key, line, color=colors.get(added.get(key, ""))))
 
     # what the coloured revisions took away ---------------------------------------
+    # removed items a new one (or the item changed) stands on: not drawn
+    in_place = {(rev, old) for rev, _, old in diagram.replaced}
     for g in diagram.ghosts:
         color = colors.get(g.rev)
-        if color is None:
+        if color is None or (g.placed and (g.rev, g.placed.id) in in_place):
             continue
         if g.placed is not None:
             p = g.placed
@@ -359,7 +373,7 @@ def scene(
     xs += [x for pts in paths for x, _ in pts]
     ys += [y for pts in paths for _, y in pts]
     for g in diagram.ghosts:  # what is drawn of the removed, too
-        if g.rev in colors and g.placed is not None:
+        if g.rev in colors and g.placed and (g.rev, g.placed.id) not in in_place:
             xs += [g.placed.bbox[0], g.placed.bbox[2]]
             ys += [g.placed.bbox[1], g.placed.bbox[3]]
     mg = theme.margin
@@ -412,7 +426,16 @@ def scene(
     if legend:
         y = y0
         for r in legend:
-            text = f"{r.id}: {r.note}" if r.note else r.id
+            swaps = ", ".join(
+                [
+                    f"{old} → {new}" if new != old else f"{new} 取替"
+                    for rev, new, old in diagram.replaced
+                    if rev == r.id and (rev, new) not in set(diagram.changed)
+                ]
+                + [f"{i} 変更" for rev, i in diagram.changed if rev == r.id]
+            )
+            text = ": ".join(t for t in (r.id, r.note) if t)
+            text += f" ({swaps})" if swaps else ""
             sheet.append(Text(x0 + 1, y, text, theme.fontsize, "left", "top", r.color))
             x1 = max(x1, x0 + 2 + _text_width(text, em))
             y -= pitch
@@ -482,14 +505,16 @@ def draw(
     frame: bool = True,
     theme: Theme | None = None,
     highlight: str = "all",
+    since: str | None = None,
 ) -> None:
     """Draw ``diagram`` to ``path`` (format from the suffix: svg / png / pdf ...,
     or xlsx -- see :mod:`.xlsx`).
 
     ``fontsize`` overrides ``theme.fontsize``; ``highlight``: which revisions
-    are drawn in their colour (see :func:`scene`).
+    are drawn in their colour, ``since``: from which revision on (see
+    :func:`scene`).
     """
-    sc = scene(diagram, label, fontsize, frame, theme, highlight)
+    sc = scene(diagram, label, fontsize, frame, theme, highlight, since)
     if Path(path).suffix.lower() == ".xlsx":
         from .xlsx import write_xlsx
 
