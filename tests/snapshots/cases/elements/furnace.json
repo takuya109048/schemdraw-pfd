@@ -11,26 +11,26 @@
    "FUEL",
    7,
    0,
-   2,
+   6,
    2
   ],
   [
    "H-1",
-   7,
+   11,
    3,
    8,
    12
   ],
   [
    "FLUE",
-   13,
+   17,
    16,
    6,
    2
   ],
   [
    "PROD",
-   20,
+   24,
    3,
    6,
    2
@@ -47,7 +47,7 @@
      11.0
     ],
     [
-     7.5,
+     11.5,
      11.0
     ]
    ]
@@ -58,15 +58,15 @@
    "utility",
    [
     [
-     9.0,
-     1.0
-    ],
-    [
-     11,
+     13,
      1
     ],
     [
-     11,
+     15,
+     1
+    ],
+    [
+     15,
      3
     ]
    ]
@@ -77,15 +77,15 @@
    "utility",
    [
     [
-     11.0,
+     15.0,
      15.0
     ],
     [
-     11,
+     15,
      17
     ],
     [
-     13,
+     17,
      17
     ]
    ]
@@ -96,11 +96,11 @@
    "pipe",
    [
     [
-     15.0,
+     19.0,
      4.0
     ],
     [
-     20,
+     24,
      4
     ]
    ]
@@ -206,6 +206,33 @@
     }
    ],
    [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 0.9,
+     "path": [
+      [
+       9,
+       1
+      ],
+      [
+       13,
+       1
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
     "SegmentText",
     {
      "align": [
@@ -249,192 +276,160 @@
      "lw": null,
      "path": [
       [
-       7,
+       11,
        3
       ],
       [
-       15,
+       19,
        3
       ],
       [
-       15,
+       19,
        10
-      ],
-      [
-       7,
-       10
-      ],
-      [
-       7,
-       3
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       7,
-       10
-      ],
-      [
-       8,
-       12
-      ],
-      [
-       14,
-       12
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       14,
-       12
-      ],
-      [
-       15,
-       10
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       10.0,
-       12
-      ],
-      [
-       12.0,
-       12
-      ],
-      [
-       12.0,
-       15
-      ],
-      [
-       10.0,
-       15
-      ],
-      [
-       10.0,
-       12
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       7.5,
-       11
-      ],
-      [
-       13.8,
-       11
-      ],
-      [
-       13.8,
-       9.5
-      ],
-      [
-       8,
-       9.5
-      ],
-      [
-       8,
-       9.5
-      ],
-      [
-       8,
-       4.8
-      ],
-      [
-       9,
-       4.8
-      ],
-      [
-       9,
-       8.7
-      ],
-      [
-       10,
-       8.7
-      ],
-      [
-       10,
-       4.8
       ],
       [
        11,
-       4.8
+       10
       ],
       [
        11,
-       8.7
+       3
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       11,
+       10
       ],
       [
        12,
-       8.7
+       12
+      ],
+      [
+       18,
+       12
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       18,
+       12
+      ],
+      [
+       19,
+       10
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       14.0,
+       12
+      ],
+      [
+       16.0,
+       12
+      ],
+      [
+       16.0,
+       15
+      ],
+      [
+       14.0,
+       15
+      ],
+      [
+       14.0,
+       12
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       11.5,
+       11
+      ],
+      [
+       17.8,
+       11
+      ],
+      [
+       17.8,
+       9.5
+      ],
+      [
+       12,
+       9.5
+      ],
+      [
+       12,
+       9.5
       ],
       [
        12,
@@ -454,10 +449,42 @@
       ],
       [
        14,
-       4
+       4.8
       ],
       [
        15,
+       4.8
+      ],
+      [
+       15,
+       8.7
+      ],
+      [
+       16,
+       8.7
+      ],
+      [
+       16,
+       4.8
+      ],
+      [
+       17,
+       4.8
+      ],
+      [
+       17,
+       8.7
+      ],
+      [
+       18,
+       8.7
+      ],
+      [
+       18,
+       4
+      ],
+      [
+       19,
        4
       ]
      ],
@@ -480,15 +507,15 @@
      "lw": null,
      "path": [
       [
-       9.2,
+       13.2,
        3
       ],
       [
-       9.5,
+       13.5,
        3.9
       ],
       [
-       9.8,
+       13.8,
        3
       ]
      ],
@@ -511,15 +538,15 @@
      "lw": null,
      "path": [
       [
-       10.7,
+       14.7,
        3
       ],
       [
-       11.0,
+       15.0,
        3.9
       ],
       [
-       11.3,
+       15.3,
        3
       ]
      ],
@@ -542,15 +569,15 @@
      "lw": null,
      "path": [
       [
-       12.2,
+       16.2,
        3
       ],
       [
-       12.5,
+       16.5,
        3.9
       ],
       [
-       12.8,
+       16.8,
        3
       ]
      ],
@@ -579,7 +606,7 @@
      "text": "H-1",
      "visible": true,
      "xy": [
-      5.983333,
+      9.983333,
       9.0
      ],
      "zorder": null
@@ -600,11 +627,11 @@
      "lw": 0.8,
      "path": [
       [
-       5.466667,
+       9.466667,
        8.655556
       ],
       [
-       6.5,
+       10.5,
        8.655556
       ]
      ],
@@ -629,27 +656,27 @@
      "lw": null,
      "path": [
       [
-       13,
+       17,
        16
       ],
       [
-       18,
+       22,
        16
       ],
       [
-       19,
+       23,
        17
       ],
       [
-       18,
+       22,
        18
       ],
       [
-       13,
+       17,
        18
       ],
       [
-       13,
+       17,
        16
       ]
      ],
@@ -678,7 +705,7 @@
      "text": "FLUE",
      "visible": true,
      "xy": [
-      15.7,
+      19.7,
       17
      ],
      "zorder": null
@@ -701,27 +728,27 @@
      "lw": null,
      "path": [
       [
-       20,
+       24,
        3
       ],
       [
-       25,
+       29,
        3
       ],
       [
-       26,
+       30,
        4
       ],
       [
-       25,
+       29,
        5
       ],
       [
-       20,
+       24,
        5
       ],
       [
-       20,
+       24,
        3
       ]
      ],
@@ -750,7 +777,7 @@
      "text": "PROD",
      "visible": true,
      "xy": [
-      22.7,
+      26.7,
       4
      ],
      "zorder": null
@@ -777,7 +804,7 @@
        11.0
       ],
       [
-       7.5,
+       11.5,
        11.0
       ]
      ],
@@ -800,11 +827,11 @@
      "lw": null,
      "path": [
       [
-       7.05,
+       11.05,
        11.3
       ],
       [
-       7.05,
+       11.05,
        10.7
       ]
      ],
@@ -829,15 +856,15 @@
      "lw": 0.9,
      "path": [
       [
-       9.0,
-       1.0
-      ],
-      [
-       11,
+       13,
        1
       ],
       [
-       11,
+       15,
+       1
+      ],
+      [
+       15,
        3
       ]
      ],
@@ -860,11 +887,11 @@
      "lw": null,
      "path": [
       [
-       11.3,
+       15.3,
        2.55
       ],
       [
-       10.7,
+       14.7,
        2.55
       ]
      ],
@@ -889,15 +916,15 @@
      "lw": 0.9,
      "path": [
       [
-       11.0,
+       15.0,
        15.0
       ],
       [
-       11,
+       15,
        17
       ],
       [
-       13,
+       17,
        17
       ]
      ],
@@ -920,11 +947,11 @@
      "lw": null,
      "path": [
       [
-       10.7,
+       14.7,
        15.45
       ],
       [
-       11.3,
+       15.3,
        15.45
       ]
      ],
@@ -949,11 +976,11 @@
      "lw": 1.1,
      "path": [
       [
-       15.0,
+       19.0,
        4.0
       ],
       [
-       20,
+       24,
        4
       ]
      ],
@@ -976,11 +1003,11 @@
      "lw": null,
      "path": [
       [
-       15.45,
+       19.45,
        3.7
       ],
       [
-       15.45,
+       19.45,
        4.3
       ]
      ],
@@ -1009,11 +1036,11 @@
        -2.0
       ],
       [
-       28.0,
+       32.0,
        -2.0
       ],
       [
-       28.0,
+       32.0,
        20.0
       ],
       [

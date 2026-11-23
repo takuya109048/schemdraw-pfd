@@ -110,6 +110,15 @@ def _font(candidates: tuple[str, ...]) -> str | None:
     return next((f for f in candidates if f in available), None)
 
 
+def _in_line_style(s: Shape, styles: dict[str, LineStyle]) -> Item:
+    """A piece of an element drawn in a line kind's style (``Polyline.line``)
+    becomes a stroke with that style's width and dashes (no arrow)."""
+    if isinstance(s, Polyline) and s.line in styles:
+        st = styles[s.line]
+        return Stroke(s.points, {"lw": st.lw, "ls": st.ls})
+    return s
+
+
 def _line_strokes(
     pts: list[Point],
     marks: dict[int, list[float]],
@@ -311,7 +320,9 @@ def scene(
 
     # equipment ---------------------------------------------------------------
     for p in diagram.placed:
-        items: list[Item] = list(p.geo.translated(p.x, p.y))
+        items: list[Item] = [
+            _in_line_style(s, styles) for s in p.geo.translated(p.x, p.y)
+        ]
         for x, y, text, scale in p.geo.texts:
             if text:
                 items.append(Text(p.x + x, p.y + y, text, theme.fontsize * scale))

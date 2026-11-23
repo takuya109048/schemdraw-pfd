@@ -159,7 +159,7 @@ fs.to_json("out.json")  # JSON と同じ形式で保存（from_json で読み戻
 | `instrument` | 計器。`mount`: `field`(丸=現場計器) / `dcs`(四角の中に丸) | `function`("FIC"等), `number` / `n`,`s`,`e`,`w` |
 | `tee` | 配管の分岐点（計器の取り出しにも使う。黒丸なし） | `arms`("wen"等) |
 | `connector` | 図面間接続の五角形フラグ | `text`, `point`(`right`/`left`) / `tip`, `tail` |
-| `utility` | ユーティリティの供給元（丸の中に略号。`STM`・`N2`・`CWS` など）。使う機器のすぐ横に置く | `text`, `point`(`right`/`left`/`up`/`down`: 線が出る向き) / `out` |
+| `utility` | ユーティリティの供給元（丸の中に略号。`STM`・`N2`・`CWS` など）。使う機器のすぐ横に置く。丸から `out` まで引き出し線が付くので、計器と見分けがつく程度に機器から離れる | `text`, `point`(`right`/`left`/`up`/`down`: 線が出る向き), `lead`(引き出し線のセル数、既定 4) / `out` |
 | `header` | 主管＋上向き枝管 | `branches`, `pitch`, `branch_elements` |
 
 - 全エレメント共通: `rotation`（0/90/180/270、反時計回り）と `mirror`（左右反転。回転より先に適用）

@@ -157,6 +157,7 @@ INVALID = {
     "invalid/bad_rotation": (ValueError, "rotation must be one of"),
     "invalid/bad_rows": (ValueError, "rows must be one of"),
     "invalid/bad_tee_arms": (ValueError, "tee arms must be a combination"),
+    "invalid/bad_utility_lead": (ValueError, "utility lead must be at least 1"),
     "invalid/bad_utility_point": (ValueError, "utility point must be one of"),
     "invalid/bad_valve_kind": (ValueError, "valve kind must be one of"),
     "invalid/bad_version": (ValueError, "unsupported flowsheet format version"),
@@ -248,7 +249,7 @@ PARAMS = {
     "strainer": set(),
     "tank": {"width", "height"},
     "tee": {"arms"},
-    "utility": {"text"},
+    "utility": {"text", "lead"},
     "valve": set(),
     "vertical_drum": {"width", "height", "beds"},
 }

@@ -27,13 +27,17 @@ class Polyline:
     """Open or closed polyline. ``boundary=False`` makes it a pure decoration;
     ``pipe=True`` marks a piece of piping drawn as part of an element (a
     header's pipes, a tee's arms), which outputs that keep lines editable
-    (:mod:`.xlsx`) draw as a line rather than as part of the symbol."""
+    (:mod:`.xlsx`) draw as a line rather than as part of the symbol.
+    ``line`` (a line kind, e.g. ``utility``): drawn in that kind's style
+    instead of the equipment line width, so it reads as part of the line it
+    leads into (a utility circle's lead)."""
 
     points: tuple[Point, ...]
     closed: bool = False
     boundary: bool = True
     fill: str | None = None
     pipe: bool = False
+    line: str | None = None
 
     def segments(self) -> list[tuple[Point, Point]]:
         pts = list(self.points)

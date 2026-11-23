@@ -37,9 +37,9 @@
   ],
   [
    "STM",
+   14,
    18,
-   12,
-   2,
+   6,
    2
   ],
   [
@@ -204,12 +204,12 @@
    "utility",
    [
     [
-     20.0,
-     13.0
+     20,
+     19
     ],
     [
      25,
-     13
+     19
     ],
     [
      25,
@@ -802,8 +802,8 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      19,
-      13
+      15,
+      19
      ],
      "clip": null,
      "color": null,
@@ -815,6 +815,33 @@
      "theta2": 360.0,
      "visible": true,
      "width": 2,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 0.9,
+     "path": [
+      [
+       16,
+       19
+      ],
+      [
+       20,
+       19
+      ]
+     ],
+     "visible": true,
      "zorder": null
     }
    ],
@@ -839,8 +866,8 @@
      "text": "STM",
      "visible": true,
      "xy": [
-      19,
-      13
+      15,
+      19
      ],
      "zorder": null
     }
@@ -1746,12 +1773,12 @@
      "lw": 0.9,
      "path": [
       [
-       20.0,
-       13.0
+       20,
+       19
       ],
       [
        25,
-       13
+       19
       ],
       [
        25,
@@ -1873,7 +1900,7 @@
      "visible": true,
      "xy": [
       10.0,
-      19.0
+      22.0
      ],
      "zorder": null
     }
@@ -1900,7 +1927,7 @@
      "visible": true,
      "xy": [
       27.0,
-      19.0
+      22.0
      ],
      "zorder": null
     }
@@ -1956,11 +1983,11 @@
       ],
       [
        46.0,
-       21.611111
+       24.611111
       ],
       [
        -2.0,
-       21.611111
+       24.611111
       ],
       [
        -2.0,

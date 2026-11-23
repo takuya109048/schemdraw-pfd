@@ -23,9 +23,9 @@
   ],
   [
    "STM",
-   22,
+   18,
    -2,
-   2,
+   6,
    2
   ],
   [
@@ -189,8 +189,8 @@
    "utility",
    [
     [
-     24.0,
-     -1.0
+     24,
+     -1
     ],
     [
      29,
@@ -947,7 +947,7 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      23,
+      19,
       -1
      ],
      "clip": null,
@@ -960,6 +960,33 @@
      "theta2": 360.0,
      "visible": true,
      "width": 2,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 0.9,
+     "path": [
+      [
+       20,
+       -1
+      ],
+      [
+       24,
+       -1
+      ]
+     ],
+     "visible": true,
      "zorder": null
     }
    ],
@@ -984,7 +1011,7 @@
      "text": "STM",
      "visible": true,
      "xy": [
-      23,
+      19,
       -1
      ],
      "zorder": null
@@ -2989,8 +3016,8 @@
      "lw": 0.9,
      "path": [
       [
-       24.0,
-       -1.0
+       24,
+       -1
       ],
       [
        29,
