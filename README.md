@@ -51,6 +51,10 @@ ChatGPT のカスタム GPT に `pfd.py` をアップロードして使うため
 
 図の文字は、日本語フォントの候補（Yu Gothic, Meiryo, MS Gothic, Noto Sans CJK JP, IPAexGothic）のうち、入っている最初のものを使う。作例の画像は Noto Sans CJK JP で描いている。
 
+### Rust 版（`rust/`）
+
+同じ JSON から同じ図（配置・配線が座標まで同じ）を、より速く、1つの実行ファイルで描く Rust 版がある。今は SVG 出力のみで、改訂（`revisions`）には未対応。使い方は [rust/README.md](rust/README.md)。
+
 ## クイックスタート
 
 ### JSON から描く
