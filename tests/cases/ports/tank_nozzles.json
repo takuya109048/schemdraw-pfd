@@ -1,0 +1,19 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 1, "params": {"text": "FEED"}},
+    {"id": "TK-1", "type": "tank", "level": 1},
+    {"id": "V1", "type": "connector", "level": 2, "params": {"text": "V1"}},
+    {"id": "V2", "type": "connector", "level": 2, "params": {"text": "V2"}},
+    {"id": "L1", "type": "connector", "level": 0, "params": {"text": "L1"}},
+    {"id": "L2", "type": "connector", "level": 0, "params": {"text": "L2"}},
+    {"id": "SIDE", "type": "connector", "level": 1, "params": {"text": "SIDE"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "TK-1.w_mid"},
+    {"from": "TK-1.n0", "to": "V1.tail"},
+    {"from": "TK-1.n6", "to": "V2.tail"},
+    {"from": "TK-1.s0", "to": "L1.tail"},
+    {"from": "TK-1.s6", "to": "L2.tail"},
+    {"from": "TK-1.e_mid", "to": "SIDE.tail"}
+  ]
+}

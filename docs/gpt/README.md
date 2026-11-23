@@ -7,7 +7,7 @@
 | [system_prompt.md](system_prompt.md) | GPT の「指示」欄に貼るシステムプロンプト（5000 文字以内） |
 | [chat_examples.md](chat_examples.md) | GPT に送るチャットの例文3パターン（かんたん / 詳細な蒸留工程 / 独自機器と予備機） |
 | [example_distillation.json](example_distillation.json) | 例文パターン2に対応する仕様の例 |
-| [example_compressor.json](example_compressor.json) | 例文パターン3に対応する仕様の例（圧縮機を `custom_elements` で定義） |
+| [example_compressor.json](example_compressor.json) | 例文パターン3に対応する仕様の例（標準の `compressor` を使う） |
 
 ## 設定のしかた
 

@@ -1,0 +1,39 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "params": {"text": "原料受入"}},
+    {"id": "TK-101", "type": "tank", "desc": "原料タンク"},
+    {"id": "P-101", "type": "pump", "desc": "原料ポンプ"},
+    {"id": "R-101", "type": "reactor", "desc": "反応槽", "params": {"jacket": true}},
+    {"id": "PSV-101", "type": "safety_valve"},
+    {"id": "FLR", "type": "connector", "params": {"text": "フレアへ"}},
+    {"id": "J-101", "type": "ejector", "desc": "真空エジェクター"},
+    {"id": "MS", "type": "connector", "params": {"text": "駆動蒸気"}},
+    {"id": "VNT", "type": "connector", "params": {"text": "ベントへ"}},
+    {"id": "CWS", "type": "connector", "params": {"text": "冷却水"}},
+    {"id": "CWR", "type": "connector", "params": {"text": "冷却水戻り"}},
+    {"id": "P-102", "type": "pump", "desc": "抜出ポンプ"},
+    {"id": "CF-101", "type": "centrifuge", "desc": "遠心分離機"},
+    {"id": "TK-102", "type": "tank", "desc": "ろ液タンク", "params": {"width": 6, "height": 6}},
+    {"id": "CAKE", "type": "connector", "params": {"text": "乾燥工程へ"}},
+    {"id": "FLT", "type": "connector", "params": {"text": "ろ液処理へ"}},
+    {"id": "P-103", "type": "pump", "desc": "ろ液ポンプ"}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "TK-101.n0"},
+    {"from": "TK-101.e0", "to": "P-101.in", "inline": ["strainer"]},
+    {"from": "P-101.out", "to": "R-101.n0", "inline": [{"type": "orifice"}, {"type": "valve", "params": {"kind": "ball"}}]},
+    {"from": "R-101.n4", "to": "PSV-101.in"},
+    {"from": "PSV-101.out", "to": "FLR.tail"},
+    {"from": "MS.tip", "to": "J-101.motive", "type": "utility"},
+    {"from": "R-101.n3", "to": "J-101.suction"},
+    {"from": "J-101.out", "to": "VNT.tail"},
+    {"from": "CWS.tip", "to": "R-101.jacket_in", "type": "utility"},
+    {"from": "R-101.jacket_out", "to": "CWR.tail", "type": "utility"},
+    {"from": "R-101.bottom", "to": "P-102.in", "inline": [{"type": "valve", "params": {"kind": "butterfly"}}]},
+    {"from": "P-102.out", "to": "CF-101.in"},
+    {"from": "CF-101.solids", "to": "CAKE.tail"},
+    {"from": "CF-101.out", "to": "TK-102.w_high"},
+    {"from": "TK-102.e0", "to": "P-103.in"},
+    {"from": "P-103.out", "to": "FLT.tail"}
+  ]
+}

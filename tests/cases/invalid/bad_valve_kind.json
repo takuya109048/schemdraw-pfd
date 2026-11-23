@@ -1,7 +1,7 @@
 {
   "elements": [
     {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
-    {"id": "V-1", "type": "valve", "level": 0, "params": {"kind": "ball"}},
+    {"id": "V-1", "type": "valve", "level": 0, "params": {"kind": "plug"}},
     {"id": "PROD", "type": "connector", "level": 0, "params": {"text": "PROD"}}
   ],
   "connections": [

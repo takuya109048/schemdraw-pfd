@@ -1,0 +1,13 @@
+{
+  "elements": [
+    {"id": "STM", "type": "connector", "level": 1, "params": {"text": "STM"}},
+    {"id": "J-1", "type": "ejector", "level": 1},
+    {"id": "OUT", "type": "connector", "level": 1, "params": {"text": "OUT"}},
+    {"id": "GAS", "type": "connector", "level": 0, "params": {"text": "GAS"}}
+  ],
+  "connections": [
+    {"from": "STM.tip", "to": "J-1.motive"},
+    {"from": "GAS.tip", "to": "J-1.suction"},
+    {"from": "J-1.out", "to": "OUT.tail"}
+  ]
+}

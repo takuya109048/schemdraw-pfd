@@ -7,7 +7,7 @@
 | ファイル | 役割 |
 |---|---|
 | `geometry.py` | 外周形状（折れ線/楕円弧）とレイキャストによる外周上の接点計算 |
-| `elements/` | エレメント定義。**1エレメント＝1ファイル**（`pump.py`, `valve.py`, `vertical_drum.py`, `column.py`, `horizontal_drum.py`, `heat_exchanger.py`, `filter_housing.py`, `header.py`, `tee.py`, `connector.py`, `instrument.py`, `custom.py`）。共通部分（`Geometry`・基底クラス・回転/反転・`ElementLibrary`）は `base.py`、標準エレメントの登録は `__init__.py` の `STANDARD_ELEMENTS`。追加するときは `elements/<名前>.py` を作って `STANDARD_ELEMENTS` に足す |
+| `elements/` | エレメント定義。**1エレメント＝1ファイル**（`pump.py`, `compressor.py`, `valve.py`, `vertical_drum.py`, `reactor.py`, `heat_exchanger.py`, … `custom.py`）。共通部分（`Geometry`・基底クラス・回転/反転・`ElementLibrary`・槽の胴のポート `shell_ports`）は `base.py`、標準エレメントの登録は `__init__.py` の `STANDARD_ELEMENTS`。追加するときは `elements/<名前>.py` を作って `STANDARD_ELEMENTS` に足す |
 | `style.py` | `LineStyle`（線の種類ごとの見た目）と `Theme`（フォント・線幅・余白・枠など図面全体の見た目）。描画系に依存しない |
 | `layout.py` | グリッド配置: レベル(Y)、順序どおりの専用列(X)、接続ポートを考慮した最小X制約 |
 | `router.py` | 直交グリッド経路探索: 曲がり回数最優先→距離。接続面に垂直に出入り、U/Iターン禁止（不可避なら緩和モード。何もないところのUターンだけ警告）。同等な系列の対応する配管は全系列で空いている経路を1回探して同じ形で敷く |

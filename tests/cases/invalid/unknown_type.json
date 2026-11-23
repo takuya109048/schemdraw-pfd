@@ -1,7 +1,7 @@
 {
   "elements": [
     {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
-    {"id": "P-1", "type": "compressor", "level": 0},
+    {"id": "P-1", "type": "crystallizer", "level": 0},
     {"id": "PROD", "type": "connector", "level": 1, "params": {"text": "PROD"}}
   ],
   "connections": [

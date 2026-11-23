@@ -1,7 +1,4 @@
-{"custom_elements":[
- {"name":"compressor","width":4,"height":4,
-  "shapes":[{"type":"polyline","points":[[0,1],[4,0],[4,4],[0,3]],"closed":true}],
-  "ports":{"in":{"side":"W","offset":2},"out":{"side":"E","offset":2}}}],
+{
  "elements":[
  {"id":"GAS","type":"connector","params":{"text":"原料ガス"}},
  {"id":"V-301","type":"vertical_drum","desc":"吸込ノックアウトドラム"},

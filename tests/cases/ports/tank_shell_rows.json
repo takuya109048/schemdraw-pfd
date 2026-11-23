@@ -1,0 +1,15 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 1, "params": {"text": "FEED"}},
+    {"id": "FEED2", "type": "connector", "level": 1, "params": {"text": "FEED2"}},
+    {"id": "TK-1", "type": "tank", "level": 1},
+    {"id": "P1", "type": "connector", "level": 1, "params": {"text": "P1"}},
+    {"id": "P2", "type": "connector", "level": 1, "params": {"text": "P2"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "TK-1.w1"},
+    {"from": "FEED2.tip", "to": "TK-1.w_low"},
+    {"from": "TK-1.e4", "to": "P1.tail"},
+    {"from": "TK-1.e_high", "to": "P2.tail"}
+  ]
+}

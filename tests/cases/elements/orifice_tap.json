@@ -1,0 +1,13 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
+    {"id": "FE-1", "type": "orifice", "level": 0},
+    {"id": "FT-1", "type": "instrument", "level": 1, "params": {"function": "FT", "number": "1"}},
+    {"id": "PROD", "type": "connector", "level": 0, "params": {"text": "PROD"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "FE-1.in"},
+    {"from": "FE-1.out", "to": "PROD.tail"},
+    {"from": "FE-1.tap", "to": "FT-1.s", "type": "instrument"}
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 1, "params": {"text": "FEED"}},
+    {"id": "CY-1", "type": "cyclone", "level": 1},
+    {"id": "GAS", "type": "connector", "level": 2, "params": {"text": "GAS"}},
+    {"id": "DUST", "type": "connector", "level": 0, "params": {"text": "DUST"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "CY-1.in"},
+    {"from": "CY-1.gas_out", "to": "GAS.tail"},
+    {"from": "CY-1.solids", "to": "DUST.tail"}
+  ]
+}

@@ -177,12 +177,12 @@ INVALID = {
     "invalid/unknown_element_key": (ValueError, "element parameters go in 'params'"),
     "invalid/unknown_equipment": (KeyError, "unknown equipment 'P-9'"),
     "invalid/unknown_inline_key": (ValueError, "unknown inline item keys ['tag']"),
-    "invalid/unknown_inline_type": (KeyError, "unknown element type 'orifice'"),
+    "invalid/unknown_inline_type": (KeyError, "unknown element type 'sight_glass'"),
     "invalid/unknown_line_kind": (ValueError, "kind must be one of"),
     "invalid/unknown_line_style_key": (ValueError, "unknown line style keys"),
     "invalid/unknown_port": (KeyError, "unknown port 'suction'"),
     "invalid/unknown_top_key": (ValueError, "unknown top-level keys ['order']"),
-    "invalid/unknown_type": (KeyError, "unknown element type 'compressor'"),
+    "invalid/unknown_type": (KeyError, "unknown element type 'crystallizer'"),
     "invalid/zero_span": (ValueError, "span must be >= 1"),
     "invalid/frozen_missing_keys": (ValueError, "frozen: must have exactly the keys"),
     "invalid/revision_bad_remove": (ValueError, "must be an id or"),
@@ -222,20 +222,40 @@ ENUMS = {
 }
 # other parameters of each element type: each written by some case
 PARAMS = {
+    "air_cooler": {"length", "fans"},
+    "blower": set(),
+    "centrifuge": set(),
     "column": {"width", "height", "beds"},
+    "compressor": set(),
     "connector": {"text", "length"},
+    "cyclone": set(),
+    "ejector": set(),
     "filter_housing": {"width", "height"},
+    "furnace": {"width", "height"},
     "header": {"branches", "pitch", "branch_elements"},
     "heat_exchanger": {"length", "diameter"},
     "horizontal_drum": {"length", "diameter"},
     "instrument": {"function", "number"},
+    "orifice": set(),
+    "plate_heat_exchanger": set(),
     "pump": set(),
+    "reactor": {"width", "height", "jacket"},
+    "safety_valve": set(),
+    "static_mixer": set(),
+    "steam_trap": set(),
+    "strainer": set(),
+    "tank": {"width", "height"},
     "tee": {"arms"},
     "valve": set(),
     "vertical_drum": {"width", "height", "beds"},
 }
-# parameters that add ports (the valve actuator, the fourth tee arm)
-PORT_VARIANTS = {"valve": [{}, {"kind": "control"}], "tee": [{"arms": "nsew"}]}
+# parameters that add ports (the valve actuator and third leg, the fourth tee
+# arm, the reactor's jacket)
+PORT_VARIANTS = {
+    "valve": [{}, {"kind": "control"}, {"kind": "three_way"}],
+    "tee": [{"arms": "nsew"}],
+    "reactor": [{}, {"jacket": True}],
+}
 SHAPES = {"rect", "polyline", "ellipse", "arc"}
 SHAPE_KEYS = {"boundary", "fill", "pipe", "closed"}
 RELATIONS = ("same", "up", "down")  # level of a line's end against its start

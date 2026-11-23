@@ -1,0 +1,15 @@
+{
+  "elements": [
+    {"id": "HOT", "type": "connector", "level": 0, "params": {"text": "HOT"}},
+    {"id": "COLD", "type": "connector", "level": 0, "params": {"text": "COLD"}},
+    {"id": "E-1", "type": "plate_heat_exchanger", "level": 0},
+    {"id": "HOT_OUT", "type": "connector", "level": 0, "params": {"text": "HOT_OUT"}},
+    {"id": "COLD_OUT", "type": "connector", "level": 0, "params": {"text": "COLD_OUT"}}
+  ],
+  "connections": [
+    {"from": "HOT.tip", "to": "E-1.in1"},
+    {"from": "E-1.out1", "to": "HOT_OUT.tail"},
+    {"from": "COLD.tip", "to": "E-1.in2"},
+    {"from": "E-1.out2", "to": "COLD_OUT.tail"}
+  ]
+}

@@ -3,11 +3,14 @@ import math
 import pytest
 
 from schemdraw_pfd import CustomSpec, Flowsheet, element_names, register_element
-from schemdraw_pfd.elements import get_element
+from schemdraw_pfd.elements import STANDARD_ELEMENTS, get_element
+from schemdraw_pfd.elements.valve import ValveSpec
 from schemdraw_pfd.geometry import ray_hit
 from schemdraw_pfd.layout import Placed
 from schemdraw_pfd.render import find_crossings
 from schemdraw_pfd.router import resolve_port
+
+STANDARD_TYPES = {spec.name for spec in STANDARD_ELEMENTS}
 
 
 def _placed(type_, x=0, y=0, **params):
@@ -65,7 +68,7 @@ def test_pump_ports_on_outline():
 
 # -- P&ID style symbols ----------------------------------------------------------
 def test_valve_kinds_and_orientation():
-    for kind in ("gate", "globe", "control", "check"):
+    for kind in ValveSpec.KINDS:
         h = _placed("valve", kind=kind)
         assert resolve_port(h, "in").point == pytest.approx((0, 1))
         assert resolve_port(h, "out").point == pytest.approx((2, 1))
@@ -74,8 +77,39 @@ def test_valve_kinds_and_orientation():
         assert resolve_port(v, "out").point == pytest.approx((1, 2))
     ctrl = _placed("valve", kind="control")
     assert resolve_port(ctrl, "signal").point == pytest.approx((1, 2))  # dome top
+    three_way = _placed("valve", kind="three_way")
+    assert resolve_port(three_way, "branch").point == pytest.approx((1, 0))
     with pytest.raises(ValueError):
-        _placed("valve", kind="butterfly")
+        _placed("valve", kind="plug")
+
+
+# parameters that add ports, so that every port of every element is checked
+PORT_VARIANTS = {
+    "valve": [{"kind": "control"}, {"kind": "three_way"}],
+    "reactor": [{"jacket": True}],
+}
+
+
+@pytest.mark.parametrize("type_", sorted(STANDARD_TYPES))
+def test_every_port_of_every_standard_element_meets_its_outline(type_):
+    for params in [{}, *PORT_VARIANTS.get(type_, [])]:
+        p = _placed(type_, **params)
+        for name in p.geo.ports:
+            x, y = resolve_port(p, name).point
+            assert -1e-9 <= x <= p.geo.width + 1e-9, (params, name)
+            assert -1e-9 <= y <= p.geo.height + 1e-9, (params, name)
+
+
+def test_reactor_nozzles_reach_the_vessel_not_the_drive():
+    r = _placed("reactor")  # 6 wide, vessel 10 tall, motor above
+    assert "top" not in r.geo.ports and "n2" not in r.geo.ports  # the shaft
+    assert resolve_port(r, "n0").point[1] < 10  # on the head, under the motor
+    j = _placed("reactor", jacket=True)
+    assert resolve_port(j, "jacket_in").point == pytest.approx((0, 2))
+    assert resolve_port(j, "jacket_out").point[0] == pytest.approx(6)
+    # a shell nozzle in the jacketed part is drawn through the jacket
+    assert resolve_port(j, "w0").point == pytest.approx((0, 2))
+    assert resolve_port(j, "w_high").point == pytest.approx((0.4, 8))
 
 
 def test_instrument_bubbles():

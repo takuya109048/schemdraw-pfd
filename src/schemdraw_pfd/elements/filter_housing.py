@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from ..geometry import Ellipse, Polyline, Port, Shape, rect
-from .base import ElementSpec, Geometry, even
+from .base import ElementSpec, Geometry, even, shell_ports
 
 INSET = 0.25  # the shell's walls stand this far inside the element's box
 LEGS = 2  # cells of legs under the bottom head
@@ -76,15 +76,8 @@ class FilterHousingSpec(ElementSpec):
                 rect(x0, plate, x0 + slot, joint - CARTRIDGE_GAP, boundary=False)
             )
 
-        rows = list(range(bottom + 1, joint))
         ports = {"vent": Port("N", w // 2), "drain": Port("S", w // 2)}
-        for i, y in enumerate(rows):
-            ports[f"w{i}"] = Port("W", y)
-            ports[f"e{i}"] = Port("E", y)
-        for side in "we":
-            ports[f"{side}_low"] = ports[f"{side}0"]
-            ports[f"{side}_mid"] = ports[f"{side}{len(rows) // 2}"]
-            ports[f"{side}_high"] = ports[f"{side}{len(rows) - 1}"]
+        ports |= shell_ports(list(range(bottom + 1, joint)))
         ports["in"] = Port("W", plate + 1)  # raw liquid, above the partition
         ports["out"] = Port("E", plate - 1)  # filtrate, below it
         return Geometry(w, h, shapes, ports, label_pos=self.label_pos, nozzles=True)
