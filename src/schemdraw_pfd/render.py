@@ -341,10 +341,11 @@ def scene(
         groups.append(Group("line", key, line, color=colors.get(added.get(key, ""))))
 
     # what the coloured revisions took away ---------------------------------------
-    in_place = set(diagram.replaced.values())  # the new one stands on it
+    # removed items a new one (or the item changed) stands on: not drawn
+    in_place = {(rev, old) for rev, _, old in diagram.replaced}
     for g in diagram.ghosts:
         color = colors.get(g.rev)
-        if color is None or (g.placed is not None and g.placed.id in in_place):
+        if color is None or (g.placed and (g.rev, g.placed.id) in in_place):
             continue
         if g.placed is not None:
             p = g.placed
@@ -372,7 +373,7 @@ def scene(
     xs += [x for pts in paths for x, _ in pts]
     ys += [y for pts in paths for _, y in pts]
     for g in diagram.ghosts:  # what is drawn of the removed, too
-        if g.rev in colors and g.placed is not None and g.placed.id not in in_place:
+        if g.rev in colors and g.placed and (g.rev, g.placed.id) not in in_place:
             xs += [g.placed.bbox[0], g.placed.bbox[2]]
             ys += [g.placed.bbox[1], g.placed.bbox[3]]
     mg = theme.margin
@@ -426,9 +427,12 @@ def scene(
         y = y0
         for r in legend:
             swaps = ", ".join(
-                f"{old} → {new}"
-                for new, old in diagram.replaced.items()
-                if diagram.added.get(new) == r.id
+                [
+                    f"{old} → {new}" if new != old else f"{new} 取替"
+                    for rev, new, old in diagram.replaced
+                    if rev == r.id and (rev, new) not in set(diagram.changed)
+                ]
+                + [f"{i} 変更" for rev, i in diagram.changed if rev == r.id]
             )
             text = ": ".join(t for t in (r.id, r.note) if t)
             text += f" ({swaps})" if swaps else ""

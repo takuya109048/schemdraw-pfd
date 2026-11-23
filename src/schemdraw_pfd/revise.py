@@ -40,6 +40,7 @@ from .geometry import Port
 from .layout import Placed
 from .netlist import (
     REVISION_COLORS,
+    Change,
     Connection,
     Equipment,
     InlineItem,
@@ -112,6 +113,8 @@ class Context:
     lines: list[Connection] = field(default_factory=list)
     # named inline items (they go with their line): id -> (in, out) ports
     inline: dict[str, tuple[str, str]] = field(default_factory=dict)
+    # every named item as written (type, parameters, ports, description)
+    specs: dict[str, Equipment] = field(default_factory=dict)
 
 
 def _int(v: float) -> int | None:
@@ -198,7 +201,9 @@ class _Sheet:
         # place it may take; removed items whose place is taken or open
         self.reuse: dict[str, Placed] = {}
         self.open: set[str] = set()
-        self.replaced: dict[str, str] = dict(d.replaced)
+        # (revision, new, old) / (revision, item): see Diagram
+        self.replaced: list[tuple[str, str, str]] = list(d.replaced)
+        self.changed: list[tuple[str, str]] = list(d.changed)
 
     # -- bookkeeping ----------------------------------------------------------
     def new_id(self, prefix: str) -> str:
@@ -448,7 +453,8 @@ class _Sheet:
             list(self.warnings),
             self.uturns,
             set(self.open),
-            dict(self.replaced),
+            list(self.replaced),
+            list(self.changed),
         )
 
     def restore(self, state: tuple) -> None:
@@ -465,6 +471,7 @@ class _Sheet:
             self.uturns,
             self.open,
             self.replaced,
+            self.changed,
         ) = (copy.copy(x) for x in state)
 
     def make_room(self, axis: int, at: int, by: int) -> None:
@@ -986,21 +993,43 @@ def apply_revision(d: Any, rev: Revision, index: int, ctx: Context) -> Any:
         if (c.src, c.dst) not in cut and not any(e in gone for e, _ in c.ends)
     ]
 
+    # -- what changes ---------------------------------------------------------
+    again: list[Equipment] = []  # changed items put anew, with their lines
+    relines: list[Connection] = []
+    for ch in rev.changes:
+        moved = _change(sheet, ch, ctx)
+        if moved is not None:
+            again.append(moved[0])
+            relines += [c for c in moved[1] if c not in relines]
+
     # -- what comes -----------------------------------------------------------
-    new = {e.id: e for e in rev.equipment}
-    _pair(sheet, rev, ctx)
+    for e in rev.equipment:
+        if e.id in sheet.placed:
+            raise ValueError(f"duplicate id {e.id!r}: it is on the sheet")
+    adding = list(rev.equipment) + again
+    new = {e.id: e for e in adding}
+    ctx.specs.update((e.id, replace(e)) for e in rev.equipment)
+    for c in rev.connections:
+        for i in c.inline:
+            if i.id:
+                if i.id in sheet.placed:
+                    raise ValueError(f"duplicate id {i.id!r}: it is on the sheet")
+                ctx.specs[i.id] = Equipment(
+                    i.id, i.type, None, dict(i.params), {}, i.desc
+                )
+    _pair(sheet, rev, ctx, adding)
     for c in rev.connections:
         ctx.inline.update(
             (item.id, (item.port_in, item.port_out)) for item in c.inline if item.id
         )
-    pending = list(rev.connections)
+    pending = list(rev.connections) + relines
     ctx.lines = ctx.lines + list(rev.connections)
     inline_ids: dict[int, list[str]] = {
         id(c): [
             item.id or f"{LINE_ITEM_PREFIX}R{index + 1}_{n}_{k}"
             for k, item in enumerate(c.inline)
         ]
-        for n, c in enumerate(rev.connections)
+        for n, c in enumerate(rev.connections + relines)
     }
     known = set(new) | {i for ids in inline_ids.values() for i in ids}
     for c in pending:
@@ -1086,7 +1115,7 @@ def apply_revision(d: Any, rev: Revision, index: int, ctx: Context) -> Any:
             lay(router, done)
 
     route_ready()
-    todo = [e.id for e in rev.equipment]
+    todo = [e.id for e in adding]
     while todo:
 
         def links(i: str) -> list[Connection]:
@@ -1125,10 +1154,11 @@ def apply_revision(d: Any, rev: Revision, index: int, ctx: Context) -> Any:
         hosts=sheet.hosts,
         revisions=info,
         replaced=sheet.replaced,
+        changed=sheet.changed,
     )
 
 
-def _pair(sheet: _Sheet, rev: Revision, ctx: Context) -> None:
+def _pair(sheet: _Sheet, rev: Revision, ctx: Context, adding: list[Equipment]) -> None:
     """Added items that replace removed ones (``sheet.reuse``): of the same
     type and size, sharing an item they connect to.  Such an item may take
     the place of the one it replaces (and does, if its lines route as well
@@ -1157,9 +1187,12 @@ def _pair(sheet: _Sheet, rev: Revision, ctx: Context) -> None:
         return out
 
     taken: set[str] = set()
-    for e in rev.equipment:
+    for e in adding:
         geo = ctx.geometry(e)
-        mine = neighbours(e.id, rev.connections)
+        if e.id in sheet.reuse:  # a changed item: its own old place
+            taken.add(sheet.reuse[e.id].id)
+            continue
+        mine = neighbours(e.id, rev.connections + lines)
         for g in gone:
             if g.id in taken or g.type != e.type:
                 continue
@@ -1193,7 +1226,9 @@ def _place(
             home = sheet.reuse.get(eq.id)
             if home is not None and (home.x, home.y) == (x, y):
                 sheet.open.add(home.id)  # it stands where the old one stood
-                sheet.replaced[eq.id] = home.id
+                swap = (sheet.rev, eq.id, home.id)
+                if swap not in sheet.replaced:
+                    sheet.replaced.append(swap)
             return router, done
         if attempt == ROOM_TRIES:
             break
@@ -1286,7 +1321,7 @@ def _best_spot(
         cells = {(x, y) for x in range(x0, x1 + 1) for y in range(y0, y1 + 1)}
         return not cells & pipes
 
-    at_home = home is not None and fits_home(home)
+    at_home = home is not None and fits_home(replace(home, geo=geo))
     if at_home:
         assert home is not None
         spots[home.x, home.y] = estimate(home.x, home.y)
@@ -1313,3 +1348,107 @@ def _best_spot(
     if best is None or best[0][0] >= (len(lines) if partial else 1):
         return None
     return best[1], best[2], best[3]
+
+
+def _change(
+    sheet: _Sheet, ch: Change, ctx: Context
+) -> tuple[Equipment, list[Connection]] | None:
+    """Change an item on the sheet (see :class:`~.netlist.Change`).
+
+    Turned the way it stands now (the rotation / mirror the layout gave
+    it), if the new item is as big and every port with a line stays where
+    it was, it is changed in place: its lines stay, only where they meet
+    its outline is found again.  Otherwise it is taken off with its lines
+    and returned with them, to be put anew -- in its old place if it fits
+    (see ``_Sheet.reuse``)."""
+    if ch.id not in sheet.placed:
+        raise KeyError(f"change: no item {ch.id!r} on the sheet")
+    spec = ctx.specs.get(ch.id)
+    if spec is None:
+        raise KeyError(f"change: {ch.id!r} cannot be changed (no item written)")
+    new = replace(
+        spec,
+        type=ch.type or spec.type,
+        params={**spec.params, **ch.params},
+        desc=spec.desc if ch.desc is None else ch.desc,
+    )
+    ctx.specs[ch.id] = new
+    p = sheet.placed[ch.id]
+    used = {
+        port for k in sheet.lines_at(ch.id) for e, port in sheet.lines[k][0].ends
+        if e == ch.id
+    }  # fmt: skip
+    turns = [(r, m) for m in (False, True) for r in (0, 90, 180, 270)]
+    if "rotation" in ch.params or "mirror" in ch.params:
+        turns = [(new.params.get("rotation", 0), new.params.get("mirror", False))]
+    for rot, mir in turns:
+        params = {**new.params, "rotation": rot, "mirror": mir}
+        try:
+            geo = ctx.geometry(replace(new, params=params))
+        except (KeyError, ValueError):
+            continue
+        if (geo.width, geo.height) != (p.geo.width, p.geo.height):
+            continue
+        if not all(
+            q in geo.ports
+            and (geo.ports[q].side, geo.ports[q].offset)
+            == (p.geo.ports[q].side, p.geo.ports[q].offset)
+            for q in used
+        ):
+            continue
+        # in place: the item redrawn, its lines met where its outline is now
+        q = replace(p, type=new.type, geo=geo)
+        sheet.placed[ch.id] = q
+        for k in sheet.lines_at(ch.id):
+            c, r = sheet.lines[k]
+            pts = list(r.points)
+            (a, pa), (b, pb) = c.ends
+            if a == ch.id:
+                pts[0] = resolve_port(q, pa).point
+            if b == ch.id:
+                pts[-1] = resolve_port(q, pb).point
+            sheet.lines[k] = (c, Route(_simplify(pts), r.strict, r.nodes))
+        _mark_changed(sheet, ch.id, new.desc)
+        return None
+    # put anew: off the sheet with its lines, back as an added item
+    lines = [c for c in ctx.lines if any(e == ch.id for e, _ in c.ends)]
+    ports = ctx.geometry(new).ports
+    for c in lines:
+        for e, port in c.ends:
+            if e == ch.id and port not in ports:
+                raise KeyError(
+                    f"change: {ch.id} as changed has no port {port!r} for "
+                    f"{c.src} -> {c.dst}; known: {sorted(ports)}"
+                )
+    if ch.id in ctx.inline:
+        raise ValueError(
+            f"change: {ch.id} does not fit its line any more; "
+            "remove the line and add it again instead"
+        )
+    old = sheet.placed[ch.id]
+    before = len(sheet.ghosts)
+    sheet.drop(items=[ch.id])
+    # what went with it comes back (in the revision's colour): no ghosts
+    sheet.ghosts[before:] = [g for g in sheet.ghosts[before:] if g.placed == old]
+    # grown: what lies beyond its old top / right side moves apart by the
+    # growth first, so it grows where it stands
+    geo = ctx.geometry(new)
+    x0, y0, x1, y1 = old.bbox
+    if geo.height > old.geo.height:
+        sheet.make_room(1, y1 + 1, geo.height - old.geo.height)
+    if geo.width > old.geo.width:
+        sheet.make_room(0, x1 + 1, geo.width - old.geo.width)
+    sheet.reuse[ch.id] = old
+    sheet.changed.append((sheet.rev, ch.id))
+    # the same item, changed: its old outline is not drawn under it
+    sheet.replaced.append((sheet.rev, ch.id, ch.id))
+    return new, lines
+
+
+def _mark_changed(sheet: _Sheet, item: str, desc: str) -> None:
+    sheet.added[item] = sheet.rev
+    sheet.changed.append((sheet.rev, item))
+    if desc:
+        sheet.descs[item] = desc
+    else:
+        sheet.descs.pop(item, None)

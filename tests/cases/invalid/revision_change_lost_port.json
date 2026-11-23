@@ -1,0 +1,1 @@
+{"elements": [{"id": "A", "type": "pump"}, {"id": "T", "type": "vertical_drum"}], "connections": [{"from": "T.bottom", "to": "A.in"}], "revisions": [{"id": "R1", "change": [{"id": "T", "type": "horizontal_drum"}]}]}

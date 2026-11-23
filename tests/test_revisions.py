@@ -24,6 +24,8 @@ UNMOVED = [
     "remove_item",
     "remove_line",
     "replace_in_place",
+    "reuse_id",
+    "change_in_place",
 ]
 
 
@@ -260,7 +262,7 @@ def test_a_replacement_stands_where_the_old_item_stood():
     pumps = [next(p for p in d.placed if p.type == "pump") for d in stages]
     assert [p.id for p in pumps] == ["P-1", "P-1N", "P-1R"]
     assert len({(p.x, p.y) for p in pumps}) == 1
-    assert stages[-1].replaced == {"P-1N": "P-1", "P-1R": "P-1N"}
+    assert stages[-1].replaced == [("R1", "P-1N", "P-1"), ("R2", "P-1R", "P-1N")]
     for d in stages:
         assert [_dirs(r.points) for c, r in d.routes if "TK-1.bottom" in c.src] == [
             _dirs(r.points) for c, r in stages[0].routes if "TK-1.bottom" in c.src
@@ -308,3 +310,83 @@ def test_cli_revision_options(tmp_path):
         out = tmp_path / f"{'_'.join(args)}.svg"
         assert main([str(spec), "-o", str(out), "-j", "1", *args]) == 0
         assert out.exists()
+
+
+def test_a_removed_id_may_be_used_again():
+    base, after = _stages("reuse_id")
+    old = next(p for p in base.placed if p.id == "P-1")
+    new = next(p for p in after.placed if p.id == "P-1")
+    assert (new.x, new.y) == (old.x, old.y)
+    assert after.added["P-1"] == "R1" and after.descs["P-1"] == "新ポンプ"
+    sheet = [g for g in scene(after).groups if g.kind == "sheet"][0]
+    legend = [i.text for i in sheet.items if isinstance(i, Text) and i.ha == "left"]
+    assert legend == ["R1: 同じタグで取替 (P-1 取替)"]
+    assert not any(g.id == "P-1 (removed)" for g in scene(after).groups)
+
+
+def test_an_id_on_the_sheet_may_not_be_used_again():
+    fs = _fs("reuse_id")
+    fs.revise("R2")
+    with pytest.raises(ValueError, match="duplicate id 'P-1'"):
+        fs.add("pump", "P-1")
+    fs.remove("P-1")
+    fs.add("pump", "P-1")  # removed in this revision: free again
+    fs.connect("TK-1.bottom", "P-1.in")
+    fs.connect("P-1.out", "OUT.tail")
+    d = fs.build()
+    assert [p.id for p in d.placed].count("P-1") == 1
+
+
+def test_a_change_that_fits_stays_in_place():
+    """A gate valve made a globe valve, a pump's description: drawn in the
+    revision's colour where they stand; their lines do not change."""
+    base, after = _stages("change_in_place")
+    assert [(p.id, p.x, p.y) for p in after.placed] == [
+        (p.id, p.x, p.y) for p in base.placed
+    ]
+    assert [r.points for _, r in after.routes] == [r.points for _, r in base.routes]
+    assert after.changed == [("R1", "V-1"), ("R1", "P-1")]
+    assert after.added == {"V-1": "R1", "P-1": "R1"}
+    assert after.descs["P-1"] == "原料ポンプ（更新）"
+    valve = next(p for p in after.placed if p.id == "V-1")
+    assert any(getattr(s, "fill", None) for s in valve.geo.shapes)  # the dot
+    colors = _colors(after, "all")
+    assert colors["V-1"] == {("red", False)}
+    assert colors["P-1.out -> V-1.in"] == {(None, False)}
+
+
+def test_a_change_that_grows_grows_where_it_stands():
+    """A tank made a taller column: what lies above it moves up by the
+    growth, the column stands on the tank's place, its lines are laid again
+    in the revision's colour and its old outline is not drawn."""
+    base, after = _stages("change_resize")
+    was = {p.id: p for p in base.placed}
+    now = {p.id: p for p in after.placed}
+    tk = now["TK-1"]
+    assert tk.type == "column" and (tk.x, tk.y) == (was["TK-1"].x, was["TK-1"].y)
+    grow = tk.geo.height - was["TK-1"].geo.height
+    assert now["IN"].y == was["IN"].y + grow
+    assert (now["P-1"].x, now["P-1"].y) == (was["P-1"].x, was["P-1"].y)
+    assert after.changed == [("R1", "TK-1")]
+    lines = [line_key(c) for c, _ in after.routes if "TK-1" in line_key(c)]
+    assert lines and all(after.added[k] == "R1" for k in lines)
+    groups = scene(after).groups
+    assert not any(g.id.endswith("(removed)") for g in groups)
+
+
+def test_python_change():
+    fs = _fs("change_in_place")
+    fs.revise("R2")
+    fs.change("V-1", kind="check")
+    fs.change("P-1", desc="")
+    assert fs.to_dict()["revisions"][-1] == {
+        "id": "R2",
+        "change": [
+            {"id": "V-1", "params": {"kind": "check"}},
+            {"id": "P-1", "desc": ""},
+        ],
+    }
+    d = fs.build()
+    assert "P-1" not in d.descs
+    with pytest.raises(KeyError, match="no item 'X'"):
+        fs.change("X", desc="?")

@@ -171,6 +171,27 @@ REVISION_COLORS = ("red", "blue", "green", "magenta", "darkorange", "purple")
 
 
 @dataclass
+class Change:
+    """An item on the sheet changed by a revision: another ``type``, its
+    ``params`` (merged into those it has) or ``desc`` (None: as it is)."""
+
+    id: str
+    type: str | None = None
+    params: dict[str, Any] = field(default_factory=dict)
+    desc: str | None = None
+
+    KEYS = ("id", "type", "params", "desc")
+
+    def to_dict(self) -> dict[str, Any]:
+        return _changed(
+            {"id": self.id},
+            ("type", self.type, None),
+            ("params", jsonable(self.params), {}),
+            ("desc", self.desc, None),
+        )
+
+
+@dataclass
 class Revision:
     """A change drawn onto a finished sheet (see :mod:`.revise`).
 
@@ -179,7 +200,9 @@ class Revision:
     apart where room is short), and what it ``remove``-s is taken away.
     ``color``: how its changes are drawn (None: by its place in the list,
     see ``REVISION_COLORS``).  ``remove``: element ids; ``remove_lines``:
-    lines as ``(from, to)``, as they were written."""
+    lines as ``(from, to)``, as they were written; ``changes``: items that
+    stay but change (see :class:`Change`).  An id removed may be used again
+    by an item added in the same or a later revision."""
 
     id: str
     color: str | None = None
@@ -188,6 +211,7 @@ class Revision:
     connections: list[Connection] = field(default_factory=list)
     remove: list[str] = field(default_factory=list)
     remove_lines: list[tuple[str, str]] = field(default_factory=list)
+    changes: list[Change] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         d: dict[str, Any] = _changed(
@@ -197,6 +221,8 @@ class Revision:
             d["remove"] = list(self.remove) + [
                 {"from": a, "to": b} for a, b in self.remove_lines
             ]
+        if self.changes:
+            d["change"] = [c.to_dict() for c in self.changes]
         if self.equipment:
             d["elements"] = [e.to_dict() for e in self.equipment]
         if self.connections:
