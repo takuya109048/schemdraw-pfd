@@ -108,7 +108,7 @@ pub fn to_svg(sc: &Scene) -> String {
     );
     for g in &sc.groups {
         let _ = writeln!(out, r#"<g class="{}" id="{}">"#, g.kind, esc(&g.id));
-        for s in &g.segs {
+        for s in &g.segs() {
             match s {
                 Seg::Line {
                     path,

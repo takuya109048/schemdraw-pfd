@@ -12,6 +12,7 @@
     clippy::too_many_arguments
 )]
 
+pub mod colors;
 pub mod elements;
 pub mod error;
 pub mod expand;
@@ -31,6 +32,7 @@ pub mod router;
 pub mod style;
 pub mod svg;
 pub mod symmetry;
+pub mod xlsx;
 
 pub use error::{Error, Result};
 pub use model::{Diagram, Flowsheet};

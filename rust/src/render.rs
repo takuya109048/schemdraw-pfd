@@ -62,11 +62,60 @@ pub enum Seg {
     },
 }
 
+/// One thing drawn: an equipment outline shape as built, or a stroke /
+/// text (as its segment).
+#[derive(Clone, Debug)]
+pub enum Item {
+    Shape(Shape),
+    Seg(Seg),
+}
+
+impl From<Seg> for Item {
+    fn from(s: Seg) -> Item {
+        Item::Seg(s)
+    }
+}
+
+/// What belongs together: one piece of equipment (outline, texts, tag),
+/// one line (its pieces and nozzle ticks), or the sheet.
 #[derive(Clone, Debug)]
 pub struct Group {
     pub kind: &'static str,
     pub id: String,
-    pub segs: Vec<Seg>,
+    pub items: Vec<Item>,
+    /// equipment only: its type and id
+    pub typ: Option<String>,
+    pub pid: Option<String>,
+    /// a revision's change: drawn in its colour; dashed if taken away
+    pub color: Option<String>,
+    pub dashed: bool,
+}
+
+impl Group {
+    /// The SchemDraw segments of the group, in its colour.
+    pub fn segs(&self) -> Vec<Seg> {
+        self.items
+            .iter()
+            .map(|i| {
+                let seg = match i {
+                    Item::Shape(s) => shape_seg(s, None),
+                    Item::Seg(s) => s.clone(),
+                };
+                paint(seg, self.color.as_deref(), self.dashed)
+            })
+            .collect()
+    }
+}
+
+/// An equipment shape as drawn: a piece in a line kind's style becomes a
+/// stroke of that style.
+fn item_of(s: &Shape, styles: &IndexMap<String, LineStyle>) -> Item {
+    if let Shape::Poly(p) = s {
+        if p.line.as_ref().is_some_and(|l| styles.contains_key(l)) {
+            return Item::Seg(shape_seg(s, Some(styles)));
+        }
+    }
+    Item::Shape(s.clone())
 }
 
 #[derive(Clone, Debug)]
@@ -379,7 +428,7 @@ fn tag_items(p: &Placed, theme: &Theme, busy: &[f64], pipes: &[Pipe]) -> Vec<Seg
 
 /// Rough width of a text block: full-width (CJK) characters take one em,
 /// others a bit over half.
-fn text_width(t: &str, em: f64) -> f64 {
+pub fn text_width(t: &str, em: f64) -> f64 {
     t.split('\n')
         .map(|line| {
             line.chars()
@@ -474,35 +523,40 @@ pub fn scene_with(
         .collect();
 
     for p in &d.placed {
-        let mut items: Vec<Seg> = p
+        let mut items: Vec<Item> = p
             .geo
             .translated(p.x as f64, p.y as f64)
             .iter()
-            .map(|s| shape_seg(s, Some(styles)))
+            .map(|s| item_of(s, styles))
             .collect();
         for (x, y, t, scale) in &p.geo.texts {
             if !t.is_empty() {
-                items.push(text(
-                    p.x as f64 + x,
-                    p.y as f64 + y,
-                    t,
-                    theme.fontsize * scale,
-                    "center",
-                    "center",
-                ));
+                items.push(
+                    text(
+                        p.x as f64 + x,
+                        p.y as f64 + y,
+                        t,
+                        theme.fontsize * scale,
+                        "center",
+                        "center",
+                    )
+                    .into(),
+                );
             }
         }
         if label && !p.id.starts_with(GENERATED_PREFIX) {
             let busy = west.get(p.id.as_str()).cloned().unwrap_or_default();
-            items.extend(tag_items(p, &theme, &busy, &pipes));
+            items.extend(tag_items(p, &theme, &busy, &pipes).into_iter().map(Item::from));
         }
         if !items.is_empty() {
-            let c = color_of(&p.id);
-            let segs = items.into_iter().map(|g| paint(g, c, false)).collect();
             groups.push(Group {
                 kind: "equipment",
                 id: p.id.clone(),
-                segs,
+                items,
+                typ: Some(p.typ.clone()),
+                pid: Some(p.id.clone()),
+                color: color_of(&p.id).map(String::from),
+                dashed: false,
             });
         }
     }
@@ -528,12 +582,15 @@ pub fn scene_with(
         }
         let _ = r;
         let key = format!("{} -> {}", c.src, c.dst);
-        let col = color_of(&key);
-        let segs = line.into_iter().map(|g| paint(g, col, false)).collect();
+        let color = color_of(&key).map(String::from);
         groups.push(Group {
             kind: "line",
             id: key,
-            segs,
+            items: line.into_iter().map(Item::from).collect(),
+            typ: None,
+            pid: None,
+            color,
+            dashed: false,
         });
     }
 
@@ -549,42 +606,51 @@ pub fn scene_with(
             if in_place.contains(&(g.rev.as_str(), p.id.as_str())) {
                 continue;
             }
-            let mut items: Vec<Seg> = p
+            let mut items: Vec<Item> = p
                 .geo
                 .translated(p.x as f64, p.y as f64)
                 .iter()
-                .map(|s| shape_seg(s, None))
+                .map(|s| Item::Shape(s.clone()))
                 .collect();
             for (x, y, t, scale) in &p.geo.texts {
                 if !t.is_empty() {
-                    items.push(text(
-                        p.x as f64 + x,
-                        p.y as f64 + y,
-                        t,
-                        theme.fontsize * scale,
-                        "center",
-                        "center",
-                    ));
+                    items.push(
+                        text(
+                            p.x as f64 + x,
+                            p.y as f64 + y,
+                            t,
+                            theme.fontsize * scale,
+                            "center",
+                            "center",
+                        )
+                        .into(),
+                    );
                 }
             }
             if label && !p.id.starts_with(GENERATED_PREFIX) {
-                items.extend(tag_items(p, &theme, &[], &pipes));
+                items.extend(tag_items(p, &theme, &[], &pipes).into_iter().map(Item::from));
             }
             if !items.is_empty() {
-                let segs = items.into_iter().map(|s| paint(s, Some(color), true)).collect();
                 groups.push(Group {
                     kind: "equipment",
                     id: format!("{} (removed)", p.id),
-                    segs,
+                    items,
+                    typ: Some(p.typ.clone()),
+                    pid: Some(p.id.clone()),
+                    color: Some(color.clone()),
+                    dashed: true,
                 });
             }
         } else if let Some((c, r)) = &g.line {
             let strokes = line_strokes(&r.points, &HashMap::new(), &styles[&c.kind], 0.0);
-            let segs = strokes.into_iter().map(|s| paint(s, Some(color), true)).collect();
             groups.push(Group {
                 kind: "line",
                 id: format!("{} -> {} (removed)", c.src, c.dst),
-                segs,
+                items: strokes.into_iter().map(Item::from).collect(),
+                typ: None,
+                pid: None,
+                color: Some(color.clone()),
+                dashed: true,
             });
         }
     }
@@ -745,7 +811,11 @@ pub fn scene_with(
         groups.push(Group {
             kind: "sheet",
             id: "sheet".into(),
-            segs: sheet,
+            items: sheet.into_iter().map(Item::from).collect(),
+            typ: None,
+            pid: None,
+            color: None,
+            dashed: false,
         });
     }
     Ok(Scene {
@@ -843,6 +913,6 @@ pub fn snapshot_with(d: &Diagram, highlight: &str, since: Option<&str>) -> Resul
         "placed": d.placed.iter().map(|p| json!([p.id, p.x, p.y, p.geo.width, p.geo.height])).collect::<Vec<_>>(),
         "routes": d.routes.iter().map(|(c, r)| json!([c.src, c.dst, c.kind, pts(&r.points)])).collect::<Vec<_>>(),
         "warnings": d.warnings,
-        "drawing": sc.groups.iter().map(|g| Value::Array(g.segs.iter().map(seg_json).collect())).collect::<Vec<_>>(),
+        "drawing": sc.groups.iter().map(|g| Value::Array(g.segs().iter().map(seg_json).collect())).collect::<Vec<_>>(),
     }))
 }
