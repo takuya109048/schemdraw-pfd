@@ -1,0 +1,11 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
+    {"id": "D-1", "type": "vertical_drum", "level": 0},
+    {"id": "N2", "type": "utility", "level": 1, "params": {"text": "N2", "lead": 0}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "D-1.w_mid"},
+    {"from": "N2.out", "to": "D-1.top", "type": "utility"}
+  ]
+}

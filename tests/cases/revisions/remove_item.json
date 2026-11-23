@@ -2,7 +2,7 @@
   "elements": [
     {"id": "P-1", "type": "pump"},
     {"id": "E-1", "type": "heat_exchanger"},
-    {"id": "CWS", "type": "connector", "params": {"text": "CWS"}},
+    {"id": "CWS", "type": "utility", "params": {"text": "CWS"}},
     {"id": "CWR", "type": "connector", "params": {"text": "CWR"}},
     {"id": "IN", "type": "connector", "params": {"text": "IN"}},
     {"id": "OUT", "type": "connector", "params": {"text": "OUT"}}
@@ -11,7 +11,7 @@
     {"from": "IN.tip", "to": "P-1.in"},
     {"from": "P-1.out", "to": "E-1.tube_in"},
     {"from": "E-1.tube_out", "to": "OUT.tail"},
-    {"from": "CWS.tip", "to": "E-1.shell_in_s", "type": "utility"},
+    {"from": "CWS.out", "to": "E-1.shell_in_s", "type": "utility"},
     {"from": "E-1.shell_out_n", "to": "CWR.tail", "type": "utility"}
   ],
   "revisions": [

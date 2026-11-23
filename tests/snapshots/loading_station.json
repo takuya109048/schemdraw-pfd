@@ -36,7 +36,7 @@
    2
   ],
   [
-   "_T_N2_tip",
+   "_T_N2_out",
    15,
    35,
    2,
@@ -99,7 +99,7 @@
    12
   ],
   [
-   "_T_N2_tip_2",
+   "_T_N2_out_2",
    35,
    35,
    2,
@@ -155,7 +155,7 @@
    12
   ],
   [
-   "_T_N2_tip_3",
+   "_T_N2_out_3",
    57,
    35,
    2,
@@ -340,13 +340,13 @@
    ]
   ],
   [
-   "N2.tip",
-   "_T_N2_tip.w",
+   "N2.out",
+   "_T_N2_out.w",
    "utility",
    [
     [
-     14.0,
-     36.0
+     14,
+     36
     ],
     [
      15,
@@ -355,8 +355,8 @@
    ]
   ],
   [
-   "_T_N2_tip.e",
-   "_T_N2_tip_2.w",
+   "_T_N2_out.e",
+   "_T_N2_out_2.w",
    "utility",
    [
     [
@@ -370,8 +370,8 @@
    ]
   ],
   [
-   "_T_N2_tip_2.e",
-   "_T_N2_tip_3.w",
+   "_T_N2_out_2.e",
+   "_T_N2_out_3.w",
    "utility",
    [
     [
@@ -385,7 +385,7 @@
    ]
   ],
   [
-   "_T_N2_tip.s",
+   "_T_N2_out.s",
    "TK-301.n3",
    "utility",
    [
@@ -400,7 +400,7 @@
    ]
   ],
   [
-   "_T_N2_tip_2.s",
+   "_T_N2_out_2.s",
    "TK-302.n3",
    "utility",
    [
@@ -415,7 +415,7 @@
    ]
   ],
   [
-   "_T_N2_tip_3.s",
+   "_T_N2_out_3.s",
    "TK-303.n3",
    "utility",
    [
@@ -1132,6 +1132,30 @@
   ],
   [
    [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      9,
+      36
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 2,
+     "ls": null,
+     "lw": null,
+     "theta1": 0.0,
+     "theta2": 360.0,
+     "visible": true,
+     "width": 2,
+     "zorder": null
+    }
+   ],
+   [
     "Segment",
     {
      "arrow": null,
@@ -1142,32 +1166,16 @@
      "color": null,
      "fill": null,
      "joinstyle": null,
-     "ls": null,
-     "lw": null,
+     "ls": "-",
+     "lw": 0.9,
      "path": [
       [
-       8,
-       35
-      ],
-      [
-       13,
-       35
+       10,
+       36
       ],
       [
        14,
        36
-      ],
-      [
-       13,
-       37
-      ],
-      [
-       8,
-       37
-      ],
-      [
-       8,
-       35
       ]
      ],
      "visible": true,
@@ -1186,7 +1194,7 @@
      "color": null,
      "decoration": null,
      "font": null,
-     "fontsize": 16.0,
+     "fontsize": 15.0,
      "href": null,
      "mathfont": null,
      "rotation": null,
@@ -1195,7 +1203,7 @@
      "text": "N2",
      "visible": true,
      "xy": [
-      10.7,
+      9,
       36
      ],
      "zorder": null
@@ -4602,8 +4610,8 @@
      "lw": 0.9,
      "path": [
       [
-       14.0,
-       36.0
+       14,
+       36
       ],
       [
        15,

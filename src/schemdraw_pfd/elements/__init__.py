@@ -55,6 +55,7 @@ from .steam_trap import SteamTrapSpec
 from .strainer import StrainerSpec
 from .tank import TankSpec
 from .tee import TeeSpec
+from .utility import UtilitySpec
 from .valve import ValveSpec
 from .vertical_drum import VerticalDrumSpec
 
@@ -84,6 +85,7 @@ STANDARD_ELEMENTS = (
     HeaderSpec,
     TeeSpec,
     ConnectorSpec,
+    UtilitySpec,
     InstrumentSpec,
 )
 for _spec in STANDARD_ELEMENTS:
@@ -98,6 +100,7 @@ __all__ = [
     "ColumnSpec",
     "CompressorSpec",
     "ConnectorSpec",
+    "UtilitySpec",
     "CustomSpec",
     "CycloneSpec",
     "EjectorSpec",

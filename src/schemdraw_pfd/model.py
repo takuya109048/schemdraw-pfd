@@ -69,6 +69,9 @@ __all__ = [
 ]
 
 FORMAT_VERSION = 1  # version of the JSON flowsheet format written by to_dict
+# the way a utility circle points to face a port on each side (under a
+# downward port it stays beside the item, its line turning up into the port)
+AIMS = {"N": "down", "E": "left", "W": "right"}
 MIN_GAP = 1  # cells always left between neighbouring elements / level bands
 REROUTE_ROUNDS = 3  # rip-up and reroute attempts per placement
 SWAP_ROUNDS = 2  # rebuilds with swappable ports re-sorted (see Flowsheet.build)
@@ -214,9 +217,11 @@ class _BuildMemo:
     port objects (kept alongside) for a quick look-up -- and whether the
     lines and ports have been checked (see ``Flowsheet._prepare``)."""
 
-    by_text: dict[tuple[str, str, str], Geometry] = field(default_factory=dict)
-    by_object: dict[tuple[str, int, int], tuple[Any, Any, Geometry]] = field(
+    by_text: dict[tuple[str, str | None, str, str], Geometry] = field(
         default_factory=dict
+    )
+    by_object: dict[tuple[str, str | None, int, int], tuple[Any, Any, Geometry]] = (
+        field(default_factory=dict)
     )
     checked: bool = False
 
@@ -781,7 +786,7 @@ class Flowsheet:
         self,
         src: str,
         dst: str,
-        kind: str = "pipe",
+        kind: str | None = None,
         inline: Sequence[Any] | None = None,
         anchor: str = "auto",
         recycle: bool = False,
@@ -791,7 +796,8 @@ class Flowsheet:
         ``kind``: one of :attr:`line_styles` -- built in are ``pipe`` (process
         line with flow arrow), ``signal`` (dashed instrument signal) and
         ``instrument`` (thin line from a tapping point to an instrument); add
-        more with :meth:`add_line_kind`.
+        more with :meth:`add_line_kind`.  Left out, it is ``utility`` for a
+        line from a ``utility`` supply circle and ``pipe`` otherwise.
 
         ``inline``: equipment sitting on the line, in flow order, e.g.
         ``["valve", {"type": "valve", "id": "FV-1", "params": {"kind":
@@ -806,6 +812,8 @@ class Flowsheet:
         recycle).  Only matters for ``layout="flow"``, which also finds loops on
         its own; marking the line says which one of a loop runs back.
         """
+        if kind is None:
+            kind = "utility" if self._from_utility(src) else "pipe"
         if kind not in self.line_styles:
             raise ValueError(
                 f"kind must be one of {sorted(self.line_styles)}, got {kind!r}"
@@ -830,7 +838,43 @@ class Flowsheet:
             self._revision.connections.append(c)
         else:
             self.connections.append(c)
+        for ref in (src, dst):
+            self._aim(split_ref(ref)[0])
         return c
+
+    def _aim(self, id: str) -> None:
+        """Turn an item that aims (a utility circle) to face the port its
+        one line goes to; with no line or several, it keeps its default."""
+        eqs = self.equipment + [e for r in self.revisions for e in r.equipment]
+        by_id = {e.id: e for e in eqs}
+        eq = by_id.get(id)
+        if eq is None or not self.library.get(eq.type).aims:
+            return
+        conns = self.connections + [c for r in self.revisions for c in r.connections]
+        ends = [
+            other
+            for c in conns
+            for (a, _), other in zip(c.ends, c.ends[::-1])
+            if a == id
+        ]
+        eq.aim = None
+        if len(ends) != 1 or ends[0][0] not in by_id:
+            return  # several lines, or one to an inline item
+        o, port = ends[0]
+        ports = self.geometry(by_id[o]).ports
+        if port in ports:
+            eq.aim = AIMS.get(ports[port].side)
+
+    def _from_utility(self, src: str) -> bool:
+        """Does the line start at a utility supply (a ``beside`` item)?"""
+        i, _ = split_ref(src)
+        eqs = self.equipment + (self._revision.equipment if self._revision else [])
+        eq = next((e for e in eqs if e.id == i), None)
+        return (
+            eq is not None
+            and self.geometry(eq).beside
+            and "utility" in self.line_styles
+        )
 
     def add_line_kind(self, name: str, style: LineStyle) -> None:
         """Add (or restyle) a kind of line, e.g. ``utility`` or ``electric``."""
@@ -863,15 +907,19 @@ class Flowsheet:
         memo = self._memo
         if memo is None:
             return e.geometry(self.library)
-        same = memo.by_object.get((e.type, id(e.params), id(e.ports)))
+        same = memo.by_object.get((e.type, e.aim, id(e.params), id(e.ports)))
         if same is not None and same[0] is e.params and same[1] is e.ports:
             return same[2]  # the very parameters (an item and its copies)
-        key = (e.type, _key(e.params), _key(e.ports))
+        key = (e.type, e.aim, _key(e.params), _key(e.ports))
         geo = memo.by_text.get(key)
         if geo is None:
             geo = memo.by_text[key] = e.geometry(self.library)
         # kept with the objects, so no other object takes their ids
-        memo.by_object[e.type, id(e.params), id(e.ports)] = (e.params, e.ports, geo)
+        memo.by_object[e.type, e.aim, id(e.params), id(e.ports)] = (
+            e.params,
+            e.ports,
+            geo,
+        )
         return geo
 
     def expand(self, equipment: list[Equipment] | None = None) -> Expanded:
@@ -1622,7 +1670,9 @@ class Flowsheet:
             if not geos[e.id].off_sheet:
                 continue
             local = e.params.get("local", "auto")
-            if local == "auto":
+            if geos[e.id].beside:
+                local = True
+            elif local == "auto":
                 used = kinds.get(e.id, set())
                 local = bool(used) and not any(self.line_styles[k].main for k in used)
             if local:
@@ -1977,7 +2027,7 @@ class Flowsheet:
         self.connect(
             c["from"],
             c["to"],
-            c.get("type", "pipe"),
+            c.get("type"),
             c.get("inline"),
             c.get("anchor", "auto"),
             c.get("recycle", False),
@@ -2054,7 +2104,11 @@ def _items(net: Expanded, flags: dict[str, str] | None = None) -> list[Item]:
     items = []
     for i, (e, g) in enumerate(zip(net.equipment, geos)):
         edge = None
-        local = e.params.get("local") is True or (flags or {}).get(e.id) == "local"
+        local = (
+            g.beside
+            or e.params.get("local") is True
+            or (flags or {}).get(e.id) == "local"
+        )
         if g.off_sheet and not local:  # a local flag is placed like equipment
             auto = "left" if i < first else "right"
             edge = e.params.get("edge") or (flags or {}).get(e.id, auto)

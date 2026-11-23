@@ -27,6 +27,7 @@ class Geometry:
     nozzles: bool = False  # draw a flange tick where a pipe meets the outline
     rotating: bool = False  # rotating machinery (spec text goes to the bottom row)
     off_sheet: bool = False  # connector flag: lives in a shared edge column
+    beside: bool = False  # off-sheet item that always stands beside its user
     # groups of ports on one face that serve alike (head nozzles, header
     # branches): the layout may swap the lines among them to avoid crossings
     swappable: list[list[str]] = field(default_factory=list)
@@ -84,6 +85,9 @@ class ElementSpec:
     """Base class: subclass, set ``name`` and implement :meth:`build`."""
 
     name = "element"
+    # ``point`` left out: face the port of the item's one line (see
+    # :meth:`.Flowsheet.connect`; ``right`` / ``left`` / ``up`` / ``down``)
+    aims = False
 
     def build(self, params: dict[str, Any]) -> Geometry:  # pragma: no cover
         raise NotImplementedError

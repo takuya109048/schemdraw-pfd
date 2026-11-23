@@ -50,6 +50,9 @@ class Equipment:
     desc: str = ""  # spec text shown in the top (bottom for pumps) row
     elevation: int | None = None  # cells above the level floor (None = automatic)
     span: int = 1  # levels a tall item (a tower) stands through
+    # the ``point`` worked out from the item's one line (a utility circle
+    # facing the port it feeds); used when ``params`` gives none
+    aim: str | None = None
 
     @property
     def tier(self) -> int:
@@ -59,14 +62,17 @@ class Equipment:
         return self.level
 
     def geometry(self, library: ElementLibrary | None = None) -> Geometry:
-        geo = (library or DEFAULT_LIBRARY).build(self.type, self.params)
+        params = self.params
+        if self.aim is not None and "point" not in params:
+            params = {**params, "point": self.aim}
+        geo = (library or DEFAULT_LIBRARY).build(self.type, params)
         for name, spec in self.ports.items():
             geo.ports[name] = parse_port(spec)
         if self.ports:
             ports = {
                 k: [p.side, p.offset] for k, p in geo.ports.items() if k in self.ports
             }
-            geo.recipe = (self.type, dict(self.params), ports)
+            geo.recipe = (self.type, dict(params), ports)
         return geo
 
     def to_dict(self) -> dict[str, Any]:

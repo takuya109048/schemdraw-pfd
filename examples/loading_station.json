@@ -9,7 +9,7 @@
   },
   {
    "id": "N2",
-   "type": "connector",
+   "type": "utility",
    "params": {
     "text": "N2"
    }
@@ -85,7 +85,7 @@
    ]
   },
   {
-   "from": "N2.tip",
+   "from": "N2.out",
    "to": "TK-301.n3",
    "type": "utility"
   },
@@ -120,7 +120,7 @@
    ]
   },
   {
-   "from": "N2.tip",
+   "from": "N2.out",
    "to": "TK-302.n3",
    "type": "utility"
   },
@@ -155,7 +155,7 @@
    ]
   },
   {
-   "from": "N2.tip",
+   "from": "N2.out",
    "to": "TK-303.n3",
    "type": "utility"
   },

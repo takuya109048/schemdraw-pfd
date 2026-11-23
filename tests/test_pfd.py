@@ -373,8 +373,11 @@ def test_process_sheet_in_the_written_order_routes_strictly():
     equipment = [p for p in d.placed if not p.geo.off_sheet]
     for a, b in zip(equipment, equipment[1:]):
         assert b.x >= a.x + a.geo.width  # a column of its own, in order
-    flags = [p for p in d.placed if p.geo.off_sheet]
+    flags = [p for p in d.placed if p.geo.off_sheet and not p.geo.beside]
     assert len({p.x for p in flags}) == 2  # one column per sheet edge
+    for p in d.placed:  # utility circles stand among the items, not on an edge
+        if p.geo.beside:
+            assert min(f.x for f in flags) < p.x < max(f.x for f in flags)
     # the feed control valve stands level with the preheater's tube inlet
     e = by["E-101"]
     assert by["FV-101"].y + 1 == e.y + e.geo.ports["tube_in"].offset
@@ -490,3 +493,51 @@ def test_alike_nozzles_and_branches_are_swapped_to_avoid_crossings():
     assert {"H-2.b2", "H-3.b2"} <= used  # the same choice in every train
     assert fs.connections[3].src == "H-1.b1"  # the flowsheet itself is unchanged
     assert fs.connections[3].dst == "F-1.in"
+
+
+def test_utility_circle_lines_default_to_the_utility_kind():
+    fs = Flowsheet()
+    fs.add("heat_exchanger", "E-1")
+    fs.add("utility", "STM", text="STM")
+    fs.add("connector", "DRN", text="DRN")
+    a = fs.connect("STM.out", "E-1.shell_in")
+    b = fs.connect("E-1.shell_out", "DRN.tail")
+    assert (a.kind, b.kind) == ("utility", "pipe")
+
+
+def test_utility_circle_stands_beside_its_user_never_on_an_edge():
+    fs = Flowsheet.from_dict(
+        {
+            "elements": [
+                {"id": "F", "type": "connector", "params": {"text": "F"}},
+                {"id": "E-1", "type": "heat_exchanger"},
+                {"id": "P", "type": "connector", "params": {"text": "P"}},
+                {"id": "STM", "type": "utility", "params": {"text": "STM"}},
+            ],
+            "connections": [
+                {"from": "F.tip", "to": "E-1.tube_in"},
+                {"from": "E-1.tube_out", "to": "P.tail"},
+                {"from": "STM.out", "to": "E-1.shell_in", "type": "pipe"},
+            ],
+        }
+    )
+    placed = {p.id: p for p in fs.build().placed}
+    assert placed["F"].x < placed["STM"].x < placed["P"].x
+
+
+def test_utility_circle_faces_the_port_of_its_one_line():
+    fs = Flowsheet()
+    fs.add("heat_exchanger", "E-1")
+    fs.add("vertical_drum", "D-1")
+    fs.add("utility", "STM", text="STM")
+    fs.add("utility", "N2", text="N2")
+    fs.add("utility", "IA", text="IA", point="left")
+    fs.connect("STM.out", "E-1.shell_in")  # a top nozzle: straight down
+    fs.connect("IA.out", "D-1.e_high")  # written out: kept
+    assert fs.geometry("STM").ports["out"].side == "S"
+    assert fs.geometry("IA").ports["out"].side == "W"
+    fs.connect("N2.out", "D-1.top")
+    assert fs.geometry("N2").ports["out"].side == "S"
+    fs.connect("N2.out", "E-1.shell_out")  # two lines: the default again
+    assert fs.geometry("N2").ports["out"].side == "E"
+    assert "point" not in fs.to_dict()["elements"][2].get("params", {})

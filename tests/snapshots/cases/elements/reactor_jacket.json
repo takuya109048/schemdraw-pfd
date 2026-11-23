@@ -38,13 +38,13 @@
  ],
  "routes": [
   [
-   "CWS.tip",
+   "CWS.out",
    "R-1.jacket_in",
    "utility",
    [
     [
-     13.0,
-     5.0
+     13,
+     5
     ],
     [
      14,
@@ -178,6 +178,30 @@
   ],
   [
    [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      8,
+      5
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 2,
+     "ls": null,
+     "lw": null,
+     "theta1": 0.0,
+     "theta2": 360.0,
+     "visible": true,
+     "width": 2,
+     "zorder": null
+    }
+   ],
+   [
     "Segment",
     {
      "arrow": null,
@@ -188,32 +212,16 @@
      "color": null,
      "fill": null,
      "joinstyle": null,
-     "ls": null,
-     "lw": null,
+     "ls": "-",
+     "lw": 0.9,
      "path": [
       [
-       7,
-       4
-      ],
-      [
-       12,
-       4
+       9,
+       5
       ],
       [
        13,
        5
-      ],
-      [
-       12,
-       6
-      ],
-      [
-       7,
-       6
-      ],
-      [
-       7,
-       4
       ]
      ],
      "visible": true,
@@ -232,7 +240,7 @@
      "color": null,
      "decoration": null,
      "font": null,
-     "fontsize": 16.0,
+     "fontsize": 15.0,
      "href": null,
      "mathfont": null,
      "rotation": null,
@@ -241,7 +249,7 @@
      "text": "CWS",
      "visible": true,
      "xy": [
-      9.7,
+      8,
       5
      ],
      "zorder": null
@@ -778,8 +786,8 @@
      "lw": 0.9,
      "path": [
       [
-       13.0,
-       5.0
+       13,
+       5
       ],
       [
        14,

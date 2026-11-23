@@ -145,7 +145,10 @@ def place_y(
 
     ``anchor_free``: a chain of items that reaches no settled item would stay
     unaligned; instead its tallest item is settled where it stands (on the
-    band floor) and the rest of the chain lines up with it.
+    band floor) and the rest of the chain lines up with it.  Items that stand
+    beside the one item they feed (utility circles) are also brought up to
+    its port (see :func:`_lift_beside`); in the written order they stand
+    where they were declared, so they stay on the floor.
     """
     height, base = _bands(items, gap_y)
     ys = [base[it.level] + (it.elevation or 0) for it in items]
@@ -227,7 +230,51 @@ def place_y(
             ys[j] = max(ys[j], ys[below] + items[below].geo.height + 1)
         settled.update(stack)
     spread(from_flags=True)
+    if anchor_free:  # the flow layout: such items stand beside what they feed
+        _lift_beside(items, links, ys, base, slack)
     return ys
+
+
+def _port_y(it: Item, y: int, side: str, off: int) -> int:
+    """Height of a port on the item's bounding box."""
+    return {"N": y + it.geo.height, "S": y}.get(side, y + off)
+
+
+def _lift_beside(
+    items: Sequence[Item],
+    links: Sequence[Link],
+    ys: list[int],
+    base: Sequence[int],
+    slack: Sequence[int],
+) -> None:
+    """Items that stand beside the one item they feed (utility circles,
+    automatic elevation) go as close to its port as their band allows: just
+    below a downward port, just above an upward one, level with a side one
+    -- instead of on the band floor, far off the port.  ``FLANGED_RUN``
+    cells are left for the turn into the port."""
+    ends: dict[int, list[tuple[int, str, int, str, int]]] = {}
+    for lk in links:
+        ends.setdefault(lk.a, []).append(
+            (lk.b, lk.b_side, lk.b_off, lk.a_side, lk.a_off)
+        )
+        ends.setdefault(lk.b, []).append(
+            (lk.a, lk.a_side, lk.a_off, lk.b_side, lk.b_off)
+        )
+    for j, it in enumerate(items):
+        if not it.geo.beside or it.elevation is not None or len(ends.get(j, [])) != 1:
+            continue
+        ((o, side, off, mine, my_off),) = ends[j]
+        t = _port_y(items[o], ys[o], side, off)
+        own = _port_y(it, 0, mine, my_off)  # the port above the item's bottom
+        if side == "S":
+            want = t - FLANGED_RUN - max(own, 0)
+            want = min(want, t - FLANGED_RUN - it.geo.height) if mine == "N" else want
+        elif side == "N":
+            want = t + FLANGED_RUN - (0 if mine == "S" else own)
+        else:
+            want = t - own
+        lo = base[it.level]
+        ys[j] = min(max(want, lo), lo + slack[j])
 
 
 def min_gap_x(items: Sequence[Item], ys: Sequence[int]) -> list[int]:

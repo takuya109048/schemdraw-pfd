@@ -16,13 +16,13 @@
     {"id": "TIC-101", "type": "instrument", "params": {"function": "TIC", "number": "101", "mount": "dcs"}},
     {"id": "P-103", "type": "pump", "desc": "缶出しポンプ"},
     {"id": "RESID", "type": "connector", "params": {"text": "残渣\n焼却へ"}},
-    {"id": "LPS-1", "type": "connector", "params": {"text": "LPS"}},
-    {"id": "LPS-2", "type": "connector", "params": {"text": "LPS"}},
+    {"id": "LPS-1", "type": "utility", "params": {"text": "LPS"}},
+    {"id": "LPS-2", "type": "utility", "params": {"text": "LPS"}},
     {"id": "SC-1", "type": "connector", "params": {"text": "SC"}},
     {"id": "SC-2", "type": "connector", "params": {"text": "SC"}},
-    {"id": "CWS-1", "type": "connector", "params": {"text": "CWS"}},
+    {"id": "CWS-1", "type": "utility", "params": {"text": "CWS"}},
     {"id": "CWR-1", "type": "connector", "params": {"text": "CWR"}},
-    {"id": "CWS-2", "type": "connector", "params": {"text": "CWS"}},
+    {"id": "CWS-2", "type": "utility", "params": {"text": "CWS"}},
     {"id": "CWR-2", "type": "connector", "params": {"text": "CWR"}}
   ],
   "connections": [
@@ -47,15 +47,15 @@
     {"from": "T-101.s2", "to": "P-103.in"},
     {"from": "P-103.out", "to": "RESID.tail"},
     {"from": "T-101.w4", "to": "TIC-101.e", "type": "instrument"},
-    {"from": "LPS-1.tip", "to": "E-101.shell_in", "type": "utility"},
+    {"from": "LPS-1.out", "to": "E-101.shell_in", "type": "utility"},
     {"from": "E-101.shell_out", "to": "SC-1.tail", "type": "utility"},
-    {"from": "LPS-2.tip", "to": "E-104.shell_out", "type": "utility",
+    {"from": "LPS-2.out", "to": "E-104.shell_out", "type": "utility",
      "inline": [{"type": "valve", "id": "TV-101", "params": {"kind": "control"}}]},
     {"from": "TIC-101.s", "to": "TV-101.signal", "type": "signal"},
     {"from": "E-104.shell_in", "to": "SC-2.tail", "type": "utility"},
-    {"from": "CWS-1.tip", "to": "E-102.shell_in_s", "type": "utility"},
+    {"from": "CWS-1.out", "to": "E-102.shell_in_s", "type": "utility"},
     {"from": "E-102.shell_out_n", "to": "CWR-1.tail", "type": "utility"},
-    {"from": "CWS-2.tip", "to": "E-103.shell_in_s", "type": "utility"},
+    {"from": "CWS-2.out", "to": "E-103.shell_in_s", "type": "utility"},
     {"from": "E-103.shell_out_n", "to": "CWR-2.tail", "type": "utility"}
   ]
 }

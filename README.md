@@ -64,7 +64,7 @@ ChatGPT のカスタム GPT に `pfd.py` をアップロードして使うため
     {"id": "TK-1", "type": "vertical_drum", "desc": "原料タンク"},
     {"id": "P-1", "type": "pump", "desc": "原料ポンプ"},
     {"id": "E-1", "type": "heat_exchanger", "desc": "原料加熱器"},
-    {"id": "STM", "type": "connector", "params": {"text": "スチーム"}},
+    {"id": "STM", "type": "utility", "params": {"text": "STM"}},
     {"id": "DRN", "type": "connector", "params": {"text": "ドレン"}},
     {"id": "OUT", "type": "connector", "params": {"text": "反応工程へ"}}
   ],
@@ -74,7 +74,7 @@ ChatGPT のカスタム GPT に `pfd.py` をアップロードして使うため
     {"from": "P-1.out", "to": "E-1.tube_in"},
     {"from": "P-1.out", "to": "TK-1.n3", "recycle": true, "inline": ["valve"]},
     {"from": "E-1.tube_out", "to": "OUT.tail"},
-    {"from": "STM.tip", "to": "E-1.shell_in", "type": "utility"},
+    {"from": "STM.out", "to": "E-1.shell_in", "type": "utility"},
     {"from": "E-1.shell_out", "to": "DRN.tail", "type": "utility"}
   ]
 }
@@ -87,7 +87,8 @@ pfd examples/feed_heating.json -o out.png     # 拡張子で svg / png / pdf / x
 <img src="examples/feed_heating.png" alt="feed_heating.json の出力" width="560">
 
 - `"recycle": true` の線はタンクへ戻る線として扱われ、並びを決めるときは無視される
-- `"type": "utility"` の線（スチーム・ドレン）のフラグは、図面端ではなく加熱器のすぐ横に置かれる
+- ユーティリティ（スチーム・窒素・冷却水など）は `utility` エレメント（丸の中に `STM`・`N2` などの略号）から入れる。丸は図面端ではなく加熱器のすぐ横に置かれる
+- 戻り（ドレン・冷却水戻り）は `connector` のフラグへ `"type": "utility"` の線で出す。このフラグも加熱器のすぐ横に置かれる
 - 1つのポート（`P-1.out`）に2本つなぐと、分岐点が自動で入る
 
 ### CLI
@@ -158,6 +159,7 @@ fs.to_json("out.json")  # JSON と同じ形式で保存（from_json で読み戻
 | `instrument` | 計器。`mount`: `field`(丸=現場計器) / `dcs`(四角の中に丸) | `function`("FIC"等), `number` / `n`,`s`,`e`,`w` |
 | `tee` | 配管の分岐点（計器の取り出しにも使う。黒丸なし） | `arms`("wen"等) |
 | `connector` | 図面間接続の五角形フラグ | `text`, `point`(`right`/`left`) / `tip`, `tail` |
+| `utility` | ユーティリティの供給元（丸の中に略号。`STM`・`N2`・`CWS` など）。使う機器のすぐ横に置く。丸から `out` まで引き出し線が付くので、計器と見分けがつく程度に機器から離れる | `text`, `point`(`right`/`left`/`up`/`down`: 線が出る向き。省略すると、つなぐ先の口へまっすぐ向く。上向きの口へは真上から下向きに、横向きの口へは真横から。下向きの口へは横から入り、丸は口のすぐ下に置かれる), `lead`(引き出し線のセル数、既定 4) / `out` |
 | `header` | 主管＋上向き枝管 | `branches`, `pitch`, `branch_elements` |
 
 - 全エレメント共通: `rotation`（0/90/180/270、反時計回り）と `mirror`（左右反転。回転より先に適用）
@@ -169,7 +171,7 @@ fs.to_json("out.json")  # JSON と同じ形式で保存（from_json で読み戻
 
 ### 接続（配管）
 
-- 種類: `"type": "pipe"`(実線＋矢印) / `"utility"`(冷却水・スチームなど。使う機器のすぐ横にフラグを置く) / `"signal"`(破線の計装信号) / `"instrument"`(計器への細線)
+- 種類: `"type": "pipe"`(実線＋矢印) / `"utility"`(冷却水・スチームなど。使う機器のすぐ横にフラグを置く。`utility` エレメントから出る線は省略するとこの種類) / `"signal"`(破線の計装信号) / `"instrument"`(計器への細線)
 - **還流・リサイクル**は `"recycle": true`。書かなくてもループは自動で見つける
 - **インライン機器**: 弁や流量計は、配管の `inline` に書けば配管の上に並ぶ（配置順に並べなくてよい）
 
@@ -294,7 +296,7 @@ pfd SPEC.json --freeze SPEC.json --revision R2  # R2 までを凍結
 
 `flow` レイアウトでは、次の順で図を組み立てる。詳しい決まりは [docs/layout.md](docs/layout.md)。
 
-1. **並び**: メインフローを左から右へ並べる（ポートの向きが優先。西向きのポートから出る線は右から左）。計器・ユーティリティのフラグはつながる機器のすぐ横、図面端のフラグは左端・右端に積む
+1. **並び**: メインフローを左から右へ並べる（ポートの向きが優先。西向きのポートから出る線は右から左）。計器・ユーティリティの丸と戻りのフラグはつながる機器のすぐ横、図面端のフラグは左端・右端に積む
 2. **段**: `level` を書かない機器は、配管の折れ・交差・長さが最小になる段を局所探索で決める（ポンプは段0）。`level` を書けばその段に固定。省略した機器が多いほど時間がかかるので、急ぐときや結果を固定したいときは `level` を書く
 3. **折り返し**: 主流が2つ以上の塔（`column` か `span` ≥ 2 の機器）を通る図は、塔ごとに段に折り返し、段をまたぐ配管は「to / from」のフラグの対にする
 4. **配線**: 曲がり数を最優先に、次に距離が短い経路を A* で探す。並列系列の対応する配管は同じ形に敷く。引けない配管があれば順番を入れ替えて引き直し、だめなら隙間を広げる
@@ -323,7 +325,7 @@ pfd SPEC.json --freeze SPEC.json --revision R2  # R2 までを凍結
 | ファイル | 内容 | 結果 |
 |---|---|---|
 | [`feed_heating`](examples/feed_heating.png) | 原料タンク → 原料ポンプ → スチーム加熱器 → 反応工程へ。ポンプの吐出の一部をタンクへ戻す（クイックスタートの例） | 機器7・交差0・警告0 |
-| [`solvent_recovery`](examples/solvent_recovery.png) | 使用済み溶剤の蒸留回収。フィード予熱器・回収塔・塔頂コンデンサー・還流槽・縦置きリボイラー・回収溶剤クーラー。流量（FIC）・液面（LIC）・温度（TIC）の制御ループは、調節弁をインラインに書き、調節計から信号線でつなぐ | 機器24＋インライン調節弁4・交差9・警告0 |
+| [`solvent_recovery`](examples/solvent_recovery.png) | 使用済み溶剤の蒸留回収。フィード予熱器・回収塔・塔頂コンデンサー・還流槽・縦置きリボイラー・回収溶剤クーラー。流量（FIC）・液面（LIC）・温度（TIC）の制御ループは、調節弁をインラインに書き、調節計から信号線でつなぐ | 機器24＋インライン調節弁4・交差6・警告0 |
 | [`btx_fractionation`](examples/btx_fractionation.png) | 改質油の BTX 留分をベンゼン塔 → トルエン塔 → キシレン塔の順に精留。主流が3基の塔を通るので、予熱／各塔の4段に自動で折り返す（段をまたぐ配管は「to / from」のフラグの対） | 機器46＋インライン調節弁6・4段・交差15・警告0 |
 | [`loading_station`](examples/loading_station.png) | 製品タンク3基 → 出荷ポンプ → 出荷フィルターの3系列並列のローリー出荷設備。受入・N2・出荷の3本の共通主管は自動で入る。[Excel 出力の例](examples/loading_station.xlsx)も置いている | 機器12＋インライン弁9・交差2・警告0 |
 | [`cooling_water`](examples/cooling_water.png) | 冷却水の循環系統。冷却塔と Y 形ストレーナーは `custom_elements` で定義。常用・予備のポンプ2台からヘッダーで3台のクーラーへ送り、戻りは冷却塔へ合流 | 機器10＋インライン弁6・交差3・警告0 |

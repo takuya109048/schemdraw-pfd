@@ -22,7 +22,7 @@
     {"id": "TK-1", "type": "vertical_drum", "desc": "原料タンク"},
     {"id": "P-1", "type": "pump", "desc": "原料ポンプ"},
     {"id": "E-1", "type": "heat_exchanger", "desc": "原料加熱器"},
-    {"id": "STM", "type": "connector", "params": {"text": "スチーム"}},
+    {"id": "STM", "type": "utility", "params": {"text": "STM"}},
     {"id": "OUT", "type": "connector", "params": {"text": "反応工程へ"}},
     {"id": "FIC-1", "type": "instrument", "params": {"function": "FIC", "number": "1", "mount": "dcs"}}
   ],
@@ -30,7 +30,7 @@
     {"from": "TK-1.bottom", "to": "P-1.in"},
     {"from": "P-1.out", "to": "E-1.tube_in", "inline": [{"type": "valve", "id": "FV-1", "params": {"kind": "control"}}]},
     {"from": "E-1.tube_out", "to": "OUT.tail"},
-    {"from": "STM.tip", "to": "E-1.shell_in", "type": "utility"},
+    {"from": "STM.out", "to": "E-1.shell_in"},
     {"from": "FIC-1.s", "to": "FV-1.signal", "type": "signal"}
   ]
 }
@@ -38,12 +38,13 @@
 - 接続は `"機器ID.ポート名"`。書き順は結果に影響しない
 - 要素のキー: `id`, `type`, `desc`（仕様欄。改行は \n）, `params`, 任意で `level`（段）。`kind` などは必ず `params` の中に書く
 - id は `P-101` の形式（`_` で始まる id は不可）
-- 接続の `type`: `pipe`（既定）/ `utility`（スチーム・冷却水など。フラグを機器の横に置く）/ `signal`（計装信号の破線）/ `instrument`（計器への細線）
+- 接続の `type`: `pipe`（既定）/ `utility`（蒸気等）/ `signal`（計装信号の破線）/ `instrument`（計器への細線）
 - 還流・リサイクルには `"recycle": true`
 - 弁・流量計などは機器として並べず、配管の `inline` に書く（`"valve"` か `{"type":"valve","id":...,"params":{...}}`）。インライン機器の id も接続先にできる
 - 1つのポートに複数の配管をつなぐと分岐が自動で入る
 - 1つのポートは出る側か入る側の一方にしか使えない。計器への線は配管のポートから計器へ向けて書く（`{"from":"K-1.out","to":"PI-1.s","type":"instrument"}`）
-- 工程の入口・出口は `connector`（入口は `tip` から出し、出口は `tail` に入れる）
+- 工程の入口・出口は `connector`（入口は `tip` から、出口は `tail` へ）
+- ユーティリティ供給は `utility`（`text` に `STM` 等）の `out` から
 
 # 機器とポート
 - `pump`, `compressor`, `blower`: `in`, `out`。`centrifuge`: `in`, `out`, `solids`
