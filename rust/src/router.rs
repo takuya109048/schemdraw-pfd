@@ -158,7 +158,68 @@ impl Scratch {
     }
 }
 
+/// Per-thread buffer of the fewest bends from every search state to the
+/// goal (see [`Router::bend_levels`]).
+#[derive(Default)]
+struct Levels {
+    stamp: u32,
+    mark: Vec<u32>,
+    lev: Vec<u16>,
+    queue: std::collections::VecDeque<u32>,
+    /// the count stopped past this level: no state is known to need fewer
+    cap: u16,
+}
+
+impl Levels {
+    fn start(&mut self, states: usize) {
+        if self.mark.len() < states {
+            self.mark.resize(states, 0);
+            self.lev.resize(states, 0);
+        }
+        self.stamp = self.stamp.wrapping_add(1);
+        if self.stamp == 0 {
+            self.mark.iter_mut().for_each(|m| *m = 0);
+            self.stamp = 1;
+        }
+        self.cap = u16::MAX;
+    }
+
+    /// The fewest bends from state ``s`` (a lower bound past the cap).
+    #[inline]
+    fn get(&self, s: usize) -> u16 {
+        debug_assert!(s < self.mark.len());
+        let v = unsafe {
+            if *self.mark.get_unchecked(s) == self.stamp {
+                *self.lev.get_unchecked(s)
+            } else {
+                u16::MAX
+            }
+        };
+        v.min(self.cap)
+    }
+
+    #[inline]
+    fn lower(&mut self, s: usize, v: u16) -> bool {
+        if v < self.get(s) {
+            unsafe {
+                *self.mark.get_unchecked_mut(s) = self.stamp;
+                *self.lev.get_unchecked_mut(s) = v;
+            }
+            return true;
+        }
+        false
+    }
+}
+
+/// Searches that drag on this many steps get the bends to the goal counted
+/// (see ``bend_levels``).  The Python tool counts them sooner (after 50
+/// steps, a relaxed search at once) on bit boards; counted state by state
+/// here, the count pays off later.  Either way the route found is the same.
+const FLOOD_AFTER: usize = 800;
+const RELAXED_FLOOD_AFTER: usize = 800;
+
 thread_local! {
+    static LEVELS: std::cell::RefCell<Levels> = std::cell::RefCell::new(Levels::default());
     static SCRATCH: std::cell::RefCell<Scratch> = std::cell::RefCell::new(Scratch::default());
 }
 
@@ -296,8 +357,147 @@ impl Router {
         nx > 1 && reach[last - ny as usize] != 0
     }
 
+    /// The fewest bends from every search state to the goal (into ``lv``,
+    /// counted back from the goal, a 0-1 breadth-first search over the
+    /// search's own moves), and the cost of one route with the fewest bends
+    /// walked from the start.  None: the goal cannot be reached at all.
+    ///
+    /// No cheapest route passes a state whose cost so far, distance to the
+    /// goal and bends still needed come to more than that route: such states
+    /// can be left out of the search without changing the route it finds
+    /// (they never lower the cost of a state on a cheapest route).
+    fn bend_levels(&self, lv: &mut Levels, si: i64, sd: usize, ti: i64, td: usize, strict: bool) -> Option<i64> {
+        // every index is a cell of the grid, inside its blocked frame
+        #[inline(always)]
+        fn cell(v: &[u8], i: usize) -> u8 {
+            debug_assert!(i < v.len());
+            unsafe { *v.get_unchecked(i) }
+        }
+        let (blocked, axes, door) = (&self.blocked, &self.axes, &self.door);
+        let tu = ti as usize;
+        if cell(axes, tu) != 0 || cell(blocked, tu) != 0 {
+            return None;
+        }
+        let arch = sd == (td + 2) % 4;
+        let n = blocked.len() as i64;
+        lv.start(blocked.len() * 64);
+        let mut queue = std::mem::take(&mut lv.queue);
+        queue.clear();
+        for m in 0..16u64 {
+            if (strict && m & (1 << td) != 0) || (!strict && m == 0) {
+                let st = (((ti as u64) * 4 + td as u64) * 16 + m) as usize;
+                lv.lower(st, 0);
+                queue.push_back(st as u32);
+            }
+        }
+        let start = ((si as u64) * 4 + sd as u64) * 16 + if strict { 1u64 << sd } else { 0 };
+        let mut fewest: Option<u16> = None;
+        while let Some(st) = queue.pop_front() {
+            let st = st as usize;
+            let k = lv.get(st);
+            // levels come off the queue in order: once past the start's,
+            // every state still to come needs more bends than any route
+            if fewest.is_some_and(|b| k > b) {
+                lv.cap = fewest.unwrap() + 1;
+                break;
+            }
+            if st as u64 == start {
+                fewest = Some(k);
+            }
+            let nmask = (st & 15) as u64;
+            let nd = (st >> 4) & 3;
+            let nn = (st >> 6) as i64;
+            let axis = 1u8 << (nd % 2);
+            // entering nn moving nd
+            if (cell(door, nn as usize) == axis && nn != ti) || cell(axes, nn as usize) & axis != 0 {
+                continue;
+            }
+            let i = nn - self.steps[nd];
+            if i < 0 || i >= n || (cell(blocked, i as usize) != 0 && i != si) {
+                continue;
+            }
+            let iu = i as usize;
+            let may_turn = cell(axes, iu) == 0 && !(cell(door, iu) != 0 && i != si);
+            let bit = 1u64 << nd;
+            let masks: &[u64] = if !strict {
+                &[0]
+            } else if nmask & bit != 0 {
+                &[nmask, nmask & !bit]
+            } else {
+                &[]
+            };
+            for d in [nd, (nd + 1) % 4, (nd + 3) % 4] {
+                let turn = d != nd;
+                if turn && !may_turn {
+                    continue;
+                }
+                for &mask in masks {
+                    if strict && mask & (1 << ((nd + 2) % 4)) != 0 && !(arch && nd == td) {
+                        continue;
+                    }
+                    let pst = (((i as u64) * 4 + d as u64) * 16 + mask) as usize;
+                    let nk = k.saturating_add(turn as u16);
+                    if lv.lower(pst, nk) {
+                        if turn {
+                            queue.push_back(pst as u32);
+                        } else {
+                            queue.push_front(pst as u32);
+                        }
+                    }
+                }
+            }
+        }
+        lv.queue = queue;
+        fewest?; // the start never reaches the goal
+        // walk a route of the fewest bends: turn down a level wherever one can
+        let (mut i, mut d, mut mask, mut cost) = (si, sd, if strict { 1u64 << sd } else { 0 }, 0i64);
+        let state = |i: i64, d: usize, m: u64| (((i as u64) * 4 + d as u64) * 16 + m) as usize;
+        while !(i == ti && d == td) {
+            let k = lv.get(state(i, d, mask));
+            let iu = i as usize;
+            let mut next = None;
+            if k > 0 && cell(axes, iu) == 0 && !(cell(door, iu) != 0 && i != si) {
+                for nd in [(d + 1) % 4, (d + 3) % 4] {
+                    if strict && mask & (1 << ((nd + 2) % 4)) != 0 && !(arch && nd == td) {
+                        continue;
+                    }
+                    let j = i + self.steps[nd];
+                    let ju = j as usize;
+                    let axis = 1u8 << (nd % 2);
+                    if cell(blocked, ju) != 0 || cell(axes, ju) & axis != 0 || (cell(door, ju) == axis && j != ti) {
+                        continue;
+                    }
+                    let nm = if strict { mask | (1 << nd) } else { 0 };
+                    if lv.get(state(j, nd, nm)) == k - 1 {
+                        next = Some((j, nd, nm, TURN_COST));
+                        break;
+                    }
+                }
+            }
+            let (j, nd, nm, turned) = match next {
+                Some(x) => x,
+                None => {
+                    let j = i + self.steps[d];
+                    if j < 0 || j >= n || lv.get(state(j, d, mask)) > k {
+                        return Some(i64::MAX / 4); // (never) no bound: drop nothing
+                    }
+                    (j, d, mask, 0)
+                }
+            };
+            cost += 1 + turned + if cell(axes, j as usize) != 0 { CROSS_COST } else { 0 };
+            (i, d, mask) = (j, nd, nm);
+        }
+        Some(cost)
+    }
+
     /// A* over (node, direction, travelled-directions mask).
     fn search(&self, s: Node, sd: usize, t: Node, td: usize, strict: bool) -> Option<Vec<Node>> {
+        // every index is a cell of the grid, inside its blocked frame
+        #[inline(always)]
+        fn cell(v: &[u8], i: usize) -> u8 {
+            debug_assert!(i < v.len());
+            unsafe { *v.get_unchecked(i) }
+        }
         let (blocked, axes, door) = (&self.blocked, &self.axes, &self.door);
         let (tx, ty) = t;
         let ti = self.index(t);
@@ -333,83 +533,108 @@ impl Router {
         let est = (t.0 - s.0).abs() + (t.1 - s.1).abs() + TURN_COST * min_bends(s, sd, t, td);
         let start: u64 = ((si as u64) * 4 + sd as u64) * 16 + if strict { 1u64 << sd } else { 0 };
         SCRATCH.with_borrow_mut(|sc| {
-            sc.start(self.blocked.len() * 64);
-            sc.set(start as usize, 0, u32::MAX);
-            // an entry is one number ordered like (f, cost so far, insertion, state)
-            let pack = |f: i64, g: i64, n: u64, st: u64| -> u128 {
-                ((f as u128) << 104) | ((g as u128) << 64) | ((n as u128) << 32) | st as u128
-            };
-            let mut heap: BinaryHeap<Reverse<u128>> = BinaryHeap::new();
-            heap.push(Reverse(pack(est, 0, 0, start)));
-            let mut counter: u64 = 1;
-            while let Some(Reverse(key)) = heap.pop() {
-                let state = (key & 0xffff_ffff) as u64;
-                let cost = ((key >> 64) & ((1u128 << 40) - 1)) as i64;
-                if sc.get(state as usize) < cost {
-                    continue;
-                }
-                let mask = state & 15;
-                let i = (state >> 6) as i64;
-                let d = ((state >> 4) & 3) as usize;
-                let here = axes[i as usize];
-                if i == ti && d == td && here == 0 {
-                    let mut path = Vec::new();
-                    let mut st = state as u32;
-                    loop {
-                        path.push(self.xy((st >> 6) as i64));
-                        let p = sc.prev[st as usize];
-                        if p == u32::MAX {
-                            path.reverse();
-                            return Some(path);
+            LEVELS.with_borrow_mut(|lv| {
+                sc.start(self.blocked.len() * 64);
+                sc.set(start as usize, 0, u32::MAX);
+                // an entry is one number ordered like (f, cost so far, insertion, state)
+                let pack = |f: i64, g: i64, n: u64, st: u64| -> u128 {
+                    ((f as u128) << 104) | ((g as u128) << 64) | ((n as u128) << 32) | st as u128
+                };
+                let mut heap: BinaryHeap<Reverse<u128>> = BinaryHeap::new();
+                heap.push(Reverse(pack(est, 0, 0, start)));
+                let mut counter: u64 = 1;
+                let mut check = if strict { FLOOD_AFTER } else { RELAXED_FLOOD_AFTER };
+                let mut bound = i64::MAX / 4;
+                let mut counted = false;
+                loop {
+                    if check > 0 {
+                        check -= 1;
+                        if check == 0 {
+                            let found = self.bend_levels(lv, si, sd, ti, td, strict);
+                            match found {
+                                None => return None,
+                                Some(b) => {
+                                    bound = b;
+                                    counted = true;
+                                }
+                            }
                         }
-                        st = p;
                     }
-                }
-                let (x, y) = self.xy(i);
-                for &(nd, turn, step, dx, dy, rev, axis, bit, reverse_ok, bends0) in &moves[d] {
-                    if turn && (here != 0 || (door[i as usize] != 0 && i != si)) {
+                    let Some(Reverse(key)) = heap.pop() else { break };
+                    let state = (key & 0xffff_ffff) as u64;
+                    let cost = ((key >> 64) & ((1u128 << 40) - 1)) as i64;
+                    if sc.get(state as usize) < cost {
                         continue;
                     }
-                    if strict && mask & rev != 0 && !reverse_ok {
-                        continue;
-                    }
-                    let n = i + step;
-                    let nu = n as usize;
-                    if blocked[nu] != 0 {
-                        continue;
-                    }
-                    if door[nu] == axis && n != ti {
-                        continue;
-                    }
-                    let used = axes[nu];
-                    if used & axis != 0 {
-                        continue;
-                    }
-                    let mut nc = cost + 1;
-                    if turn {
-                        nc += TURN_COST;
-                    }
-                    if used != 0 {
-                        nc += CROSS_COST;
-                    }
-                    let nmask = if strict { mask | bit } else { 0 };
-                    let nstate = ((n as u64) * 4 + nd as u64) * 16 + nmask;
-                    if nc < sc.get(nstate as usize) {
-                        let rx = tx - x - dx;
-                        let ry = ty - y - dy;
-                        let run = rx.abs() + ry.abs();
-                        sc.set(nstate as usize, nc, state as u32);
-                        let mut bends = bends0;
-                        if bends < 0 {
-                            let on = rx * tdy - ry * tdx == 0 && rx * tdx + ry * tdy >= 0;
-                            bends = if on { 0 } else { 2 * TURN_COST };
+                    let mask = state & 15;
+                    let i = (state >> 6) as i64;
+                    let d = ((state >> 4) & 3) as usize;
+                    let here = cell(axes, i as usize);
+                    if i == ti && d == td && here == 0 {
+                        let mut path = Vec::new();
+                        let mut st = state as u32;
+                        loop {
+                            path.push(self.xy((st >> 6) as i64));
+                            let p = sc.prev[st as usize];
+                            if p == u32::MAX {
+                                path.reverse();
+                                return Some(path);
+                            }
+                            st = p;
                         }
-                        heap.push(Reverse(pack(nc + run + bends, nc, counter, nstate)));
-                        counter += 1;
+                    }
+                    let (x, y) = self.xy(i);
+                    for &(nd, turn, step, dx, dy, rev, axis, bit, reverse_ok, bends0) in &moves[d] {
+                        if turn && (here != 0 || (cell(door, i as usize) != 0 && i != si)) {
+                            continue;
+                        }
+                        if strict && mask & rev != 0 && !reverse_ok {
+                            continue;
+                        }
+                        let n = i + step;
+                        let nu = n as usize;
+                        if cell(blocked, nu) != 0 {
+                            continue;
+                        }
+                        if cell(door, nu) == axis && n != ti {
+                            continue;
+                        }
+                        let used = cell(axes, nu);
+                        if used & axis != 0 {
+                            continue;
+                        }
+                        let mut nc = cost + 1;
+                        if turn {
+                            nc += TURN_COST;
+                        }
+                        if used != 0 {
+                            nc += CROSS_COST;
+                        }
+                        let nmask = if strict { mask | bit } else { 0 };
+                        let nstate = ((n as u64) * 4 + nd as u64) * 16 + nmask;
+                        if nc < sc.get(nstate as usize) {
+                            let rx = tx - x - dx;
+                            let ry = ty - y - dy;
+                            let run = rx.abs() + ry.abs();
+                            if counted {
+                                let need = lv.get(nstate as usize) as i64;
+                                if nc + run + TURN_COST * need > bound {
+                                    continue; // dearer than a route known: on no cheapest one
+                                }
+                            }
+                            sc.set(nstate as usize, nc, state as u32);
+                            let mut bends = bends0;
+                            if bends < 0 {
+                                let on = rx * tdy - ry * tdx == 0 && rx * tdx + ry * tdy >= 0;
+                                bends = if on { 0 } else { 2 * TURN_COST };
+                            }
+                            heap.push(Reverse(pack(nc + run + bends, nc, counter, nstate)));
+                            counter += 1;
+                        }
                     }
                 }
-            }
-            None
+                None
+            })
         })
     }
 
