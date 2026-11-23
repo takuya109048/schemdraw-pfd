@@ -23,9 +23,9 @@
   ],
   [
    "STM",
-   18,
+   22,
    -2,
-   6,
+   2,
    2
   ],
   [
@@ -184,7 +184,7 @@
    ]
   ],
   [
-   "STM.tip",
+   "STM.out",
    "E-2.shell_in",
    "utility",
    [
@@ -940,45 +940,26 @@
   ],
   [
    [
-    "Segment",
+    "SegmentArc",
     {
+     "angle": 0,
      "arrow": null,
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
-     "capstyle": null,
+     "center": [
+      23,
+      -1
+     ],
      "clip": null,
      "color": null,
      "fill": null,
-     "joinstyle": null,
+     "height": 2,
      "ls": null,
      "lw": null,
-     "path": [
-      [
-       18,
-       -2
-      ],
-      [
-       23,
-       -2
-      ],
-      [
-       24,
-       -1
-      ],
-      [
-       23,
-       0
-      ],
-      [
-       18,
-       0
-      ],
-      [
-       18,
-       -2
-      ]
-     ],
+     "theta1": 0.0,
+     "theta2": 360.0,
      "visible": true,
+     "width": 2,
      "zorder": null
     }
    ],
@@ -994,7 +975,7 @@
      "color": null,
      "decoration": null,
      "font": null,
-     "fontsize": 16.0,
+     "fontsize": 15.0,
      "href": null,
      "mathfont": null,
      "rotation": null,
@@ -1003,7 +984,7 @@
      "text": "STM",
      "visible": true,
      "xy": [
-      20.7,
+      23,
       -1
      ],
      "zorder": null

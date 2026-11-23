@@ -781,7 +781,7 @@ class Flowsheet:
         self,
         src: str,
         dst: str,
-        kind: str = "pipe",
+        kind: str | None = None,
         inline: Sequence[Any] | None = None,
         anchor: str = "auto",
         recycle: bool = False,
@@ -791,7 +791,8 @@ class Flowsheet:
         ``kind``: one of :attr:`line_styles` -- built in are ``pipe`` (process
         line with flow arrow), ``signal`` (dashed instrument signal) and
         ``instrument`` (thin line from a tapping point to an instrument); add
-        more with :meth:`add_line_kind`.
+        more with :meth:`add_line_kind`.  Left out, it is ``utility`` for a
+        line from a ``utility`` supply circle and ``pipe`` otherwise.
 
         ``inline``: equipment sitting on the line, in flow order, e.g.
         ``["valve", {"type": "valve", "id": "FV-1", "params": {"kind":
@@ -806,6 +807,8 @@ class Flowsheet:
         recycle).  Only matters for ``layout="flow"``, which also finds loops on
         its own; marking the line says which one of a loop runs back.
         """
+        if kind is None:
+            kind = "utility" if self._from_utility(src) else "pipe"
         if kind not in self.line_styles:
             raise ValueError(
                 f"kind must be one of {sorted(self.line_styles)}, got {kind!r}"
@@ -831,6 +834,17 @@ class Flowsheet:
         else:
             self.connections.append(c)
         return c
+
+    def _from_utility(self, src: str) -> bool:
+        """Does the line start at a utility supply (a ``beside`` item)?"""
+        i, _ = split_ref(src)
+        eqs = self.equipment + (self._revision.equipment if self._revision else [])
+        eq = next((e for e in eqs if e.id == i), None)
+        return (
+            eq is not None
+            and self.geometry(eq).beside
+            and "utility" in self.line_styles
+        )
 
     def add_line_kind(self, name: str, style: LineStyle) -> None:
         """Add (or restyle) a kind of line, e.g. ``utility`` or ``electric``."""
@@ -1622,7 +1636,9 @@ class Flowsheet:
             if not geos[e.id].off_sheet:
                 continue
             local = e.params.get("local", "auto")
-            if local == "auto":
+            if geos[e.id].beside:
+                local = True
+            elif local == "auto":
                 used = kinds.get(e.id, set())
                 local = bool(used) and not any(self.line_styles[k].main for k in used)
             if local:
@@ -1977,7 +1993,7 @@ class Flowsheet:
         self.connect(
             c["from"],
             c["to"],
-            c.get("type", "pipe"),
+            c.get("type"),
             c.get("inline"),
             c.get("anchor", "auto"),
             c.get("recycle", False),
@@ -2054,7 +2070,11 @@ def _items(net: Expanded, flags: dict[str, str] | None = None) -> list[Item]:
     items = []
     for i, (e, g) in enumerate(zip(net.equipment, geos)):
         edge = None
-        local = e.params.get("local") is True or (flags or {}).get(e.id) == "local"
+        local = (
+            g.beside
+            or e.params.get("local") is True
+            or (flags or {}).get(e.id) == "local"
+        )
         if g.off_sheet and not local:  # a local flag is placed like equipment
             auto = "left" if i < first else "right"
             edge = e.params.get("edge") or (flags or {}).get(e.id, auto)

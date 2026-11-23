@@ -33,7 +33,7 @@
   },
   {
    "id": "LPS-201",
-   "type": "connector",
+   "type": "utility",
    "params": {
     "text": "LPS"
    }
@@ -74,7 +74,7 @@
   },
   {
    "id": "CWS-21",
-   "type": "connector",
+   "type": "utility",
    "params": {
     "text": "CWS"
    }
@@ -96,7 +96,7 @@
   },
   {
    "id": "HPS-21",
-   "type": "connector",
+   "type": "utility",
    "params": {
     "text": "HPS"
    }
@@ -151,7 +151,7 @@
   },
   {
    "id": "CWS-22",
-   "type": "connector",
+   "type": "utility",
    "params": {
     "text": "CWS"
    }
@@ -173,7 +173,7 @@
   },
   {
    "id": "HPS-22",
-   "type": "connector",
+   "type": "utility",
    "params": {
     "text": "HPS"
    }
@@ -228,7 +228,7 @@
   },
   {
    "id": "CWS-23",
-   "type": "connector",
+   "type": "utility",
    "params": {
     "text": "CWS"
    }
@@ -250,7 +250,7 @@
   },
   {
    "id": "HPS-23",
-   "type": "connector",
+   "type": "utility",
    "params": {
     "text": "HPS"
    }
@@ -281,7 +281,7 @@
   },
   {
    "id": "CWS-202",
-   "type": "connector",
+   "type": "utility",
    "params": {
     "text": "CWS"
    }
@@ -322,7 +322,7 @@
    "type": "signal"
   },
   {
-   "from": "LPS-201.tip",
+   "from": "LPS-201.out",
    "to": "E-201.shell_in",
    "type": "utility"
   },
@@ -366,7 +366,7 @@
    "to": "PRD-21.tail"
   },
   {
-   "from": "CWS-21.tip",
+   "from": "CWS-21.out",
    "to": "E-211.shell_in_s",
    "type": "utility"
   },
@@ -384,7 +384,7 @@
    "to": "T-210.e2"
   },
   {
-   "from": "HPS-21.tip",
+   "from": "HPS-21.out",
    "to": "E-212.shell_out",
    "type": "utility"
   },
@@ -446,7 +446,7 @@
    "to": "PRD-22.tail"
   },
   {
-   "from": "CWS-22.tip",
+   "from": "CWS-22.out",
    "to": "E-221.shell_in_s",
    "type": "utility"
   },
@@ -464,7 +464,7 @@
    "to": "T-220.e2"
   },
   {
-   "from": "HPS-22.tip",
+   "from": "HPS-22.out",
    "to": "E-222.shell_out",
    "type": "utility"
   },
@@ -526,7 +526,7 @@
    "to": "PRD-23.tail"
   },
   {
-   "from": "CWS-23.tip",
+   "from": "CWS-23.out",
    "to": "E-231.shell_in_s",
    "type": "utility"
   },
@@ -544,7 +544,7 @@
    "to": "T-230.e2"
   },
   {
-   "from": "HPS-23.tip",
+   "from": "HPS-23.out",
    "to": "E-232.shell_out",
    "type": "utility"
   },
@@ -566,7 +566,7 @@
    "to": "HEAVY.tail"
   },
   {
-   "from": "CWS-202.tip",
+   "from": "CWS-202.out",
    "to": "E-202.shell_in_s",
    "type": "utility"
   },

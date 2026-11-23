@@ -157,6 +157,7 @@ INVALID = {
     "invalid/bad_rotation": (ValueError, "rotation must be one of"),
     "invalid/bad_rows": (ValueError, "rows must be one of"),
     "invalid/bad_tee_arms": (ValueError, "tee arms must be a combination"),
+    "invalid/bad_utility_point": (ValueError, "utility point must be one of"),
     "invalid/bad_valve_kind": (ValueError, "valve kind must be one of"),
     "invalid/bad_version": (ValueError, "unsupported flowsheet format version"),
     "invalid/drum_too_short": (ValueError, "vertical_drum height must be >="),
@@ -219,6 +220,7 @@ ENUMS = {
     ("connector", "point"): ("right", ("right", "left")),
     ("connector", "edge"): (None, ("left", "right")),
     ("connector", "local"): ("auto", (True, False, "auto")),
+    ("utility", "point"): ("right", ("right", "left", "up", "down")),
 }
 # other parameters of each element type: each written by some case
 PARAMS = {
@@ -246,6 +248,7 @@ PARAMS = {
     "strainer": set(),
     "tank": {"width", "height"},
     "tee": {"arms"},
+    "utility": {"text"},
     "valve": set(),
     "vertical_drum": {"width", "height", "beds"},
 }

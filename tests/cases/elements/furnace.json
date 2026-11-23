@@ -3,13 +3,13 @@
     {"id": "FEED", "type": "connector", "level": 1, "params": {"text": "FEED"}},
     {"id": "H-1", "type": "furnace", "level": 1},
     {"id": "PROD", "type": "connector", "level": 1, "params": {"text": "PROD"}},
-    {"id": "FUEL", "type": "connector", "level": 0, "params": {"text": "FUEL"}},
+    {"id": "FUEL", "type": "utility", "level": 0, "params": {"text": "FUEL"}},
     {"id": "FLUE", "type": "connector", "level": 2, "params": {"text": "FLUE"}}
   ],
   "connections": [
     {"from": "FEED.tip", "to": "H-1.in"},
     {"from": "H-1.out", "to": "PROD.tail"},
-    {"from": "FUEL.tip", "to": "H-1.fuel", "type": "utility"},
+    {"from": "FUEL.out", "to": "H-1.fuel", "type": "utility"},
     {"from": "H-1.flue", "to": "FLUE.tail", "type": "utility"}
   ]
 }

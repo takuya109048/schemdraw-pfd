@@ -44,9 +44,9 @@
   ],
   [
    "CWS",
-   24,
+   28,
    11,
-   6,
+   2,
    2
   ],
   [
@@ -65,9 +65,9 @@
   ],
   [
    "MS",
-   37,
+   41,
    26,
-   6,
+   2,
    2
   ],
   [
@@ -184,7 +184,7 @@
    ]
   ],
   [
-   "CWS.tip",
+   "CWS.out",
    "R-101.jacket_in",
    "utility",
    [
@@ -233,7 +233,7 @@
    ]
   ],
   [
-   "MS.tip",
+   "MS.out",
    "J-101.motive",
    "utility",
    [
@@ -1147,45 +1147,26 @@
   ],
   [
    [
-    "Segment",
+    "SegmentArc",
     {
+     "angle": 0,
      "arrow": null,
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
-     "capstyle": null,
+     "center": [
+      29,
+      12
+     ],
      "clip": null,
      "color": null,
      "fill": null,
-     "joinstyle": null,
+     "height": 2,
      "ls": null,
      "lw": null,
-     "path": [
-      [
-       24,
-       11
-      ],
-      [
-       29,
-       11
-      ],
-      [
-       30,
-       12
-      ],
-      [
-       29,
-       13
-      ],
-      [
-       24,
-       13
-      ],
-      [
-       24,
-       11
-      ]
-     ],
+     "theta1": 0.0,
+     "theta2": 360.0,
      "visible": true,
+     "width": 2,
      "zorder": null
     }
    ],
@@ -1201,16 +1182,16 @@
      "color": null,
      "decoration": null,
      "font": null,
-     "fontsize": 16.0,
+     "fontsize": 15.0,
      "href": null,
      "mathfont": null,
      "rotation": null,
      "rotation_global": true,
      "rotation_mode": null,
-     "text": "冷却水",
+     "text": "CWS",
      "visible": true,
      "xy": [
-      26.7,
+      29,
       12
      ],
      "zorder": null
@@ -1661,45 +1642,26 @@
   ],
   [
    [
-    "Segment",
+    "SegmentArc",
     {
+     "angle": 0,
      "arrow": null,
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
-     "capstyle": null,
+     "center": [
+      42,
+      27
+     ],
      "clip": null,
      "color": null,
      "fill": null,
-     "joinstyle": null,
+     "height": 2,
      "ls": null,
      "lw": null,
-     "path": [
-      [
-       37,
-       26
-      ],
-      [
-       42,
-       26
-      ],
-      [
-       43,
-       27
-      ],
-      [
-       42,
-       28
-      ],
-      [
-       37,
-       28
-      ],
-      [
-       37,
-       26
-      ]
-     ],
+     "theta1": 0.0,
+     "theta2": 360.0,
      "visible": true,
+     "width": 2,
      "zorder": null
     }
    ],
@@ -1715,16 +1677,16 @@
      "color": null,
      "decoration": null,
      "font": null,
-     "fontsize": 16.0,
+     "fontsize": 15.0,
      "href": null,
      "mathfont": null,
      "rotation": null,
      "rotation_global": true,
      "rotation_mode": null,
-     "text": "駆動蒸気",
+     "text": "MS",
      "visible": true,
      "xy": [
-      39.7,
+      42,
       27
      ],
      "zorder": null
@@ -2058,7 +2020,7 @@
      "lw": null,
      "path": [
       [
-       35,
+       35.0,
        30.0
       ],
       [
