@@ -1,0 +1,15 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 0, "params": {"text": "FEED"}},
+    {"id": "D-1", "type": "vertical_drum", "level": 0},
+    {"id": "PSV-1", "type": "safety_valve", "level": 1},
+    {"id": "FLARE", "type": "connector", "level": 1, "params": {"text": "FLARE"}},
+    {"id": "PROD", "type": "connector", "level": 0, "params": {"text": "PROD"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "D-1.w_mid"},
+    {"from": "D-1.top", "to": "PSV-1.in"},
+    {"from": "PSV-1.out", "to": "FLARE.tail"},
+    {"from": "D-1.bottom", "to": "PROD.tail"}
+  ]
+}

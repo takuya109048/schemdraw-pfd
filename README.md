@@ -130,15 +130,30 @@ fs.to_json("out.json")  # JSON と同じ形式で保存（from_json で読み戻
 
 ## 機器（エレメント）
 
-見た目は「化学工学レビュワー」の P&ID 解説記事の記載例を参考にしている（<https://chemical-engineering-review.com/piping-and-instrumentation-diagram/>）。
+見た目は「化学工学レビュワー」の P&ID 解説記事の記載例を参考にしている（<https://chemical-engineering-review.com/piping-and-instrumentation-diagram/>）。その記事にない機器は、Wikipedia の P&ID 記号表（ISO 10628 系。<https://en.wikipedia.org/wiki/Piping_and_instrumentation_diagram>）と、日本の PFD / EFD で一般的な描き方に合わせている。
 
 | type | 内容 | 主なパラメータ / ポート |
 |---|---|---|
 | `pump` | 円形ケーシング＋台形の台座（2x3、弁と同程度の大きさ） | `in`(水平の吸込), `out`(ケーシング右端から垂直に上へ出る吐出) |
-| `valve` | `kind`: `gate` / `globe`(黒丸) / `control`(ドーム型駆動部) / `check`(Z字) | `in`, `out`, 調節弁のみ `signal` |
+| `compressor` | 圧縮機。吸込側が広い台形（4x4） | `in`(西・吸込), `out`(東・吐出) |
+| `blower` | ブロワー・ファン。円に吐出へ収束する2本の線と3枚羽根（ISO 10628 のファン。4x4） | `in`(西), `out`(東) |
+| `centrifuge` | 遠心分離機。ケーシングの中にバスケット、下に駆動モーター（4x4） | `in`(上・供給), `out`(東・ろ液), `solids`(下・ケーキ) |
+| `valve` | `kind`: `gate` / `globe`(黒丸) / `ball`(三角の間に円) / `butterfly`(四角＋対角線＋黒丸) / `three_way`(下に3つ目の三角) / `control`(ドーム型駆動部) / `check`(Z字) | `in`, `out`, 三方弁のみ `branch`(下), 調節弁のみ `signal` |
+| `safety_valve` | 安全弁（ばね式・アングル形）。下から入り横へ出る本体の上にばね（2x3） | `in`(下), `out`(東) |
+| `strainer` | Y 形ストレーナー（配管上。2x2） | `in`, `out` |
+| `steam_trap` | スチームトラップ。円の右下半分を黒（ISO 10628。配管上。2x2） | `in`, `out` |
+| `orifice` | オリフィス（流量計の検出部）。配管を横切る2本の線（2x2） | `in`, `out`, `tap`(上。差圧伝送器への計装線) |
+| `static_mixer` | スタティックミキサー。管の中にねじれたエレメント（4x2） | `in`, `out` |
+| `ejector` | エジェクター。駆動ノズル・のど・ディフューザー（4x2） | `motive`(西・駆動流体), `suction`(下・吸引), `out`(東) |
 | `vertical_drum` / `column` | 丸鏡板の槽 / 充填層(×印)付きの塔 | `width`, `height`, `beds` / `top`, `bottom`, `n<i>`, `s<i>`（上下の鏡板のノズル。左から順、中央が `top`/`bottom`。複数のラインを別々のノズルから入れられる）, `w<i>`, `e<i>` |
+| `reactor` | 撹拌槽・反応器。上鏡板のモーター（M）から軸と2枚羽根のプロペラ。`jacket: true` で下鏡と胴の下2/3を包むジャケット | `width`(既定6), `height`(槽の高さ。既定10。モーターの分3セル高くなる), `jacket` / `bottom`, `n<i>`（中央は撹拌軸なのでない）, `s<i>`, `w<i>`, `e<i>`, ジャケット付きは `jacket_in`(西・下), `jacket_out`(東・ジャケット上端) |
+| `tank` | 平底・コーンルーフの貯槽 | `width`(既定8), `height`(既定8、屋根込み) / `top`, `bottom`, `n<i>`(屋根), `s<i>`(底), `w<i>`, `e<i>` |
 | `horizontal_drum` | 横型槽 | `length`, `diameter` / `w`, `e`, `n<i>`, `s<i>` |
+| `cyclone` | サイクロン。円筒＋円錐、円筒の中に内筒（4x8） | `in`(西・上寄りの接線入口), `gas_out`(上), `solids`(円錐の下) |
 | `heat_exchanger` | 丸い管箱の多管式熱交換器 | `orientation`(`vertical` で縦置き) / `tube_in/out`, `shell_in/out` |
+| `plate_heat_exchanger` | プレート式熱交換器。枠と板の束に角から角への×（ISO 10628。4x6） | `in1`(西・上) → `out1`(東・下), `in2`(西・下) → `out2`(東・上) |
+| `air_cooler` | 空冷式熱交換器（フィンファン）。管束の下に押込みファン | `length`(既定8), `fans`(既定1。長さ4セルに1台まで) / `in`(西), `out`(東) |
+| `furnace` | 加熱炉。バーナー付きの放射室、その上の対流室と煙突。コイルは対流室から入り、放射室を上下して床近くから出る | `width`(既定8), `height`(既定12、10以上) / `in`(西・対流室), `out`(東・下), `fuel`(下・バーナー), `flue`(煙突の上) |
 | `filter_housing` | 脚付きのカートリッジフィルターハウジング（勝和技研 SL シリーズの外形図が参考）。円筒の胴に皿形の下鏡、V バンドで留める皿形の蓋。胴の下寄りの仕切り板で、上の原液室（仕切り板の上にカートリッジが立つ。幅2セルにつき1本）と下のろ液室に分かれる | `width`(既定4), `height`(既定10、9以上。脚2・下鏡1・ろ液室2・原液室・蓋1) / `in`(西側面・仕切り板のすぐ上), `out`(東側面・ろ液室), `vent`(蓋の頂部), `drain`(下鏡の底。脚のあいだ), `w<i>`, `e<i>` |
 | `instrument` | 計器。`mount`: `field`(丸=現場計器) / `dcs`(四角の中に丸) | `function`("FIC"等), `number` / `n`,`s`,`e`,`w` |
 | `tee` | 配管の分岐点（計器の取り出しにも使う。黒丸なし） | `arms`("wen"等) |
@@ -146,8 +161,8 @@ fs.to_json("out.json")  # JSON と同じ形式で保存（from_json で読み戻
 | `header` | 主管＋上向き枝管 | `branches`, `pitch`, `branch_elements` |
 
 - 全エレメント共通: `rotation`（0/90/180/270、反時計回り）と `mirror`（左右反転。回転より先に適用）
-- 大きさの目安: ポンプ 2x3 ≒ 弁 2x2 < 熱交換器 12x4 < 縦型ドラム 6x10（`width`/`height`/`length`/`diameter` で変更可）。座標・大きさはすべて整数グリッド
-- 冷却塔・ストレーナー・圧縮機などの標準にない機器は、JSON の `custom_elements` で定義する（`examples/cooling_water.json` に冷却塔と Y 形ストレーナーの例）
+- 大きさの目安: ポンプ 2x3 ≒ 弁 2x2 < 圧縮機 4x4 < 熱交換器 12x4 < 縦型ドラム 6x10（`width`/`height`/`length`/`diameter` で変更可）。座標・大きさはすべて整数グリッド
+- 冷却塔・乾燥機などの標準にない機器は、JSON の `custom_elements` で定義する（`examples/cooling_water.json` に冷却塔と Y 形ストレーナーの例）
 - タグは下線付き、槽類のノズルにはフランジ線、全体に枠線（`frame=False` で無効）
 - `desc`: 機器の仕様。図の上段（回転機は下段）にタグと並べて表示
 - `elevation`: 段の中での高さ。省略時は、接続相手の向かい合うポートと一直線になる高さに自動でそろえる
@@ -312,6 +327,7 @@ pfd SPEC.json --freeze SPEC.json --revision R2  # R2 までを凍結
 | [`btx_fractionation`](examples/btx_fractionation.png) | 改質油の BTX 留分をベンゼン塔 → トルエン塔 → キシレン塔の順に精留。主流が3基の塔を通るので、予熱／各塔の4段に自動で折り返す（段をまたぐ配管は「to / from」のフラグの対） | 機器46＋インライン調節弁6・4段・交差15・警告0 |
 | [`loading_station`](examples/loading_station.png) | 製品タンク3基 → 出荷ポンプ → 出荷フィルターの3系列並列のローリー出荷設備。受入・N2・出荷の3本の共通主管は自動で入る。[Excel 出力の例](examples/loading_station.xlsx)も置いている | 機器12＋インライン弁9・交差2・警告0 |
 | [`cooling_water`](examples/cooling_water.png) | 冷却水の循環系統。冷却塔と Y 形ストレーナーは `custom_elements` で定義。常用・予備のポンプ2台からヘッダーで3台のクーラーへ送り、戻りは冷却塔へ合流 | 機器10＋インライン弁6・交差3・警告0 |
+| [`batch_reaction`](examples/batch_reaction.png) | 原料タンク → ポンプ（吸込に Y 形ストレーナー、吐出にオリフィスとボール弁）→ ジャケット付き撹拌反応槽 → 抜出ポンプ（バタフライ弁）→ 遠心分離機 → ろ液タンク。反応槽には安全弁（フレアへ）と真空エジェクター、ジャケットには冷却水。標準エレメントだけで描いている | 機器17＋インライン機器4・交差0・警告0 |
 
 <img src="examples/btx_fractionation.png" alt="BTX 精留の自動生成例（4段に折り返し）" width="420">
 

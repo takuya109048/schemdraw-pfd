@@ -1,0 +1,15 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 1, "params": {"text": "FEED"}},
+    {"id": "R-1", "type": "reactor", "level": 1, "params": {"jacket": true}},
+    {"id": "PROD", "type": "connector", "level": 0, "params": {"text": "PROD"}},
+    {"id": "CWS", "type": "connector", "level": 1, "params": {"text": "CWS"}},
+    {"id": "CWR", "type": "connector", "level": 1, "params": {"text": "CWR"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "R-1.w_high"},
+    {"from": "R-1.bottom", "to": "PROD.tail"},
+    {"from": "CWS.tip", "to": "R-1.jacket_in", "type": "utility"},
+    {"from": "R-1.jacket_out", "to": "CWR.tail", "type": "utility"}
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 2, "params": {"text": "FEED"}},
+    {"id": "R-1", "type": "reactor", "level": 1, "params": {"width": 8, "height": 12}},
+    {"id": "PROD", "type": "connector", "level": 0, "params": {"text": "PROD"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "R-1.n0"},
+    {"from": "R-1.s3", "to": "PROD.tail"}
+  ]
+}

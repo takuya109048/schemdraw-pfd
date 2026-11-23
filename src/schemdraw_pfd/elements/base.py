@@ -97,6 +97,21 @@ def even(value: Any, minimum: int, what: str) -> int:
     return v
 
 
+def shell_ports(rows: list[int]) -> dict[str, Port]:
+    """``w<i>`` / ``e<i>`` on the given grid rows of a vessel's shell (from
+    the bottom), with the ``w_low``, ``w_mid``, ``w_high`` (and ``e_...``)
+    aliases."""
+    ports: dict[str, Port] = {}
+    for i, y in enumerate(rows):
+        ports[f"w{i}"] = Port("W", y)
+        ports[f"e{i}"] = Port("E", y)
+    for side in "we":
+        ports[f"{side}_low"] = ports[f"{side}0"]
+        ports[f"{side}_mid"] = ports[f"{side}{len(rows) // 2}"]
+        ports[f"{side}_high"] = ports[f"{side}{len(rows) - 1}"]
+    return ports
+
+
 def parse_port(v: Any) -> Port:
     """Accept ``Port``, ``{"side": "N", "offset": 1}`` or ``("N", 1)``."""
     if isinstance(v, Port):

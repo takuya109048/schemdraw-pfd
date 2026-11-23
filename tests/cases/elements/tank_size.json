@@ -1,0 +1,11 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 2, "params": {"text": "FEED"}},
+    {"id": "TK-1", "type": "tank", "level": 1, "params": {"width": 6, "height": 6}},
+    {"id": "PROD", "type": "connector", "level": 1, "params": {"text": "PROD"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "TK-1.top"},
+    {"from": "TK-1.e_low", "to": "PROD.tail"}
+  ]
+}

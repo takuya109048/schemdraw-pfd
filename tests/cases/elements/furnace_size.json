@@ -1,0 +1,11 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 1, "params": {"text": "FEED"}},
+    {"id": "H-1", "type": "furnace", "level": 1, "params": {"width": 10, "height": 14}},
+    {"id": "PROD", "type": "connector", "level": 1, "params": {"text": "PROD"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "H-1.in"},
+    {"from": "H-1.out", "to": "PROD.tail"}
+  ]
+}

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from ..geometry import Ellipse, Polyline, Port, Shape, rect
-from .base import ElementSpec, Geometry, even
+from .base import ElementSpec, Geometry, even, shell_ports
 
 
 class VerticalDrumSpec(ElementSpec):
@@ -57,14 +57,7 @@ class VerticalDrumSpec(ElementSpec):
         for i, x in enumerate(range(1, w)):
             ports[f"n{i}"] = Port("N", x)
             ports[f"s{i}"] = Port("S", x)
-        rows = list(range(lo, hi + 1))
-        for i, y in enumerate(rows):
-            ports[f"w{i}"] = Port("W", y)
-            ports[f"e{i}"] = Port("E", y)
-        for side in "we":
-            ports[f"{side}_low"] = ports[f"{side}0"]
-            ports[f"{side}_mid"] = ports[f"{side}{len(rows) // 2}"]
-            ports[f"{side}_high"] = ports[f"{side}{len(rows) - 1}"]
+        ports |= shell_ports(list(range(lo, hi + 1)))
         heads = [[f"n{i}" for i in range(w - 1)], [f"s{i}" for i in range(w - 1)]]
         return Geometry(
             w, h, shapes, ports, label_pos=self.label_pos, nozzles=True, swappable=heads

@@ -1,0 +1,13 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 1, "params": {"text": "FEED"}},
+    {"id": "CF-1", "type": "centrifuge", "level": 0},
+    {"id": "LIQ", "type": "connector", "level": 0, "params": {"text": "LIQ"}},
+    {"id": "CAKE", "type": "connector", "level": 0, "params": {"text": "CAKE"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "CF-1.in"},
+    {"from": "CF-1.out", "to": "LIQ.tail"},
+    {"from": "CF-1.solids", "to": "CAKE.tail"}
+  ]
+}

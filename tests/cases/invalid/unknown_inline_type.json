@@ -6,6 +6,6 @@
   ],
   "connections": [
     {"from": "FEED.tip", "to": "P-1.in"},
-    {"from": "P-1.out", "to": "PROD.tail", "inline": ["orifice"]}
+    {"from": "P-1.out", "to": "PROD.tail", "inline": ["sight_glass"]}
   ]
 }

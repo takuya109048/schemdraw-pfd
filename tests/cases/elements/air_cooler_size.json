@@ -1,0 +1,11 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 1, "params": {"text": "FEED"}},
+    {"id": "E-1", "type": "air_cooler", "level": 1, "params": {"length": 12, "fans": 2}},
+    {"id": "PROD", "type": "connector", "level": 1, "params": {"text": "PROD"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "E-1.in"},
+    {"from": "E-1.out", "to": "PROD.tail"}
+  ]
+}

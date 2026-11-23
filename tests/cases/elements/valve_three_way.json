@@ -1,0 +1,13 @@
+{
+  "elements": [
+    {"id": "FEED", "type": "connector", "level": 1, "params": {"text": "FEED"}},
+    {"id": "V-1", "type": "valve", "level": 1, "params": {"kind": "three_way"}},
+    {"id": "PROD", "type": "connector", "level": 1, "params": {"text": "PROD"}},
+    {"id": "BYP", "type": "connector", "level": 0, "params": {"text": "BYP"}}
+  ],
+  "connections": [
+    {"from": "FEED.tip", "to": "V-1.in"},
+    {"from": "V-1.out", "to": "PROD.tail"},
+    {"from": "V-1.branch", "to": "BYP.tail"}
+  ]
+}
