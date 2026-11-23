@@ -43,6 +43,9 @@ pub struct Geometry {
     pub off_sheet: bool,
     pub beside: bool,
     pub swappable: Vec<Vec<String>>,
+    /// what it was built from -- (type, parameters, extra ports) -- so a
+    /// laid out sheet can be written down and read back (see ``freeze``)
+    pub recipe: Option<(String, Params, serde_json::Map<String, Value>)>,
     port_ends: OnceLock<IndexMap<String, std::result::Result<PortEnd, String>>>,
 }
 
@@ -60,6 +63,7 @@ impl Clone for Geometry {
             off_sheet: self.off_sheet,
             beside: self.beside,
             swappable: self.swappable.clone(),
+            recipe: self.recipe.clone(),
             port_ends: OnceLock::new(),
         }
     }
@@ -1464,6 +1468,8 @@ impl Library {
                 }
             }?
         };
-        transform(geo, rotation.as_ref(), mirror.as_ref())
+        let mut geo = transform(geo, rotation.as_ref(), mirror.as_ref())?;
+        geo.recipe = Some((name.to_string(), params.clone(), serde_json::Map::new()));
+        Ok(geo)
     }
 }

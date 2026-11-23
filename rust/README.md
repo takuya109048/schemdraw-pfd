@@ -10,7 +10,16 @@ cargo build --release              # target/release/pfd ができる
 ./target/release/pfd ../examples/solvent_recovery.json -o out.svg
 ```
 
-オプションは Python 版の `pfd` と同じ（`--no-labels`、`--no-frame`、`--fontsize`、`--layout`、`-j/--jobs`、`--list-elements`、`--describe`）。`-j` はプロセス数ではなくスレッド数。
+オプションは Python 版の `pfd` と同じ（`--no-labels`、`--no-frame`、`--fontsize`、`--layout`、`-j/--jobs`、`--revision`、`--highlight`、`--since`、`--freeze`、`--list-elements`、`--describe`）。`-j` はプロセス数ではなくスレッド数。
+
+```bash
+# 改訂 R1 までの図を、R1 だけ色付きで
+./target/release/pfd SPEC.json -o out.svg --revision R1 --highlight latest
+# いまの図を JSON に凍結して書き出す（以後の改訂はこの図に描き足される）
+./target/release/pfd SPEC.json --freeze frozen.json
+```
+
+凍結したファイルは Python 版と互換で、どちらで凍結してもどちらでも読み戻せる（内容の指紋が同じになる）。
 
 `--snapshot PATH` を付けると、配置・配線・描く図形を Python 版のスナップショットと同じ形の JSON で書き出す。
 
@@ -21,7 +30,7 @@ cargo build --release              # target/release/pfd ができる
 | JSON の読み込み・検査（エラーメッセージも同じ） | 対応 |
 | 自動配置・段の自動決定・段への折り返し・配線・圧縮・並列系列 | 対応（座標まで一致） |
 | 出力 | SVG のみ（PNG / PDF / xlsx は未対応） |
-| 改訂（`revisions`）・凍結（`frozen`, `--freeze`） | 未対応（入っている JSON はエラーにする） |
+| 改訂（`revisions`：撤去・追加・変更・取替）・凍結（`frozen`, `--freeze`） | 対応（座標・色まで一致、凍結ファイルは Python 版と相互に読める） |
 
 SVG は SchemDraw（matplotlib）を通さず直接書くので、ファイルの中身は Python 版と違う。描く図形の位置・大きさ・線種は同じ。
 
@@ -47,13 +56,14 @@ SVG は SchemDraw（matplotlib）を通さず直接書くので、ファイル�
 cargo test --release
 ```
 
-- `tests/snapshots.rs`: `tests/cases/` の小さな例すべて（改訂を使うものを除く）と `examples/` の作例が、`tests/snapshots/` のスナップショットと一致する（数値は 1e-6 まで）。`PFD_CASE=<部分文字列>` で絞り込める
-- `tests/invalid.rs`: `tests/cases/invalid/` の各例が、Python 版のテスト（`tests/test_cases.py` の `INVALID`）と同じ種類・メッセージのエラーになる
+- `tests/snapshots.rs`: `tests/cases/` の小さな例すべて（改訂・凍結の例を含む 306 件）と `examples/` の作例が、`tests/snapshots/` のスナップショットと一致する（数値は 1e-6 まで）。`PFD_CASE=<部分文字列>` で絞り込める
+- `tests/revisions.rs`: 凍結した図が読み戻せる、凍結後の改訂は凍結した図に描き足される、元が変わった凍結は作り直して警告する、すべての例が凍結できる、など
+- `tests/invalid.rs`: `tests/cases/invalid/` の各例（48 件）が、Python 版のテスト（`tests/test_cases.py` の `INVALID`）と同じ種類・メッセージのエラーになる
 
 Python 版のスナップショットを更新したら（`PFD_UPDATE_SNAPSHOTS=1 pytest ...`）、Rust 版もそれに合わせる。
 
 ## 構成 (`src/`)
 
-Python 版のモジュールと1対1に対応する: `geometry.rs`、`elements.rs`（全エレメント）、`style.rs`、`netlist.rs`、`expand.rs`、`flow.rs`、`levels.rs`、`symmetry.rs`、`layout.rs`、`router.rs`、`model.rs`、`render.rs`。ほかに、SVG を書く `svg.rs`、スレッドで並べて作る `pool.rs`、Python の値の扱い（`int()`・`str()`・`round()`・`//` など）を真似る `pyval.rs`、エラーの `error.rs`、コマンドの `main.rs`。
+Python 版のモジュールと1対1に対応する: `geometry.rs`、`elements.rs`（全エレメント）、`style.rs`、`netlist.rs`、`expand.rs`、`flow.rs`、`levels.rs`、`symmetry.rs`、`layout.rs`、`router.rs`、`model.rs`、`revise.rs`、`freeze.rs`、`render.rs`。ほかに、SVG を書く `svg.rs`、スレッドで並べて作る `pool.rs`、Python の値の扱い（`int()`・`str()`・`round()`・`//` など）を真似る `pyval.rs`、`json.dumps` と同じ文字列を書く `pyjson.rs`（凍結の指紋用）、エラーの `error.rs`、コマンドの `main.rs`。
 
 座標を一致させるため、Python 版の処理の順序（辞書の順、安定ソート、同点の扱い、浮動小数点の計算順、`round` の偶数丸め、負の数の `//`）をそのまま守っている。

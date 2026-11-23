@@ -7,13 +7,21 @@ use crate::error::{Error, Result};
 use crate::pyval;
 
 /// How one kind of line (``pipe``, ``signal`` ...) is drawn.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub struct LineStyle {
     pub lw: f64,
     pub ls: String,
     pub arrow: Option<String>,
     pub process: bool,
     pub main: bool,
+    /// the values as written (written back as they were)
+    pub raw: serde_json::Map<String, Value>,
+}
+
+impl PartialEq for LineStyle {
+    fn eq(&self, o: &LineStyle) -> bool {
+        (self.lw, &self.ls, &self.arrow, self.process, self.main) == (o.lw, &o.ls, &o.arrow, o.process, o.main)
+    }
 }
 
 pub const STYLE_KEYS: [&str; 5] = ["lw", "ls", "arrow", "process", "main"];
@@ -26,6 +34,7 @@ impl LineStyle {
             arrow: arrow.map(String::from),
             process,
             main,
+            raw: Default::default(),
         }
     }
 
@@ -47,19 +56,20 @@ impl LineStyle {
             arrow: d.get("arrow").filter(|v| !v.is_null()).map(pyval::str),
             process: d.get("process").is_some_and(pyval::truthy),
             main: d.get("main").map(pyval::truthy).unwrap_or(true),
+            raw: d.clone(),
         })
     }
 
     pub fn to_dict(&self) -> Value {
         let mut d = serde_json::Map::new();
-        d.insert("lw".into(), Value::from(self.lw));
-        d.insert("ls".into(), Value::from(self.ls.clone()));
-        d.insert(
-            "arrow".into(),
-            self.arrow.clone().map(Value::from).unwrap_or(Value::Null),
-        );
-        d.insert("process".into(), Value::from(self.process));
-        d.insert("main".into(), Value::from(self.main));
+        let mut put = |k: &str, v: Value| {
+            d.insert(k.into(), self.raw.get(k).cloned().unwrap_or(v));
+        };
+        put("lw", Value::from(self.lw));
+        put("ls", Value::from(self.ls.clone()));
+        put("arrow", self.arrow.clone().map(Value::from).unwrap_or(Value::Null));
+        put("process", Value::from(self.process));
+        put("main", Value::from(self.main));
         Value::Object(d)
     }
 }

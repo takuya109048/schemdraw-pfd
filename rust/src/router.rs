@@ -463,6 +463,10 @@ impl Router {
         })
     }
 
+    pub fn commit_nodes(&mut self, nodes: &[Node]) {
+        self.commit(nodes)
+    }
+
     fn commit(&mut self, nodes: &[Node]) {
         for w in nodes.windows(2) {
             let (a, b) = (w[0], w[1]);

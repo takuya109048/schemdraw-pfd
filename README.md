@@ -53,7 +53,7 @@ ChatGPT のカスタム GPT に `pfd.py` をアップロードして使うため
 
 ### Rust 版（`rust/`）
 
-同じ JSON から同じ図（配置・配線が座標まで同じ）を、より速く、1つの実行ファイルで描く Rust 版がある。今は SVG 出力のみで、改訂（`revisions`）には未対応。使い方は [rust/README.md](rust/README.md)。
+同じ JSON から同じ図（配置・配線が座標まで同じ）を、より速く、1つの実行ファイルで描く Rust 版がある。今は SVG 出力のみ（改訂・凍結にも対応）。使い方は [rust/README.md](rust/README.md)。
 
 ## クイックスタート
 

@@ -6,7 +6,9 @@ use pfd::elements::summary;
 use pfd::{Flowsheet, render};
 
 const USAGE: &str = "usage: pfd [-h] [-o OUTPUT] [--no-labels] [--no-frame] [--fontsize FONTSIZE]
-           [--layout {order,flow}] [-j JOBS] [--snapshot PATH]
+           [--layout {order,flow}] [-j JOBS] [--revision ID]
+           [--highlight {all,latest,none}] [--since ID] [--freeze PATH]
+           [--snapshot PATH]
            [--list-elements] [--describe TYPE] [spec]
 
 Generate a PFD from a JSON spec
@@ -23,6 +25,14 @@ options:
   --layout {order,flow}
                         override the spec's layout: declared order, or from the flow direction
   -j, --jobs JOBS       worker threads for the builds (default: one per CPU; 1: none)
+  --revision ID         draw the sheet as of this revision ('base': before any revision)
+  --highlight {all,latest,none}
+                        revisions drawn in their colour: all (default), only the latest, or none
+  --since ID            draw only the revisions from this one on as changes (in colour); earlier
+                        ones are drawn as settled
+  --freeze PATH         write the spec with the sheet as built kept in it (through --revision,
+                        default: the last revision), so later revisions are drawn onto exactly
+                        that sheet
   --snapshot PATH       also write the placement, routes and drawing as JSON (as the
                         Python tool's snapshot tests list them)
   --list-elements       list element types (including the spec's custom elements) and exit
@@ -37,6 +47,10 @@ struct Args {
     layout: Option<String>,
     jobs: Option<usize>,
     snapshot: Option<String>,
+    revision: Option<String>,
+    highlight: String,
+    since: Option<String>,
+    freeze: Option<String>,
     list: bool,
     describe: Option<String>,
 }
@@ -51,6 +65,10 @@ fn parse(argv: &[String]) -> Result<Args, String> {
         layout: None,
         jobs: None,
         snapshot: None,
+        revision: None,
+        highlight: "all".into(),
+        since: None,
+        freeze: None,
         list: false,
         describe: None,
     };
@@ -100,8 +118,17 @@ fn parse(argv: &[String]) -> Result<Args, String> {
             "--snapshot" => a.snapshot = Some(value("--snapshot")?),
             "--list-elements" => a.list = true,
             "--describe" => a.describe = Some(value("--describe")?),
-            "--revision" | "--highlight" | "--since" | "--freeze" => {
-                return Err(format!("{flag}: revisions are not supported by the Rust port yet"));
+            "--revision" => a.revision = Some(value("--revision")?),
+            "--since" => a.since = Some(value("--since")?),
+            "--freeze" => a.freeze = Some(value("--freeze")?),
+            "--highlight" => {
+                let v = value("--highlight")?;
+                if !["all", "latest", "none"].contains(&v.as_str()) {
+                    return Err(format!(
+                        "argument --highlight: invalid choice: '{v}' (choose from 'all', 'latest', 'none')"
+                    ));
+                }
+                a.highlight = v;
             }
             s if s.starts_with('-') && s.len() > 1 => return Err(format!("unrecognized arguments: {s}")),
             _ => {
@@ -148,16 +175,44 @@ fn run(args: Args) -> Result<(), String> {
     if args.jobs.is_some() {
         fs.jobs = args.jobs;
     }
+    if let Some(path) = &args.freeze {
+        let d = fs.freeze(4, args.revision.as_deref()).map_err(|e| e.to_string())?;
+        let through = args
+            .revision
+            .clone()
+            .unwrap_or_else(|| fs.revisions.last().map_or("base".into(), |r| r.id.clone()));
+        let text = fs.to_json().map_err(|e| e.to_string())?;
+        std::fs::write(path, text).map_err(|e| format!("{path}: {e}"))?;
+        for w in &d.warnings {
+            eprintln!("warning: {w}");
+        }
+        println!("wrote {path} (frozen through {through})");
+        if args.output.is_none() {
+            return Ok(());
+        }
+    }
     let output = args.output.unwrap_or_else(|| "pfd.svg".into());
     let lower = output.to_lowercase();
     if !lower.ends_with(".svg") {
         return Err(format!("{output}: only .svg output is supported by the Rust port"));
     }
-    let diagram = fs.build(4, true).map_err(|e| e.to_string())?;
-    let sc = render::scene(&diagram, args.labels, args.fontsize, args.frame, None).map_err(|e| e.to_string())?;
+    let diagram = fs
+        .build_until(4, true, args.revision.as_deref())
+        .map_err(|e| e.to_string())?;
+    let sc = render::scene_with(
+        &diagram,
+        args.labels,
+        args.fontsize,
+        args.frame,
+        None,
+        &args.highlight,
+        args.since.as_deref(),
+    )
+    .map_err(|e| e.to_string())?;
     std::fs::write(&output, pfd::svg::to_svg(&sc)).map_err(|e| format!("{output}: {e}"))?;
     if let Some(path) = &args.snapshot {
-        let snap = render::snapshot(&diagram).map_err(|e| e.to_string())?;
+        let snap =
+            render::snapshot_with(&diagram, &args.highlight, args.since.as_deref()).map_err(|e| e.to_string())?;
         std::fs::write(path, serde_json::to_string_pretty(&snap).unwrap()).map_err(|e| format!("{path}: {e}"))?;
     }
     for w in &diagram.warnings {

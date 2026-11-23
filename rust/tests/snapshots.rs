@@ -83,11 +83,6 @@ fn check(spec: &Path, snap: &Path) -> Result<(), String> {
     Ok(())
 }
 
-fn uses_revisions(spec: &Path) -> bool {
-    let v: Value = serde_json::from_str(&std::fs::read_to_string(spec).unwrap()).unwrap();
-    v.get("revisions").is_some() || v.get("frozen").is_some()
-}
-
 fn run(pairs: Vec<(PathBuf, PathBuf)>) {
     let only = std::env::var("PFD_CASE").ok();
     let mut failed = Vec::new();
@@ -96,9 +91,6 @@ fn run(pairs: Vec<(PathBuf, PathBuf)>) {
         let name = spec.strip_prefix(repo()).unwrap().display().to_string();
         if only.as_ref().is_some_and(|o| !name.contains(o.as_str())) {
             continue;
-        }
-        if uses_revisions(&spec) {
-            continue; // revisions are not ported yet
         }
         count += 1;
         let start = std::time::Instant::now();

@@ -77,6 +77,15 @@ impl Equipment {
         for (name, spec) in self.ports.iter() {
             geo.ports.insert(name.clone(), parse_port(spec)?);
         }
+        if !self.ports.is_empty() {
+            let mut ports = serde_json::Map::new();
+            for (k, p) in &geo.ports {
+                if self.ports.contains_key(k) {
+                    ports.insert(k.clone(), serde_json::json!([p.side.to_string(), p.offset]));
+                }
+            }
+            geo.recipe = Some((self.typ.clone(), params, ports));
+        }
         Ok(geo)
     }
 
@@ -86,7 +95,7 @@ impl Equipment {
 }
 
 /// Equipment that sits on a line (valve, flow meter, strainer ...).
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct InlineItem {
     pub typ: String,
     pub id: Option<String>,
@@ -155,7 +164,7 @@ impl InlineItem {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Connection {
     pub src: String,
     pub dst: String,
@@ -216,4 +225,181 @@ impl Connection {
 
 fn split_or_whole(r: &str) -> (String, String) {
     split_ref(r).unwrap_or_else(|_| (r.to_string(), String::new()))
+}
+
+/// Add ``(key, value)`` to ``d`` unless the value is the default.
+fn changed(d: &mut serde_json::Map<String, Value>, key: &str, value: Value, default: Value) {
+    if value != default {
+        d.insert(key.into(), value);
+    }
+}
+
+fn opt(v: Option<i64>) -> Value {
+    v.map(Value::from).unwrap_or(Value::Null)
+}
+
+impl Equipment {
+    pub fn to_dict(&self) -> Result<Value> {
+        let mut d = serde_json::Map::new();
+        d.insert("id".into(), Value::from(self.id.clone()));
+        d.insert("type".into(), Value::from(self.typ.clone()));
+        changed(&mut d, "level", opt(self.level), Value::Null);
+        changed(&mut d, "elevation", opt(self.elevation), Value::Null);
+        changed(&mut d, "span", Value::from(self.span), Value::from(1));
+        changed(&mut d, "desc", Value::from(self.desc.clone()), Value::from(""));
+        let mut ports = serde_json::Map::new();
+        for (k, v) in self.ports.iter() {
+            let p = parse_port(v)?;
+            ports.insert(k.clone(), serde_json::json!([p.side.to_string(), p.offset]));
+        }
+        changed(&mut d, "ports", Value::Object(ports), Value::Object(Default::default()));
+        changed(
+            &mut d,
+            "params",
+            Value::Object((*self.params).clone()),
+            Value::Object(Default::default()),
+        );
+        Ok(Value::Object(d))
+    }
+}
+
+impl InlineItem {
+    pub fn to_dict(&self) -> Value {
+        let mut d = serde_json::Map::new();
+        d.insert("type".into(), Value::from(self.typ.clone()));
+        changed(
+            &mut d,
+            "id",
+            self.id.clone().map(Value::from).unwrap_or(Value::Null),
+            Value::Null,
+        );
+        changed(
+            &mut d,
+            "params",
+            Value::Object(self.params.clone()),
+            Value::Object(Default::default()),
+        );
+        changed(&mut d, "level", opt(self.level), Value::Null);
+        changed(&mut d, "elevation", opt(self.elevation), Value::Null);
+        changed(&mut d, "desc", Value::from(self.desc.clone()), Value::from(""));
+        changed(&mut d, "in", Value::from(self.port_in.clone()), Value::from("in"));
+        changed(&mut d, "out", Value::from(self.port_out.clone()), Value::from("out"));
+        if d.len() == 1 {
+            Value::from(self.typ.clone())
+        } else {
+            Value::Object(d)
+        }
+    }
+}
+
+impl Connection {
+    pub fn to_dict(&self) -> Value {
+        let mut d = serde_json::Map::new();
+        d.insert("from".into(), Value::from(self.src.clone()));
+        d.insert("to".into(), Value::from(self.dst.clone()));
+        changed(&mut d, "type", Value::from(self.kind.clone()), Value::from("pipe"));
+        changed(
+            &mut d,
+            "inline",
+            Value::Array(self.inline.iter().map(|i| i.to_dict()).collect()),
+            Value::Array(vec![]),
+        );
+        changed(&mut d, "anchor", Value::from(self.anchor.clone()), Value::from("auto"));
+        changed(&mut d, "recycle", Value::from(self.recycle), Value::from(false));
+        Value::Object(d)
+    }
+}
+
+pub const REVISION_COLORS: [&str; 6] = ["red", "blue", "green", "magenta", "darkorange", "purple"];
+
+/// An item on the sheet changed by a revision.
+#[derive(Clone, Debug)]
+pub struct Change {
+    pub id: String,
+    pub typ: Option<String>,
+    pub params: Params,
+    pub desc: Option<String>,
+}
+
+pub const CHANGE_KEYS: [&str; 4] = ["id", "type", "params", "desc"];
+
+impl Change {
+    pub fn to_dict(&self) -> Value {
+        let mut d = serde_json::Map::new();
+        d.insert("id".into(), Value::from(self.id.clone()));
+        changed(
+            &mut d,
+            "type",
+            self.typ.clone().map(Value::from).unwrap_or(Value::Null),
+            Value::Null,
+        );
+        changed(
+            &mut d,
+            "params",
+            Value::Object(self.params.clone()),
+            Value::Object(Default::default()),
+        );
+        changed(
+            &mut d,
+            "desc",
+            self.desc.clone().map(Value::from).unwrap_or(Value::Null),
+            Value::Null,
+        );
+        Value::Object(d)
+    }
+}
+
+/// A change drawn onto a finished sheet (see [`crate::revise`]).
+#[derive(Clone, Debug, Default)]
+pub struct Revision {
+    pub id: String,
+    pub color: Option<String>,
+    pub note: String,
+    pub equipment: Vec<Equipment>,
+    pub connections: Vec<Connection>,
+    pub remove: Vec<String>,
+    pub remove_lines: Vec<(String, String)>,
+    pub changes: Vec<Change>,
+}
+
+impl Revision {
+    pub fn to_dict(&self) -> Result<Value> {
+        let mut d = serde_json::Map::new();
+        d.insert("id".into(), Value::from(self.id.clone()));
+        changed(
+            &mut d,
+            "color",
+            self.color.clone().map(Value::from).unwrap_or(Value::Null),
+            Value::Null,
+        );
+        changed(&mut d, "note", Value::from(self.note.clone()), Value::from(""));
+        if !self.remove.is_empty() || !self.remove_lines.is_empty() {
+            let mut r: Vec<Value> = self.remove.iter().map(|x| Value::from(x.clone())).collect();
+            r.extend(
+                self.remove_lines
+                    .iter()
+                    .map(|(a, b)| serde_json::json!({"from": a, "to": b})),
+            );
+            d.insert("remove".into(), Value::Array(r));
+        }
+        if !self.changes.is_empty() {
+            d.insert(
+                "change".into(),
+                Value::Array(self.changes.iter().map(Change::to_dict).collect()),
+            );
+        }
+        if !self.equipment.is_empty() {
+            d.insert(
+                "elements".into(),
+                Value::Array(self.equipment.iter().map(|e| e.to_dict()).collect::<Result<_>>()?),
+            );
+        }
+        if !self.connections.is_empty() {
+            d.insert(
+                "connections".into(),
+                Value::Array(self.connections.iter().map(Connection::to_dict).collect()),
+            );
+        }
+        Ok(Value::Object(d))
+    }
 }

@@ -108,10 +108,10 @@ fn text(x: f64, y: f64, t: &str, fontsize: f64, ha: &str, va: &str) -> Seg {
 
 /// The segment of one outline shape (a piece drawn in a line kind's style
 /// becomes a stroke with that style's width and dashes).
-fn shape_seg(s: &Shape, styles: &IndexMap<String, LineStyle>) -> Seg {
+fn shape_seg(s: &Shape, styles: Option<&IndexMap<String, LineStyle>>) -> Seg {
     match s {
         Shape::Poly(p) => {
-            if let Some(st) = p.line.as_ref().and_then(|l| styles.get(l)) {
+            if let Some(st) = p.line.as_ref().and_then(|l| styles.and_then(|m| m.get(l))) {
                 return stroke(
                     p.points.clone(),
                     Style {
@@ -157,6 +157,116 @@ fn shape_seg(s: &Shape, styles: &IndexMap<String, LineStyle>) -> Seg {
             }
         }
     }
+}
+
+/// A segment in a revision's colour (``dashed``: what it took away).
+fn paint(seg: Seg, color: Option<&str>, dashed: bool) -> Seg {
+    let c = color.map(String::from);
+    match seg {
+        Seg::Text {
+            xy,
+            text,
+            align,
+            fontsize,
+            color: own,
+        } => Seg::Text {
+            xy,
+            text,
+            align,
+            fontsize,
+            color: own.or(c),
+        },
+        Seg::Line {
+            path,
+            color: own,
+            lw,
+            ls,
+            arrow,
+            arrowwidth,
+            arrowlength,
+        } => Seg::Line {
+            path,
+            color: c.or(own),
+            lw,
+            ls: if dashed { Some("--".into()) } else { ls },
+            arrow,
+            arrowwidth,
+            arrowlength,
+        },
+        Seg::Poly {
+            verts,
+            closed,
+            fill,
+            color: own,
+            ls,
+        } => Seg::Poly {
+            verts,
+            closed,
+            fill: if fill.is_some() { c.clone().or(fill) } else { None },
+            color: c.or(own),
+            ls: if dashed { Some("--".into()) } else { ls },
+        },
+        Seg::Circle {
+            center,
+            radius,
+            fill,
+            color: own,
+            ls,
+        } => Seg::Circle {
+            center,
+            radius,
+            fill: if fill.is_some() { c.clone().or(fill) } else { None },
+            color: c.or(own),
+            ls: if dashed { Some("--".into()) } else { ls },
+        },
+        Seg::Arc {
+            center,
+            width,
+            height,
+            theta1,
+            theta2,
+            color: own,
+            ls,
+        } => Seg::Arc {
+            center,
+            width,
+            height,
+            theta1,
+            theta2,
+            color: c.or(own),
+            ls: if dashed { Some("--".into()) } else { ls },
+        },
+    }
+}
+
+/// Revision id -> colour of the revisions drawn in colour.
+pub fn colors(d: &Diagram, highlight: &str, since: Option<&str>) -> Result<HashMap<String, String>> {
+    if !["all", "latest", "none"].contains(&highlight) {
+        return Err(Error::Value(format!(
+            "highlight must be one of ('all', 'latest', 'none'), got {}",
+            crate::pyval::str_repr(highlight)
+        )));
+    }
+    let mut revs: &[crate::revise::RevisionInfo] = &d.revisions;
+    if let Some(since) = since.filter(|s| *s != "base") {
+        let Some(k) = revs.iter().position(|r| r.id == since) else {
+            let mut known = vec!["base".to_string()];
+            known.extend(revs.iter().map(|r| r.id.clone()));
+            return Err(Error::Value(format!(
+                "unknown revision {}; known: {}",
+                crate::pyval::str_repr(since),
+                crate::pyval::list_repr(&known)
+            )));
+        };
+        revs = &revs[k..];
+    }
+    if highlight == "none" || revs.is_empty() {
+        return Ok(HashMap::new());
+    }
+    if highlight == "latest" {
+        revs = &revs[revs.len() - 1..];
+    }
+    Ok(revs.iter().map(|r| (r.id.clone(), r.color.clone())).collect())
 }
 
 /// Split a route at its crossing marks into line pieces (a gap at each);
@@ -311,6 +421,22 @@ fn nozzle_tick(a: Point, b: Point) -> Seg {
 
 /// Everything drawn on the sheet, in drawing order.
 pub fn scene(d: &Diagram, label: bool, fontsize: Option<f64>, frame: bool, theme: Option<Theme>) -> Result<Scene> {
+    scene_with(d, label, fontsize, frame, theme, "all", None)
+}
+
+/// [`scene`] with the revisions drawn in colour chosen: ``highlight`` (all,
+/// latest or none) from revision ``since`` on.
+pub fn scene_with(
+    d: &Diagram,
+    label: bool,
+    fontsize: Option<f64>,
+    frame: bool,
+    theme: Option<Theme>,
+    highlight: &str,
+    since: Option<&str>,
+) -> Result<Scene> {
+    let colors = colors(d, highlight, since)?;
+    let color_of = |key: &str| d.added.get(key).and_then(|r| colors.get(r)).map(String::as_str);
     let mut theme = theme.unwrap_or_default();
     if let Some(f) = fontsize {
         theme.fontsize = f;
@@ -352,7 +478,7 @@ pub fn scene(d: &Diagram, label: bool, fontsize: Option<f64>, frame: bool, theme
             .geo
             .translated(p.x as f64, p.y as f64)
             .iter()
-            .map(|s| shape_seg(s, styles))
+            .map(|s| shape_seg(s, Some(styles)))
             .collect();
         for (x, y, t, scale) in &p.geo.texts {
             if !t.is_empty() {
@@ -371,10 +497,12 @@ pub fn scene(d: &Diagram, label: bool, fontsize: Option<f64>, frame: bool, theme
             items.extend(tag_items(p, &theme, &busy, &pipes));
         }
         if !items.is_empty() {
+            let c = color_of(&p.id);
+            let segs = items.into_iter().map(|g| paint(g, c, false)).collect();
             groups.push(Group {
                 kind: "equipment",
                 id: p.id.clone(),
-                segs: items,
+                segs,
             });
         }
     }
@@ -399,11 +527,66 @@ pub fn scene(d: &Diagram, label: bool, fontsize: Option<f64>, frame: bool, theme
             }
         }
         let _ = r;
+        let key = format!("{} -> {}", c.src, c.dst);
+        let col = color_of(&key);
+        let segs = line.into_iter().map(|g| paint(g, col, false)).collect();
         groups.push(Group {
             kind: "line",
-            id: format!("{} -> {}", c.src, c.dst),
-            segs: line,
+            id: key,
+            segs,
         });
+    }
+
+    // what the coloured revisions took away
+    let in_place: std::collections::HashSet<(&str, &str)> = d
+        .replaced
+        .iter()
+        .map(|(r, _, old)| (r.as_str(), old.as_str()))
+        .collect();
+    for g in &d.ghosts {
+        let Some(color) = colors.get(&g.rev) else { continue };
+        if let Some(p) = &g.placed {
+            if in_place.contains(&(g.rev.as_str(), p.id.as_str())) {
+                continue;
+            }
+            let mut items: Vec<Seg> = p
+                .geo
+                .translated(p.x as f64, p.y as f64)
+                .iter()
+                .map(|s| shape_seg(s, None))
+                .collect();
+            for (x, y, t, scale) in &p.geo.texts {
+                if !t.is_empty() {
+                    items.push(text(
+                        p.x as f64 + x,
+                        p.y as f64 + y,
+                        t,
+                        theme.fontsize * scale,
+                        "center",
+                        "center",
+                    ));
+                }
+            }
+            if label && !p.id.starts_with(GENERATED_PREFIX) {
+                items.extend(tag_items(p, &theme, &[], &pipes));
+            }
+            if !items.is_empty() {
+                let segs = items.into_iter().map(|s| paint(s, Some(color), true)).collect();
+                groups.push(Group {
+                    kind: "equipment",
+                    id: format!("{} (removed)", p.id),
+                    segs,
+                });
+            }
+        } else if let Some((c, r)) = &g.line {
+            let strokes = line_strokes(&r.points, &HashMap::new(), &styles[&c.kind], 0.0);
+            let segs = strokes.into_iter().map(|s| paint(s, Some(color), true)).collect();
+            groups.push(Group {
+                kind: "line",
+                id: format!("{} -> {} (removed)", c.src, c.dst),
+                segs,
+            });
+        }
     }
 
     // sheet: specification rows and border
@@ -422,6 +605,17 @@ pub fn scene(d: &Diagram, label: bool, fontsize: Option<f64>, frame: bool, theme
             ys.push(y);
         }
     }
+    for g in &d.ghosts {
+        if let Some(p) = &g.placed {
+            if colors.contains_key(&g.rev) && !in_place.contains(&(g.rev.as_str(), p.id.as_str())) {
+                let b = p.bbox();
+                xs.push(b.0 as f64);
+                xs.push(b.2 as f64);
+                ys.push(b.1 as f64);
+                ys.push(b.3 as f64);
+            }
+        }
+    }
     let fmin = |v: &[f64]| v.iter().cloned().fold(f64::INFINITY, f64::min);
     let fmax = |v: &[f64]| v.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
     let mg = theme.margin;
@@ -435,7 +629,7 @@ pub fn scene(d: &Diagram, label: bool, fontsize: Option<f64>, frame: bool, theme
         d.rows.clone()
     };
     let last = bands.len() - 1;
-    let mut specs: IndexMap<(usize, bool), Vec<(f64, String)>> = IndexMap::new();
+    let mut specs: IndexMap<(usize, bool), Vec<(f64, String, Option<String>)>> = IndexMap::new();
     for p in &d.placed {
         let Some(desc) = d.descs.get(&p.id) else { continue };
         if !label || desc.is_empty() {
@@ -458,10 +652,11 @@ pub fn scene(d: &Diagram, label: bool, fontsize: Option<f64>, frame: bool, theme
             *r = (*r).max(t.matches('\n').count() as i64 + 1);
         }
         let b = p.bbox();
+        let col = color_of(&p.id).map(String::from);
         specs
             .entry((band, rot))
             .or_default()
-            .push(((b.0 + b.2) as f64 / 2.0, t));
+            .push(((b.0 + b.2) as f64 / 2.0, t, col));
     }
     let mut keys: Vec<(usize, bool)> = specs.keys().copied().collect();
     keys.sort_by_key(|&(band, rot)| (rot, band));
@@ -476,15 +671,66 @@ pub fn scene(d: &Diagram, label: bool, fontsize: Option<f64>, frame: bool, theme
         } else {
             hi + mg
         };
-        for (cx, t) in spread(entries, em) {
+        let mut order: Vec<usize> = (0..entries.len()).collect();
+        order.sort_by(|&a, &b| entries[a].0.partial_cmp(&entries[b].0).unwrap());
+        let plain: Vec<(f64, String)> = entries.iter().map(|e| (e.0, e.1.clone())).collect();
+        for (k, (cx, t)) in order.into_iter().zip(spread(&plain, em)) {
             x0 = x0.min(cx - text_width(&t, em) / 2.0 - 1.0);
             x1 = x1.max(cx + text_width(&t, em) / 2.0 + 1.0);
-            sheet.push(text(cx, y, &t, theme.fontsize, "center", va));
+            sheet.push(paint(
+                text(cx, y, &t, theme.fontsize, "center", va),
+                entries[k].2.as_deref(),
+                false,
+            ));
         }
     }
     let pitch = theme.spec_line_height * em;
     y0 -= rows[1] as f64 * pitch + if rows[1] != 0 { 1.0 } else { 0.0 };
     y1 += rows[0] as f64 * pitch + if rows[0] != 0 { 1.0 } else { 0.0 };
+    let legend: Vec<&crate::revise::RevisionInfo> = d.revisions.iter().filter(|r| colors.contains_key(&r.id)).collect();
+    if !legend.is_empty() {
+        let mut y = y0;
+        let changed: std::collections::HashSet<(&str, &str)> =
+            d.changed.iter().map(|(r, i)| (r.as_str(), i.as_str())).collect();
+        for r in legend {
+            let mut swaps: Vec<String> = d
+                .replaced
+                .iter()
+                .filter(|(rev, new, _)| *rev == r.id && !changed.contains(&(rev.as_str(), new.as_str())))
+                .map(|(_, new, old)| {
+                    if new != old {
+                        format!("{old} → {new}")
+                    } else {
+                        format!("{new} 取替")
+                    }
+                })
+                .collect();
+            swaps.extend(
+                d.changed
+                    .iter()
+                    .filter(|(rev, _)| *rev == r.id)
+                    .map(|(_, i)| format!("{i} 変更")),
+            );
+            let swaps = swaps.join(", ");
+            let mut t = [r.id.as_str(), r.note.as_str()]
+                .iter()
+                .filter(|t| !t.is_empty())
+                .copied()
+                .collect::<Vec<_>>()
+                .join(": ");
+            if !swaps.is_empty() {
+                t.push_str(&format!(" ({swaps})"));
+            }
+            sheet.push(paint(
+                text(x0 + 1.0, y, &t, theme.fontsize, "left", "top"),
+                Some(&r.color),
+                false,
+            ));
+            x1 = x1.max(x0 + 2.0 + text_width(&t, em));
+            y -= pitch;
+        }
+        y0 = y - 0.5;
+    }
     if frame {
         let corners = vec![(x0, y0), (x1, y0), (x1, y1), (x0, y1), (x0, y0)];
         sheet.push(stroke(
@@ -587,7 +833,12 @@ pub fn seg_json(s: &Seg) -> Value {
 /// Placement, routes, warnings and drawing of ``d`` as the Python snapshot
 /// tests list them (``tests/snapshots``).
 pub fn snapshot(d: &Diagram) -> Result<Value> {
-    let sc = scene(d, true, None, true, None)?;
+    snapshot_with(d, "all", None)
+}
+
+/// [`snapshot`] with the revisions drawn in colour chosen (see [`scene_with`]).
+pub fn snapshot_with(d: &Diagram, highlight: &str, since: Option<&str>) -> Result<Value> {
+    let sc = scene_with(d, true, None, true, None, highlight, since)?;
     Ok(json!({
         "placed": d.placed.iter().map(|p| json!([p.id, p.x, p.y, p.geo.width, p.geo.height])).collect::<Vec<_>>(),
         "routes": d.routes.iter().map(|(c, r)| json!([c.src, c.dst, c.kind, pts(&r.points)])).collect::<Vec<_>>(),

@@ -12,12 +12,15 @@ use crate::elements::{CustomSpec, Geometry, Library};
 use crate::error::{Error, Result};
 use crate::expand::{Expanded, GENERATED_PREFIX, TAP_PREFIX, expand};
 use crate::flow::{plan_flow, split_rows};
+use crate::freeze::{fingerprint, from_data, to_data};
 use crate::geometry::{Point, count_crossings};
 use crate::layout::{FLANGED_RUN, FlowLink, Item, Link, Placed, bands, min_gap_x, place, place_y, port_dx};
 use crate::levels::{Levels, MAX_ROUNDS, moves, search_levels, start_levels};
-use crate::netlist::{ANCHORS, Connection, Equipment, InlineItem, check_id, split_ref};
+use crate::netlist::{ANCHORS, CHANGE_KEYS, Change, Connection, Equipment, InlineItem, Revision, check_id, split_ref};
 use crate::pool::pool_map;
+use crate::pyjson;
 use crate::pyval::{self, Params};
+use crate::revise::{Context, Ghost, RevisionInfo, account_revision, apply_revision};
 use crate::router::{BoxF, DIRS, Route, Router, Terminal, min_bends, needless_uturn, resolve_port};
 use crate::style::{LineStyle, Theme, default_line_styles};
 use crate::symmetry::{Symmetry, find_units, gap_groups};
@@ -35,6 +38,7 @@ pub const LAYOUTS: [&str; 2] = ["order", "flow"];
 pub const ROW_MODES: [&str; 2] = ["auto", "single"];
 pub const ELEMENT_KEYS: [&str; 8] = ["id", "type", "level", "params", "ports", "desc", "elevation", "span"];
 pub const CONNECTION_KEYS: [&str; 6] = ["from", "to", "type", "inline", "anchor", "recycle"];
+pub const REVISION_KEYS: [&str; 7] = ["id", "color", "note", "elements", "connections", "remove", "change"];
 pub const TOP_KEYS: [&str; 9] = [
     "version",
     "layout",
@@ -58,6 +62,17 @@ pub struct Diagram {
     pub uturns: i64,
     /// a sheet folded into rows: each row's (bottom, top) y
     pub rows: Vec<(f64, f64)>,
+    /// revisions drawn onto the sheet, in order; the revision that added
+    /// each item (by id) and line (``"src -> dst"``); what they took away;
+    /// the line each junction taps
+    pub revisions: Vec<RevisionInfo>,
+    pub added: IndexMap<String, String>,
+    pub ghosts: Vec<Ghost>,
+    pub hosts: IndexMap<String, String>,
+    /// items put where an item the same revision removed stood: (revision,
+    /// new, old); items a revision changed: (revision, item)
+    pub replaced: Vec<(String, String, String)>,
+    pub changed: Vec<(String, String)>,
 }
 
 impl Diagram {
@@ -151,8 +166,12 @@ pub struct Flowsheet {
     pub line_styles: IndexMap<String, LineStyle>,
     pub equipment: Vec<Equipment>,
     pub connections: Vec<Connection>,
-    /// the JSON lists ``revisions`` / ``frozen`` (not drawn by this port)
-    pub revisions: Vec<Value>,
+    /// changes drawn onto the built sheet, in order (see ``revise``)
+    pub revisions: Vec<Revision>,
+    /// the revision ``add`` / ``connect`` go to
+    current: Option<usize>,
+    /// the sheet as built through some revision, kept (see ``freeze``)
+    pub frozen: Option<Value>,
 }
 
 /// The way a utility circle points to face a port on each side.
@@ -200,6 +219,8 @@ impl Flowsheet {
             equipment: Vec::new(),
             connections: Vec::new(),
             revisions: Vec::new(),
+            current: None,
+            frozen: None,
         })
     }
 
@@ -207,14 +228,111 @@ impl Flowsheet {
     /// Ids of all equipment, including inline items that were given an id.
     pub fn ids(&self) -> HashSet<String> {
         let mut out: HashSet<String> = self.equipment.iter().map(|e| e.id.clone()).collect();
-        for c in &self.connections {
-            for i in &c.inline {
-                if let Some(id) = &i.id {
-                    out.insert(id.clone());
+        let named = |cs: &[Connection], out: &mut HashSet<String>| {
+            for c in cs {
+                for i in &c.inline {
+                    if let Some(id) = &i.id {
+                        out.insert(id.clone());
+                    }
                 }
             }
+        };
+        named(&self.connections, &mut out);
+        for r in &self.revisions {
+            out.extend(r.equipment.iter().map(|e| e.id.clone()));
+            named(&r.connections, &mut out);
         }
         out
+    }
+
+    /// Ids on the sheet once the revisions so far are applied.
+    fn live_ids(&self) -> HashSet<String> {
+        let mut live: HashSet<String> = self.equipment.iter().map(|e| e.id.clone()).collect();
+        let mut lines: Vec<Connection> = self.connections.clone();
+        for c in &lines {
+            live.extend(c.inline.iter().filter_map(|i| i.id.clone()));
+        }
+        for r in &self.revisions {
+            let mut gone: HashSet<String> = r.remove.iter().cloned().collect();
+            for c in &lines {
+                let ends: Vec<&str> = c.ends().iter().map(|e| e.0).collect();
+                if ends.iter().any(|e| gone.contains(*e))
+                    || r.remove_lines.iter().any(|(a, b)| *a == c.src && *b == c.dst)
+                {
+                    gone.extend(c.inline.iter().filter_map(|i| i.id.clone()));
+                }
+            }
+            live.retain(|i| !gone.contains(i));
+            lines.retain(|c| !c.ends().iter().any(|e| gone.contains(e.0)));
+            live.extend(r.equipment.iter().map(|e| e.id.clone()));
+            for c in &r.connections {
+                live.extend(c.inline.iter().filter_map(|i| i.id.clone()));
+            }
+            lines.extend(r.connections.iter().cloned());
+        }
+        live
+    }
+
+    fn current_revision(&mut self, what: &str) -> Result<&mut Revision> {
+        match self.current {
+            Some(k) => Ok(&mut self.revisions[k]),
+            None => Err(Error::Value(format!(
+                "{what}: start a revision first (Flowsheet.revise)"
+            ))),
+        }
+    }
+
+    /// Start a revision: what is added, connected, removed and disconnected
+    /// from now on is drawn onto the sheet built so far.
+    pub fn revise(&mut self, id: &str, color: Option<String>, note: &str) -> Result<()> {
+        check_id(id)?;
+        if id == "base" || self.revisions.iter().any(|r| r.id == id) {
+            return Err(Error::Value(format!("revision id {} is taken", pyval::str_repr(id))));
+        }
+        self.revisions.push(Revision {
+            id: id.into(),
+            color,
+            note: note.into(),
+            ..Default::default()
+        });
+        self.current = Some(self.revisions.len() - 1);
+        Ok(())
+    }
+
+    /// Take items off the sheet in the current revision.
+    pub fn remove(&mut self, ids: &[&str]) -> Result<()> {
+        let rev = self.current_revision("remove")?;
+        rev.remove.extend(ids.iter().map(|s| s.to_string()));
+        Ok(())
+    }
+
+    /// Take the line ``src -> dst`` (as written) off the sheet.
+    pub fn disconnect(&mut self, src: &str, dst: &str) -> Result<()> {
+        let rev = self.current_revision("disconnect")?;
+        rev.remove_lines.push((src.into(), dst.into()));
+        Ok(())
+    }
+
+    /// Change an item on the sheet in the current revision.
+    pub fn change(&mut self, id: &str, typ: Option<String>, desc: Option<String>, params: Params) -> Result<()> {
+        self.current_revision("change")?;
+        if let Some(t) = &typ {
+            self.library.check(t)?;
+        }
+        if !self.live_ids().contains(id) {
+            return Err(Error::Key(format!(
+                "change: no item {} on the sheet",
+                pyval::str_repr(id)
+            )));
+        }
+        let rev = self.current_revision("change")?;
+        rev.changes.push(Change {
+            id: id.into(),
+            typ,
+            params,
+            desc,
+        });
+        Ok(())
     }
 
     fn check_new_id(id: &str, known: &HashSet<String>) -> Result<()> {
@@ -257,13 +375,21 @@ impl Flowsheet {
             _ => format!("{typ}{}", self.equipment.len() + 1),
         };
         check_id(&id)?;
-        Self::check_new_id(&id, &self.ids())?;
+        let known = if self.current.is_some() {
+            self.live_ids()
+        } else {
+            self.ids()
+        };
+        Self::check_new_id(&id, &known)?;
         let mut eq = Equipment::new(&id, typ, level, params);
         eq.ports = Arc::new(ports);
         eq.desc = desc.into();
         eq.elevation = elevation;
         eq.span = span;
-        self.equipment.push(eq);
+        match self.current {
+            Some(k) => self.revisions[k].equipment.push(eq),
+            None => self.equipment.push(eq),
+        }
         Ok(())
     }
 
@@ -301,11 +427,17 @@ impl Flowsheet {
         }
         let items: Vec<InlineItem> = inline.iter().map(InlineItem::parse).collect::<Result<_>>()?;
         let mut known = self.ids();
+        let mut live = if self.current.is_some() {
+            self.live_ids()
+        } else {
+            known.clone()
+        };
         for item in &items {
             self.library.check(&item.typ)?;
             if let Some(id) = &item.id {
-                Self::check_new_id(id, &known)?;
+                Self::check_new_id(id, &live)?;
                 known.insert(id.clone());
+                live.insert(id.clone());
             }
         }
         for r in [src, dst] {
@@ -314,8 +446,11 @@ impl Flowsheet {
                 return Err(Error::Key(format!("unknown equipment {}", pyval::str_repr(&i))));
             }
         }
-        self.connections
-            .push(Connection::full(src, dst, &kind, items, anchor, recycle));
+        let c = Connection::full(src, dst, &kind, items, anchor, recycle);
+        match self.current {
+            Some(k) => self.revisions[k].connections.push(c),
+            None => self.connections.push(c),
+        }
         for r in [src, dst] {
             let (i, _) = split_ref(r)?;
             self.aim(&i)?;
@@ -326,14 +461,23 @@ impl Flowsheet {
     /// Turn an item that aims (a utility circle) to face the port its one
     /// line goes to; with no line or several, it keeps its default.
     fn aim(&mut self, id: &str) -> Result<()> {
-        let Some(k) = self.equipment.iter().position(|e| e.id == id) else {
+        let all: Vec<&Equipment> = self
+            .equipment
+            .iter()
+            .chain(self.revisions.iter().flat_map(|r| r.equipment.iter()))
+            .collect();
+        let Some(eq) = all.iter().find(|e| e.id == id) else {
             return Ok(());
         };
-        if !self.library.aims(&self.equipment[k].typ) {
+        if !self.library.aims(&eq.typ) {
             return Ok(());
         }
         let mut ends: Vec<(String, String)> = Vec::new();
-        for c in &self.connections {
+        let conns = self
+            .connections
+            .iter()
+            .chain(self.revisions.iter().flat_map(|r| r.connections.iter()));
+        for c in conns {
             let e = c.ends();
             for (a, other) in [(e[0], e[1]), (e[1], e[0])] {
                 if a.0 == id {
@@ -341,17 +485,24 @@ impl Flowsheet {
                 }
             }
         }
-        self.equipment[k].aim = None;
-        if ends.len() != 1 {
-            return Ok(());
+        let mut aim = None;
+        if ends.len() == 1 {
+            let (o, port) = &ends[0];
+            if let Some(other) = all.iter().find(|e| &e.id == o) {
+                let geo = self.geometry(other)?;
+                if let Some(p) = geo.ports.get(port) {
+                    aim = aim_for(p.side).map(String::from);
+                }
+            }
         }
-        let (o, port) = &ends[0];
-        let Some(other) = self.equipment.iter().find(|e| &e.id == o).cloned() else {
-            return Ok(());
-        };
-        let geo = self.geometry(&other)?;
-        if let Some(p) = geo.ports.get(port) {
-            self.equipment[k].aim = aim_for(p.side).map(String::from);
+        for e in self
+            .equipment
+            .iter_mut()
+            .chain(self.revisions.iter_mut().flat_map(|r| r.equipment.iter_mut()))
+        {
+            if e.id == id {
+                e.aim = aim.clone();
+            }
         }
         Ok(())
     }
@@ -359,7 +510,8 @@ impl Flowsheet {
     /// Does the line start at a utility supply (a ``beside`` item)?
     fn starts_at_utility(&self, src: &str) -> Result<bool> {
         let (i, _) = split_ref(src)?;
-        let Some(eq) = self.equipment.iter().find(|e| e.id == i) else {
+        let current = self.current.map(|k| &self.revisions[k].equipment[..]).unwrap_or(&[]);
+        let Some(eq) = self.equipment.iter().chain(current).find(|e| e.id == i) else {
             return Ok(false);
         };
         Ok(self.geometry(eq)?.beside && self.line_styles.contains_key("utility"))
@@ -419,13 +571,201 @@ impl Flowsheet {
     }
 
     // -- build ----------------------------------------------------------------------
+    /// The sheet as written, then every revision drawn onto it in order --
+    /// up to and including revision ``until`` (``"base"``: none).
     pub fn build(&self, max_expand: usize, compact: bool) -> Result<Diagram> {
-        if !self.revisions.is_empty() {
-            return Err(Error::Value(
-                "revisions are not supported by the Rust port yet; use the Python tool".into(),
+        self.build_until(max_expand, compact, None)
+    }
+
+    pub fn build_until(&self, max_expand: usize, compact: bool, until: Option<&str>) -> Result<Diagram> {
+        let mut ids: Vec<String> = vec!["base".into()];
+        ids.extend(self.revisions.iter().map(|r| r.id.clone()));
+        let last = match until {
+            Some(u) => ids.iter().position(|i| i == u).ok_or_else(|| {
+                Error::Value(format!(
+                    "unknown revision {}; known: {}",
+                    pyval::str_repr(u),
+                    pyval::list_repr(&ids)
+                ))
+            })?,
+            None => ids.len() - 1,
+        };
+        let (frozen, start, stale) = self.frozen_sheet(last)?;
+        let mut d = match frozen {
+            Some(d) => d,
+            None => {
+                let mut d = self.build_base(max_expand, compact)?;
+                if !stale.is_empty() {
+                    d.warnings.push(stale);
+                }
+                d
+            }
+        };
+        let mut ctx = Context {
+            library: self.library.clone(),
+            styles: self.line_styles.clone(),
+            lines: self.connections.clone(),
+            inline: HashMap::new(),
+            specs: HashMap::new(),
+        };
+        for e in &self.equipment {
+            ctx.specs.insert(e.id.clone(), e.clone());
+        }
+        for c in &self.connections {
+            for i in &c.inline {
+                if let Some(id) = &i.id {
+                    ctx.inline.insert(id.clone(), (i.port_in.clone(), i.port_out.clone()));
+                    let mut e = Equipment::new(id, &i.typ, None, i.params.clone());
+                    e.desc = i.desc.clone();
+                    ctx.specs.insert(id.clone(), e);
+                }
+            }
+        }
+        for (k, rev) in self.revisions[..last].iter().enumerate() {
+            if k < start {
+                account_revision(rev, &mut ctx)?;
+                continue;
+            }
+            d = apply_revision(d, rev, k, &mut ctx).map_err(|e| e.context(&format!("revision {}", rev.id)))?;
+        }
+        Ok(d)
+    }
+
+    /// What a sheet frozen through revision ``through`` is built from.
+    fn source(&self, through: &str) -> Result<Value> {
+        let mut d = self.to_dict()?;
+        let o = d.as_object_mut().unwrap();
+        o.shift_remove("frozen");
+        let k = self.revisions.iter().position(|r| r.id == through).map_or(0, |k| k + 1);
+        let revs: Vec<Value> = match o.get("revisions") {
+            Some(Value::Array(a)) => a[..k].to_vec(),
+            _ => Vec::new(),
+        };
+        o.insert("revisions".into(), Value::Array(revs));
+        if self.layout == "flow" {
+            let opts = pyjson::Options {
+                sort_keys: true,
+                ensure_ascii: true,
+                indent: None,
+            };
+            for key in ["elements", "connections"] {
+                if let Some(Value::Array(a)) = o.get_mut(key) {
+                    a.sort_by_cached_key(|v| pyjson::dumps(v, opts));
+                }
+            }
+        }
+        Ok(d)
+    }
+
+    /// Keep the sheet as built through revision ``until`` (default: the last
+    /// one): later builds read it back instead of laying it out.
+    pub fn freeze(&mut self, max_expand: usize, until: Option<&str>) -> Result<Diagram> {
+        let d = self.build_until(max_expand, true, until)?;
+        let through = match until {
+            Some(u) => u.to_string(),
+            None => self.revisions.last().map_or("base".into(), |r| r.id.clone()),
+        };
+        let mut frozen = serde_json::Map::new();
+        frozen.insert("through".into(), Value::from(through.clone()));
+        frozen.insert("fingerprint".into(), Value::from(fingerprint(&self.source(&through)?)));
+        frozen.insert("sheet".into(), to_data(&d)?);
+        self.frozen = Some(Value::Object(frozen));
+        Ok(d)
+    }
+
+    /// The frozen sheet if it can serve a build through revision number
+    /// ``last`` (0: the base): the sheet, the revisions on it, and why it
+    /// could not (``""`` if it could, or there is none).
+    fn frozen_sheet(&self, last: usize) -> Result<(Option<Diagram>, usize, String)> {
+        let Some(frozen) = &self.frozen else {
+            return Ok((None, 0, String::new()));
+        };
+        let through = frozen.get("through").map(pyval::str).unwrap_or_default();
+        let mut ids: Vec<String> = vec!["base".into()];
+        ids.extend(self.revisions.iter().map(|r| r.id.clone()));
+        let Some(k) = ids.iter().position(|i| *i == through) else {
+            return Ok((
+                None,
+                0,
+                format!(
+                    "frozen sheet: no revision {} any more; laid out anew",
+                    pyval::str_repr(&through)
+                ),
+            ));
+        };
+        if k > last {
+            return Ok((None, 0, String::new()));
+        }
+        let want = fingerprint(&self.source(&through)?);
+        if frozen.get("fingerprint").map(pyval::str) != Some(want) {
+            return Ok((
+                None,
+                0,
+                format!(
+                    "frozen sheet (through {through}) is out of date: what it was built from has changed; laid out anew"
+                ),
             ));
         }
-        self.build_base(max_expand, compact)
+        let sheet = from_data(
+            frozen.get("sheet").unwrap_or(&Value::Null),
+            &self.library,
+            &self.line_styles,
+        )?;
+        Ok((Some(sheet), k, String::new()))
+    }
+
+    /// The flowsheet in the JSON format read by ``from_dict``.
+    pub fn to_dict(&self) -> Result<Value> {
+        let mut d = serde_json::Map::new();
+        d.insert("version".into(), Value::from(FORMAT_VERSION));
+        d.insert("layout".into(), Value::from(self.layout.clone()));
+        if self.rows != "auto" {
+            d.insert("rows".into(), Value::from(self.rows.clone()));
+        }
+        if !self.library.custom.is_empty() {
+            d.insert(
+                "custom_elements".into(),
+                Value::Array(self.library.custom.values().map(|s| s.to_dict()).collect()),
+            );
+        }
+        let defaults = default_line_styles();
+        let kinds: serde_json::Map<String, Value> = self
+            .line_styles
+            .iter()
+            .filter(|(k, s)| defaults.get(*k) != Some(s))
+            .map(|(k, s)| (k.clone(), s.to_dict()))
+            .collect();
+        if !kinds.is_empty() {
+            d.insert("line_kinds".into(), Value::Object(kinds));
+        }
+        d.insert(
+            "elements".into(),
+            Value::Array(self.equipment.iter().map(|e| e.to_dict()).collect::<Result<_>>()?),
+        );
+        d.insert(
+            "connections".into(),
+            Value::Array(self.connections.iter().map(Connection::to_dict).collect()),
+        );
+        if !self.revisions.is_empty() {
+            d.insert(
+                "revisions".into(),
+                Value::Array(self.revisions.iter().map(|r| r.to_dict()).collect::<Result<_>>()?),
+            );
+        }
+        if let Some(f) = &self.frozen {
+            d.insert("frozen".into(), f.clone());
+        }
+        Ok(Value::Object(d))
+    }
+
+    /// The flowsheet as JSON text (``json.dumps(..., indent=2)``).
+    pub fn to_json(&self) -> Result<String> {
+        let opts = pyjson::Options {
+            sort_keys: false,
+            ensure_ascii: false,
+            indent: Some(2),
+        };
+        Ok(pyjson::dumps(&self.to_dict()?, opts) + "\n")
     }
 
     fn build_base(&self, max_expand: usize, compact: bool) -> Result<Diagram> {
@@ -1511,6 +1851,7 @@ impl Flowsheet {
             line_styles: self.line_styles.clone(),
             uturns: turned.len() as i64,
             rows: Vec::new(),
+            ..Default::default()
         };
         Ok((Some(diagram), Vec::new(), turned))
     }
@@ -1623,9 +1964,12 @@ impl Flowsheet {
         let n = pos.len();
         fs.connections
             .sort_by_key(|c| *pos.get(&(c.src.clone(), c.dst.clone())).unwrap_or(&n));
-        if let Some(Value::Array(revs)) = d.get("revisions") {
-            fs.revisions = revs.clone();
+        for (i, r) in list("revisions").iter().enumerate() {
+            let id = r.get("id").map(pyval::str).unwrap_or_else(|| "?".into());
+            fs.revise_dict(r)
+                .map_err(|e| e.context(&format!("revisions[{i}] ({id})")))?;
         }
+        fs.current = None;
         if let Some(frozen) = d.get("frozen") {
             let ok = matches!(frozen, Value::Object(o) if {
                 let mut k: Vec<&String> = o.keys().collect();
@@ -1637,8 +1981,96 @@ impl Flowsheet {
                     "frozen: must have exactly the keys ['fingerprint', 'sheet', 'through']".into(),
                 ));
             }
+            fs.frozen = Some(frozen.clone());
         }
         Ok(fs)
+    }
+
+    fn revise_dict(&mut self, r: &Value) -> Result<()> {
+        let o = r
+            .as_object()
+            .ok_or_else(|| Error::Type("a revision must be a dict".into()))?;
+        let unknown: Vec<&String> = o.keys().filter(|k| !REVISION_KEYS.contains(&k.as_str())).collect();
+        if !unknown.is_empty() {
+            return Err(Error::Value(format!(
+                "unknown keys {}",
+                sorted_keys_repr(unknown.into_iter())
+            )));
+        }
+        let id = pyval::str(o.get("id").ok_or_else(|| Error::Key("id".into()))?);
+        let color = o.get("color").filter(|v| !v.is_null()).map(pyval::str);
+        let note = o.get("note").map(pyval::str).unwrap_or_default();
+        self.revise(&id, color, &note)?;
+        let empty = Vec::new();
+        let list = |k: &str| match o.get(k) {
+            Some(Value::Array(a)) => a.clone(),
+            _ => empty.clone(),
+        };
+        for x in list("remove") {
+            match &x {
+                Value::String(s) => self.remove(&[s])?,
+                Value::Object(m) if m.len() == 2 && m.contains_key("from") && m.contains_key("to") => {
+                    self.disconnect(&pyval::str(&m["from"]), &pyval::str(&m["to"]))?
+                }
+                _ => {
+                    return Err(Error::Value(format!(
+                        "remove: {} must be an id or {{'from': ..., 'to': ...}}",
+                        pyval::repr(&x)
+                    )));
+                }
+            }
+        }
+        for (i, ch) in list("change").iter().enumerate() {
+            let cid = ch.get("id").map(pyval::str).unwrap_or_else(|| "?".into());
+            self.change_dict(ch)
+                .map_err(|e| e.context(&format!("change[{i}] ({cid})")))?;
+        }
+        for (i, e) in list("elements").iter().enumerate() {
+            let eid = e.get("id").map(pyval::str).unwrap_or_else(|| "?".into());
+            self.add_dict(e)
+                .map_err(|err| err.context(&format!("elements[{i}] ({eid})")))?;
+        }
+        let conns = list("connections");
+        let mut pending: Vec<(usize, &Value)> = conns.iter().enumerate().collect();
+        while !pending.is_empty() {
+            let mut retry = Vec::new();
+            for &(i, c) in &pending {
+                match self.connect_dict(c) {
+                    Ok(()) => {}
+                    Err(Error::Key(_)) => retry.push((i, c)),
+                    Err(e) => return Err(e),
+                }
+            }
+            if retry.len() == pending.len() {
+                let (i, c) = retry[0];
+                let show = |k: &str| c.get(k).map(pyval::str).unwrap_or_else(|| "None".into());
+                let at = format!("connections[{i}] ({} -> {})", show("from"), show("to"));
+                self.connect_dict(c).map_err(|e| e.context(&at))?;
+            }
+            pending = retry;
+        }
+        Ok(())
+    }
+
+    fn change_dict(&mut self, ch: &Value) -> Result<()> {
+        let o = ch
+            .as_object()
+            .ok_or_else(|| Error::Type("a change must be a dict".into()))?;
+        let unknown: Vec<&String> = o.keys().filter(|k| !CHANGE_KEYS.contains(&k.as_str())).collect();
+        if !unknown.is_empty() {
+            return Err(Error::Value(format!(
+                "unknown keys {}",
+                sorted_keys_repr(unknown.into_iter())
+            )));
+        }
+        let id = pyval::str(o.get("id").ok_or_else(|| Error::Key("id".into()))?);
+        let typ = o.get("type").filter(|v| !v.is_null()).map(pyval::str);
+        let desc = o.get("desc").filter(|v| !v.is_null()).map(pyval::str);
+        let params = match o.get("params") {
+            Some(Value::Object(p)) => p.clone(),
+            _ => Params::new(),
+        };
+        self.change(&id, typ, desc, params)
     }
 
     fn add_dict(&mut self, e: &Value) -> Result<()> {

@@ -20,9 +20,6 @@ fn invalid_cases_are_refused_with_their_message() {
         let (kind, msg) = rest.split_once(", \"").unwrap();
         let msg = msg.trim_end_matches("),").trim_end_matches('"');
         let text = std::fs::read_to_string(repo.join(format!("tests/cases/invalid/{name}.json"))).unwrap();
-        if text.contains("\"revisions\"") || text.contains("\"frozen\"") {
-            continue; // revisions are not ported yet
-        }
         count += 1;
         let result = Flowsheet::from_json(&text).and_then(|fs| fs.build(4, true));
         match result {
