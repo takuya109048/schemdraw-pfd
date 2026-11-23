@@ -18,7 +18,13 @@ from schemdraw_pfd.revise import line_key
 
 NAMES = sorted(p.stem for p in (CASES / "revisions").glob("*.json"))
 # cases that fit their changes in without moving the sheet apart
-UNMOVED = ["add_spare_pump", "remove_inline", "remove_item", "remove_line"]
+UNMOVED = [
+    "add_spare_pump",
+    "remove_inline",
+    "remove_item",
+    "remove_line",
+    "replace_in_place",
+]
 
 
 def _fs(name: str) -> Flowsheet:
@@ -244,3 +250,61 @@ def test_remove_and_disconnect_need_a_revision():
 def test_unknown_revision_to_build_until():
     with pytest.raises(ValueError, match="unknown revision 'R9'"):
         _fs("remove_line").build(until="R9")
+
+
+def test_a_replacement_stands_where_the_old_item_stood():
+    """Removed and added in one revision, alike and joined to the same
+    items: the new pump takes the old one's place, again and again, and
+    its lines run the way the old ones ran."""
+    stages = _stages("replace_in_place")
+    pumps = [next(p for p in d.placed if p.type == "pump") for d in stages]
+    assert [p.id for p in pumps] == ["P-1", "P-1N", "P-1R"]
+    assert len({(p.x, p.y) for p in pumps}) == 1
+    assert stages[-1].replaced == {"P-1N": "P-1", "P-1R": "P-1N"}
+    for d in stages:
+        assert [_dirs(r.points) for c, r in d.routes if "TK-1.bottom" in c.src] == [
+            _dirs(r.points) for c, r in stages[0].routes if "TK-1.bottom" in c.src
+        ]
+
+
+def test_a_replaced_item_is_named_in_the_legend_not_drawn_under_the_new():
+    d = _fs("replace_in_place").build()
+    groups = scene(d).groups
+    assert not any(g.id.startswith("P-1 (removed)") for g in groups)
+    sheet = [g for g in groups if g.kind == "sheet"][0]
+    legend = [i.text for i in sheet.items if isinstance(i, Text) and i.color]
+    assert legend == ["R1: ポンプ更新 (P-1 → P-1N)", "R2: 再更新 (P-1N → P-1R)"]
+
+
+def test_since_draws_the_earlier_revisions_as_settled():
+    d = _fs("two_revisions").build()
+    since = _colors_since(d, "R2")
+    assert since["E-1"] == {(None, False)}  # R1: settled, plain
+    assert since["PI-1"] == {("#008080", False)}
+    assert "E-1.tube_out -> TK-1.n3 (removed)" in since  # R2 removed it
+    assert _colors_since(d, "base") == _colors(d, "all")
+    with pytest.raises(ValueError, match="unknown revision 'R9'"):
+        scene(d, since="R9")
+
+
+def _colors_since(d: Diagram, since: str) -> dict[str, set]:
+    out: dict[str, set] = {}
+    for g in scene(d, since=since).groups:
+        if g.kind != "sheet":
+            out.setdefault(g.id, set()).add((g.color, g.dashed))
+    return out
+
+
+def test_cli_revision_options(tmp_path):
+    from schemdraw_pfd.cli import main
+
+    spec = CASES / "revisions" / "two_revisions.json"
+    for args in (
+        ["--revision", "base"],
+        ["--revision", "R1", "--highlight", "latest"],
+        ["--since", "R2"],
+        ["--highlight", "none"],
+    ):
+        out = tmp_path / f"{'_'.join(args)}.svg"
+        assert main([str(spec), "-o", str(out), "-j", "1", *args]) == 0
+        assert out.exists()

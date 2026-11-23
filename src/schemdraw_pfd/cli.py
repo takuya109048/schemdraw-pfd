@@ -50,6 +50,12 @@ def main(argv: list[str] | None = None) -> int:
         help="revisions drawn in their colour: all (default), only the latest, or none",
     )
     ap.add_argument(
+        "--since",
+        metavar="ID",
+        help="draw only the revisions from this one on as changes (in colour); "
+        "earlier ones are drawn as settled",
+    )
+    ap.add_argument(
         "--list-elements",
         action="store_true",
         help="list element types (including the spec's custom elements) and exit",
@@ -81,6 +87,7 @@ def main(argv: list[str] | None = None) -> int:
         args.output,
         until=args.revision,
         highlight=args.highlight,
+        since=args.since,
         label=not args.no_labels,
         frame=not args.no_frame,
         fontsize=args.fontsize,

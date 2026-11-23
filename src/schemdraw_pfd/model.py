@@ -115,6 +115,8 @@ class Diagram:
     added: dict[str, str] = field(default_factory=dict)
     ghosts: list[Ghost] = field(default_factory=list)
     hosts: dict[str, str] = field(default_factory=dict)
+    # items put where an item the same revision removed stood: new -> old
+    replaced: dict[str, str] = field(default_factory=dict)
 
     @property
     def bends(self) -> int:

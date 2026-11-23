@@ -194,6 +194,11 @@ class _Sheet:
         self.uturns: int = d.uturns
         self.serial = 0
         self.orphans: set[str] = set()  # flags whose lines were all removed
+        # replacements (see _pair): added item -> the removed item whose
+        # place it may take; removed items whose place is taken or open
+        self.reuse: dict[str, Placed] = {}
+        self.open: set[str] = set()
+        self.replaced: dict[str, str] = dict(d.replaced)
 
     # -- bookkeeping ----------------------------------------------------------
     def new_id(self, prefix: str) -> str:
@@ -442,6 +447,8 @@ class _Sheet:
             self.next_line,
             list(self.warnings),
             self.uturns,
+            set(self.open),
+            dict(self.replaced),
         )
 
     def restore(self, state: tuple) -> None:
@@ -456,6 +463,8 @@ class _Sheet:
             self.next_line,
             self.warnings,
             self.uturns,
+            self.open,
+            self.replaced,
         ) = (copy.copy(x) for x in state)
 
     def make_room(self, axis: int, at: int, by: int) -> None:
@@ -496,7 +505,7 @@ class _Sheet:
             self.rows = [(mv(lo), mv(hi)) for lo, hi in self.rows]
 
     # -- routing --------------------------------------------------------------
-    def board(self, margin: int = MARGIN) -> Router:
+    def board(self, margin: int = MARGIN, also: str | None = None) -> Router:
         """A router over the sheet with every line laid."""
         placed = list(self.placed.values())
         boxes = [p.bbox for p in placed]
@@ -509,10 +518,21 @@ class _Sheet:
         router = Router(placed, margin + int(over) + 1)
         for _, r in self.lines.values():
             self.lay(router, r.points)
-        for g in self.ghosts:  # items this revision takes away stay clear
-            if g.rev == self.rev and g.placed is not None:  # (lines may reuse
-                self.block(router, g.placed.bbox)  # the way a removed one ran)
+        for g in self.cleared(also):  # items this revision takes away stay
+            self.block(router, g.bbox)  # clear (lines may run where one ran)
         return router
+
+    def cleared(self, also: str | None = None) -> list[Placed]:
+        """Items this revision removed whose place stays clear: all but
+        those an added item replaces in place (``also``: one more)."""
+        return [
+            g.placed
+            for g in self.ghosts
+            if g.rev == self.rev
+            and g.placed is not None
+            and g.placed.id not in self.open
+            and g.placed.id != also
+        ]
 
     @staticmethod
     def lay(router: Router, points: list[Point]) -> None:
@@ -886,12 +906,13 @@ class _Sheet:
         return True
 
     # -- placing --------------------------------------------------------------
-    def free_cells(self) -> tuple[set[Node], set[Node]]:
+    def free_cells(self, also: str | None = None) -> tuple[set[Node], set[Node]]:
         """Cells an added item may not cover: around items (a cell's gap
-        kept), and on lines."""
+        kept), and on lines -- and on what this revision removed, except
+        where an added item replaces a removed one (see :meth:`cleared`)."""
         near: set[Node] = set()
-        boxes = [p.bbox for p in self.placed.values()]
-        boxes += [g.placed.bbox for g in self.ghosts if g.rev == self.rev and g.placed]
+        kept = self.cleared(also)
+        boxes = [p.bbox for p in self.placed.values()] + [g.bbox for g in kept]
         for x0, y0, x1, y1 in boxes:
             for x in range(x0 - 1, x1 + 2):
                 for y in range(y0 - 1, y1 + 2):
@@ -899,9 +920,15 @@ class _Sheet:
         pipes: set[Node] = set()
         for _, r in self.lines.values():
             pipes.update(_lattice(r.points))
+        freed = {
+            g.placed.id
+            for g in self.ghosts
+            if g.rev == self.rev and g.placed is not None
+        } - {g.id for g in kept}
         for g in self.ghosts:
             if g.rev == self.rev and g.line is not None:
-                pipes.update(_lattice(g.line[1].points))
+                if not any(e in freed for e, _ in g.line[0].ends):
+                    pipes.update(_lattice(g.line[1].points))
         return near, pipes
 
     # -- several lines at once -------------------------------------------------
@@ -961,6 +988,7 @@ def apply_revision(d: Any, rev: Revision, index: int, ctx: Context) -> Any:
 
     # -- what comes -----------------------------------------------------------
     new = {e.id: e for e in rev.equipment}
+    _pair(sheet, rev, ctx)
     for c in rev.connections:
         ctx.inline.update(
             (item.id, (item.port_in, item.port_out)) for item in c.inline if item.id
@@ -1096,7 +1124,51 @@ def apply_revision(d: Any, rev: Revision, index: int, ctx: Context) -> Any:
         ghosts=sheet.ghosts,
         hosts=sheet.hosts,
         revisions=info,
+        replaced=sheet.replaced,
     )
+
+
+def _pair(sheet: _Sheet, rev: Revision, ctx: Context) -> None:
+    """Added items that replace removed ones (``sheet.reuse``): of the same
+    type and size, sharing an item they connect to.  Such an item may take
+    the place of the one it replaces (and does, if its lines route as well
+    from there): a pump changed for another stays where the old one stood."""
+    gone = [g.placed for g in sheet.ghosts if g.rev == rev.id and g.placed]
+    lines = [g.line[0] for g in sheet.ghosts if g.rev == rev.id and g.line]
+
+    def neighbours(item: str, conns: list[Connection], hops: int = 2) -> set[str]:
+        out: set[str] = set()
+        todo, seen = [item], {item}
+        for _ in range(hops):
+            nxt = []
+            for i in todo:
+                for c in conns:
+                    ids = [e for e, _ in c.ends]
+                    if i in ids:
+                        for o in ids:
+                            if o not in seen:
+                                seen.add(o)
+                                # through generated items (tees, inline items)
+                                if o.startswith(GENERATED_PREFIX) or sheet.bound(o):
+                                    nxt.append(o)
+                                else:
+                                    out.add(o)
+            todo = nxt
+        return out
+
+    taken: set[str] = set()
+    for e in rev.equipment:
+        geo = ctx.geometry(e)
+        mine = neighbours(e.id, rev.connections)
+        for g in gone:
+            if g.id in taken or g.type != e.type:
+                continue
+            if (g.geo.width, g.geo.height) != (geo.width, geo.height):
+                continue
+            if mine & neighbours(g.id, lines):
+                sheet.reuse[e.id] = g
+                taken.add(g.id)
+                break
 
 
 def _place(
@@ -1118,6 +1190,10 @@ def _place(
         if best is not None:
             (x, y), router, done = best
             sheet.add_item(Placed(eq.id, eq.type, 0, geo, x, y), eq.desc)
+            home = sheet.reuse.get(eq.id)
+            if home is not None and (home.x, home.y) == (x, y):
+                sheet.open.add(home.id)  # it stands where the old one stood
+                sheet.replaced[eq.id] = home.id
             return router, done
         if attempt == ROOM_TRIES:
             break
@@ -1150,10 +1226,12 @@ def _best_spot(
     """The best free spot for ``eq`` (see :func:`_place`), with the router
     and the lines routed there; None if its lines route nowhere (all of
     them; ``partial``: any of them)."""
-    near, pipes = sheet.free_cells()
+    home = sheet.reuse.get(eq.id)  # the place of the item it replaces
+    also = home.id if home else None
+    near, pipes = sheet.free_cells(also)
     w, h = geo.width, geo.height
     probe = Placed(eq.id, eq.type, 0, geo, 0, 0)
-    base = sheet.board()
+    base = sheet.board(also=also)
     # per line: own port, where it may meet the other end, src?, run needed
     ends: list[tuple[str, list[Terminal], bool, int]] = []
     for c in lines:
@@ -1196,9 +1274,27 @@ def _best_spot(
                 for y in range(fy - h - REACH, fy + REACH + 1):
                     if (x, y) not in spots and free(x, y):
                         spots[x, y] = estimate(x, y)
+
+    def fits_home(p: Placed) -> bool:
+        """The old item's place, which the layout chose: it only has to be
+        clear (the gap the free spots keep may be less there)."""
+        x0, y0, x1, y1 = p.bbox
+        for q in sheet.placed.values():
+            b = q.bbox
+            if b[0] <= x1 and x0 <= b[2] and b[1] <= y1 and y0 <= b[3]:
+                return False
+        cells = {(x, y) for x in range(x0, x1 + 1) for y in range(y0, y1 + 1)}
+        return not cells & pipes
+
+    at_home = home is not None and fits_home(home)
+    if at_home:
+        assert home is not None
+        spots[home.x, home.y] = estimate(home.x, home.y)
     if not spots:
         return None
     ranked = sorted(spots, key=lambda s: (spots[s], abs(s[1]), s[0]))[:SPOTS]
+    if at_home and home is not None and (home.x, home.y) not in ranked:
+        ranked.insert(0, (home.x, home.y))
     best = None
     for x, y in ranked:
         router = sheet.clone(base)
@@ -1209,7 +1305,9 @@ def _best_spot(
             score, done = sheet.try_lines(router, lines)
         finally:
             del sheet.placed[eq.id]
-        key = (*score, spots[x, y])
+        moved = not (home is not None and (x, y) == (home.x, home.y))
+        fails, short, turns, cost = score
+        key = (fails, short, moved, turns, cost, spots[x, y])
         if best is None or key < best[0]:
             best = (key, (x, y), router, done)
     if best is None or best[0][0] >= (len(lines) if partial else 1):
