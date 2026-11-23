@@ -1,0 +1,1 @@
+{"elements": [{"id": "A", "type": "pump"}, {"id": "F", "type": "connector"}], "connections": [{"from": "A.out", "to": "F.tail"}], "revisions": [{"id": "R1", "connections": [{"from": "A.out", "to": "Z.in"}]}]}

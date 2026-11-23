@@ -38,9 +38,11 @@ from .netlist import (
     Connection,
     Equipment,
     InlineItem,
+    Revision,
     check_id,
     split_ref,
 )
+from .revise import Context, Ghost, RevisionInfo, apply_revision
 from .router import (
     DIRS,
     Route,
@@ -61,6 +63,7 @@ __all__ = [
     "Equipment",
     "Flowsheet",
     "InlineItem",
+    "Revision",
 ]
 
 FORMAT_VERSION = 1  # version of the JSON flowsheet format written by to_dict
@@ -76,8 +79,11 @@ KINDS = tuple(DEFAULT_LINE_STYLES)  # built-in line kinds (kept for compatibilit
 _ELEMENT_KEYS = {"id", "type", "level", "params", "ports", "desc", "elevation", "span"}
 _CONNECTION_KEYS = {"from", "to", "type", "inline", "anchor", "recycle"}
 _TOP_KEYS = set(
-    "version layout rows custom_elements line_kinds elements connections".split()
+    "version layout rows custom_elements line_kinds elements connections "
+    "revisions".split()
 )
+_REVISION_KEYS = {"id", "color", "note", "elements", "connections", "remove"}
+HIGHLIGHTS = ("all", "latest", "none")  # which revisions are drawn in colour
 LAYOUTS = ("order", "flow")
 ROW_MODES = ("auto", "single")
 
@@ -102,6 +108,13 @@ class Diagram:
     uturns: int = 0
     # a sheet folded into rows (flow layout): each row's (bottom, top) y
     rows: list[tuple[float, float]] = field(default_factory=list)
+    # revisions drawn onto the sheet (see :mod:`.revise`), in order; the
+    # revision that added each item (by id) and line (``"src -> dst"``);
+    # what they took away; the line each junction taps
+    revisions: list[RevisionInfo] = field(default_factory=list)
+    added: dict[str, str] = field(default_factory=dict)
+    ghosts: list[Ghost] = field(default_factory=list)
+    hosts: dict[str, str] = field(default_factory=dict)
 
     @property
     def bends(self) -> int:
@@ -621,13 +634,50 @@ class Flowsheet:
         self.line_styles: dict[str, LineStyle] = dict(DEFAULT_LINE_STYLES)
         self.equipment: list[Equipment] = []
         self.connections: list[Connection] = []
+        # changes drawn onto the built sheet, in order (see :meth:`revise`)
+        self.revisions: list[Revision] = []
+        self._revision: Revision | None = None  # where add / connect go
 
     # -- editing --------------------------------------------------------------
     def ids(self) -> set[str]:
         """Ids of all equipment, including inline items that were given an id."""
         out = {e.id for e in self.equipment}
         out |= {i.id for c in self.connections for i in c.inline if i.id}
+        for r in self.revisions:
+            out |= {e.id for e in r.equipment}
+            out |= {i.id for c in r.connections for i in c.inline if i.id}
         return out
+
+    def revise(self, id: str, color: str | None = None, note: str = "") -> Revision:
+        """Start a revision: what is added, connected, removed and
+        disconnected from now on is drawn onto the sheet built so far,
+        which keeps its look (see :mod:`.revise`).  ``color``: how the
+        revision's changes are drawn (default: red, blue, green ... by its
+        place in the list)."""
+        check_id(id)
+        if id == "base" or any(r.id == id for r in self.revisions):
+            raise ValueError(f"revision id {id!r} is taken")
+        rev = Revision(id, color, note)
+        self.revisions.append(rev)
+        self._revision = rev
+        return rev
+
+    def remove(self, *ids: str) -> None:
+        """Take items off the sheet in the current revision (their lines go
+        with them; an inline item's line is joined up through it)."""
+        rev = self._current("remove")
+        rev.remove.extend(ids)
+
+    def disconnect(self, src: str, dst: str) -> None:
+        """Take the line ``src -> dst`` (as written) off the sheet in the
+        current revision, with the items on it."""
+        rev = self._current("disconnect")
+        rev.remove_lines.append((src, dst))
+
+    def _current(self, what: str) -> Revision:
+        if self._revision is None:
+            raise ValueError(f"{what}: start a revision first (Flowsheet.revise)")
+        return self._revision
 
     def add(
         self,
@@ -669,7 +719,10 @@ class Flowsheet:
         eq = Equipment(
             id, type, level, params, dict(ports or {}), desc, elevation, span
         )
-        self.equipment.append(eq)
+        if self._revision is not None:
+            self._revision.equipment.append(eq)
+        else:
+            self.equipment.append(eq)
         return eq
 
     def connect(
@@ -719,7 +772,10 @@ class Flowsheet:
             if i not in known:
                 raise KeyError(f"unknown equipment {i!r}")
         c = Connection(src, dst, kind, items, anchor, bool(recycle))
-        self.connections.append(c)
+        if self._revision is not None:
+            self._revision.connections.append(c)
+        else:
+            self.connections.append(c)
         return c
 
     def add_line_kind(self, name: str, style: LineStyle) -> None:
@@ -783,7 +839,38 @@ class Flowsheet:
         )
 
     # -- build ----------------------------------------------------------------
-    def build(self, max_expand: int = 4, compact: bool = True) -> Diagram:
+    def build(
+        self, max_expand: int = 4, compact: bool = True, until: str | None = None
+    ) -> Diagram:
+        """The sheet as written (:meth:`_build_base`), then every revision
+        drawn onto it in order (see :mod:`.revise`) -- up to and including
+        revision ``until`` (``"base"``: none)."""
+        if until is not None and until != "base":
+            if all(r.id != until for r in self.revisions):
+                known = ["base"] + [r.id for r in self.revisions]
+                raise ValueError(f"unknown revision {until!r}; known: {known}")
+        d = self._build_base(max_expand, compact)
+        if until == "base" or not self.revisions:
+            return d
+        ctx = Context(
+            self.library,
+            lambda e: _context(e.id, lambda: e.geometry(self.library)),
+            self.line_styles,
+            list(self.connections),
+            {
+                i.id: (i.port_in, i.port_out)
+                for c in self.connections
+                for i in c.inline
+                if i.id
+            },
+        )
+        for k, rev in enumerate(self.revisions):
+            d = _context(f"revision {rev.id}", lambda: apply_revision(d, rev, k, ctx))
+            if rev.id == until:
+                break
+        return d
+
+    def _build_base(self, max_expand: int = 4, compact: bool = True) -> Diagram:
         """Lay out and route (:meth:`_build`), then let swappable ports trade
         lines (:meth:`_reassign`).
 
@@ -1698,7 +1785,40 @@ class Flowsheet:
                 _context(where, lambda: fs._connect_dict(c))
             pending = retry
         fs.connections.sort(key=_original_order(d, fs))
+        for i, r in enumerate(d.get("revisions", [])):
+            _context(f"revisions[{i}] ({r.get('id', '?')})", lambda: fs._revise_dict(r))
+        fs._revision = None
         return fs
+
+    def _revise_dict(self, r: dict) -> None:
+        unknown = set(r) - _REVISION_KEYS
+        if unknown:
+            raise ValueError(f"unknown keys {sorted(unknown)}")
+        rev = self.revise(r["id"], r.get("color"), r.get("note", ""))
+        for x in r.get("remove", []):
+            if isinstance(x, str):
+                rev.remove.append(x)
+            elif isinstance(x, dict) and set(x) == {"from", "to"}:
+                rev.remove_lines.append((x["from"], x["to"]))
+            else:
+                raise ValueError(
+                    f"remove: {x!r} must be an id or {{'from': ..., 'to': ...}}"
+                )
+        for i, e in enumerate(r.get("elements", [])):
+            _context(f"elements[{i}] ({e.get('id', '?')})", lambda: self._add_dict(e))
+        pending = list(enumerate(r.get("connections", [])))
+        while pending:
+            retry = []
+            for i, c in pending:
+                try:
+                    self._connect_dict(c)
+                except KeyError:
+                    retry.append((i, c))
+            if len(retry) == len(pending):
+                i, c = retry[0]
+                where = f"connections[{i}] ({c.get('from')} -> {c.get('to')})"
+                _context(where, lambda: self._connect_dict(c))
+            pending = retry
 
     def _add_dict(self, e: dict) -> None:
         unknown = set(e) - _ELEMENT_KEYS
@@ -1755,6 +1875,8 @@ class Flowsheet:
             d["line_kinds"] = kinds
         d["elements"] = [e.to_dict() for e in self.equipment]
         d["connections"] = [c.to_dict() for c in self.connections]
+        if self.revisions:
+            d["revisions"] = [r.to_dict() for r in self.revisions]
         return d
 
     @classmethod
@@ -1770,11 +1892,12 @@ class Flowsheet:
             json.dumps(self.to_dict(), ensure_ascii=False, indent=2) + "\n", "utf-8"
         )
 
-    def render(self, path: str | Path, **kw: Any) -> Diagram:
-        """Build and draw; keyword arguments go to :func:`render.draw`."""
+    def render(self, path: str | Path, until: str | None = None, **kw: Any) -> Diagram:
+        """Build (up to revision ``until``) and draw; keyword arguments go to
+        :func:`render.draw`."""
         from .render import draw
 
-        diagram = self.build()
+        diagram = self.build(until=until)
         draw(diagram, path, **kw)
         return diagram
 

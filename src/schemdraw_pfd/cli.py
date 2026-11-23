@@ -39,6 +39,17 @@ def main(argv: list[str] | None = None) -> int:
         help="worker processes for the builds (default: one per CPU; 1: none)",
     )
     ap.add_argument(
+        "--revision",
+        metavar="ID",
+        help="draw the sheet as of this revision ('base': before any revision)",
+    )
+    ap.add_argument(
+        "--highlight",
+        choices=("all", "latest", "none"),
+        default="all",
+        help="revisions drawn in their colour: all (default), only the latest, or none",
+    )
+    ap.add_argument(
         "--list-elements",
         action="store_true",
         help="list element types (including the spec's custom elements) and exit",
@@ -68,6 +79,8 @@ def main(argv: list[str] | None = None) -> int:
 
     diagram = fs.render(
         args.output,
+        until=args.revision,
+        highlight=args.highlight,
         label=not args.no_labels,
         frame=not args.no_frame,
         fontsize=args.fontsize,

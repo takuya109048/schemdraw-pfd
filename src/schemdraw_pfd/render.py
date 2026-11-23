@@ -40,7 +40,7 @@ from ._vendor.schemdraw.types import Halign, Valign
 from .expand import GENERATED_PREFIX
 from .geometry import Polyline, Shape, find_crossings  # noqa: F401 (re-exported)
 from .layout import Placed
-from .model import Diagram
+from .model import HIGHLIGHTS, Diagram
 from .style import DEFAULT_THEME, LineStyle, Theme
 
 Point = tuple[float, float]
@@ -58,6 +58,7 @@ class Text:
     fontsize: float
     ha: Halign = "center"
     va: Valign = "center"
+    color: str | None = None  # None: the group's colour
 
 
 @dataclass(frozen=True)
@@ -82,6 +83,9 @@ class Group:
     id: str
     items: list[Item]
     placed: Placed | None = None  # equipment only
+    # a revision's change: drawn in its colour; dashed if taken away
+    color: str | None = None
+    dashed: bool = False
 
 
 @dataclass
@@ -246,15 +250,36 @@ def _nozzle_tick(a: Point, b: Point) -> Stroke:
     return Stroke(((cx - 0.3 * dy, cy - 0.3 * dx), (cx + 0.3 * dy, cy + 0.3 * dx)))
 
 
+def _colors(diagram: Diagram, highlight: str) -> dict[str, str]:
+    """Revision id -> colour of the revisions drawn in colour: ``all``,
+    only the ``latest`` one, or ``none``."""
+    if highlight not in HIGHLIGHTS:
+        raise ValueError(f"highlight must be one of {HIGHLIGHTS}, got {highlight!r}")
+    revs = diagram.revisions
+    if highlight == "none" or not revs:
+        return {}
+    if highlight == "latest":
+        revs = revs[-1:]
+    return {r.id: r.color for r in revs}
+
+
 def scene(
     diagram: Diagram,
     label: bool = True,
     fontsize: float | None = None,
     frame: bool = True,
     theme: Theme | None = None,
+    highlight: str = "all",
 ) -> Scene:
-    """Everything :func:`draw` puts on the sheet, in drawing order."""
+    """Everything :func:`draw` puts on the sheet, in drawing order.
+
+    ``highlight``: which revisions are drawn in their colour (``all``,
+    ``latest`` or ``none``; the others are drawn like the rest of the
+    sheet); what a coloured revision took away is drawn dashed in its
+    colour, what the others took away is left out."""
     theme = theme or DEFAULT_THEME
+    colors = _colors(diagram, highlight)
+    added = diagram.added
     if fontsize is not None:
         theme = replace(theme, fontsize=fontsize)
     styles = diagram.line_styles
@@ -280,7 +305,9 @@ def scene(
                 items.append(Text(p.x + x, p.y + y, text, theme.fontsize * scale))
         if label and not p.id.startswith(GENERATED_PREFIX):
             items += _tag_items(p, theme, west.get(p.id, []), pipes)
-        groups.append(Group("equipment", p.id, items, p))
+        if items:
+            color = colors.get(added.get(p.id, ""))
+            groups.append(Group("equipment", p.id, items, p, color))
 
     # lines -------------------------------------------------------------------
     conns = [c for c, _ in diagram.routes]
@@ -298,13 +325,43 @@ def scene(
                 line.append(_nozzle_tick(pts[0], pts[1]))
             if by_id[dst].geo.nozzles:
                 line.append(_nozzle_tick(pts[-1], pts[-2]))
-        groups.append(Group("line", f"{c.src} -> {c.dst}", line))
+        key = f"{c.src} -> {c.dst}"
+        groups.append(Group("line", key, line, color=colors.get(added.get(key, ""))))
+
+    # what the coloured revisions took away ---------------------------------------
+    for g in diagram.ghosts:
+        color = colors.get(g.rev)
+        if color is None:
+            continue
+        if g.placed is not None:
+            p = g.placed
+            items = list(p.geo.translated(p.x, p.y))
+            for x, y, text, scale in p.geo.texts:
+                if text:
+                    items.append(Text(p.x + x, p.y + y, text, theme.fontsize * scale))
+            if label and not p.id.startswith(GENERATED_PREFIX):
+                items += _tag_items(p, theme, [], pipes)
+            if items:
+                groups.append(
+                    Group("equipment", f"{p.id} (removed)", items, p, color, True)
+                )
+        elif g.line is not None:
+            c, r = g.line
+            strokes = _line_strokes(r.points, {}, styles[c.kind], 0)
+            groups.append(
+                Group("line", f"{c.src} -> {c.dst} (removed)", list(strokes),
+                      color=color, dashed=True)
+            )  # fmt: skip
 
     # sheet: specification rows and border --------------------------------------
     xs = [v for p in diagram.placed for v in (p.bbox[0], p.bbox[2])]
     ys = [v for p in diagram.placed for v in (p.bbox[1], p.bbox[3])]
     xs += [x for pts in paths for x, _ in pts]
     ys += [y for pts in paths for _, y in pts]
+    for g in diagram.ghosts:  # what is drawn of the removed, too
+        if g.rev in colors and g.placed is not None:
+            xs += [g.placed.bbox[0], g.placed.bbox[2]]
+            ys += [g.placed.bbox[1], g.placed.bbox[3]]
     mg = theme.margin
     x0, x1, y0, y1 = min(xs) - mg, max(xs) + mg, min(ys) - mg, max(ys) + mg
     em = theme.fontsize / PT_PER_UNIT
@@ -314,7 +371,7 @@ def scene(
     # whole drawing is that row
     bands = diagram.rows or [(y0 + mg, y1 - mg)]
     last = len(bands) - 1
-    specs: dict[tuple[int, bool], list[tuple[float, str]]] = {}
+    specs: dict[tuple[int, bool], list[tuple[float, str, str | None]]] = {}
     for p in diagram.placed:
         desc = diagram.descs.get(p.id)
         if not (label and desc):
@@ -329,7 +386,7 @@ def scene(
         if (band, p.geo.rotating) in ((0, False), (last, True)):
             rows[p.geo.rotating] = max(rows[p.geo.rotating], text.count("\n") + 1)
         specs.setdefault((band, p.geo.rotating), []).append(
-            ((p.bbox[0] + p.bbox[2]) / 2, text)
+            ((p.bbox[0] + p.bbox[2]) / 2, text, colors.get(added.get(p.id, "")))
         )
     for (band, rotating), entries in sorted(specs.items(), key=lambda e: e[0][::-1]):
         va: Valign = "top" if rotating else "bottom"
@@ -338,15 +395,28 @@ def scene(
             y = y0 if band == last else lo - mg
         else:
             y = y1 if band == 0 else hi + mg
-        for cx, text in _spread(entries, em):
+        order = sorted(range(len(entries)), key=lambda k: entries[k][0])
+        spread = _spread([(cx, text) for cx, text, _ in entries], em)
+        for k, (cx, text) in zip(order, spread):  # _spread sorts like order
             x0, x1 = (
                 min(x0, cx - _text_width(text, em) / 2 - 1),
                 max(x1, cx + _text_width(text, em) / 2 + 1),
             )
-            sheet.append(Text(cx, y, text, theme.fontsize, "center", va))
+            color = entries[k][2]
+            sheet.append(Text(cx, y, text, theme.fontsize, "center", va, color))
     pitch = theme.spec_line_height * em
     y0 -= rows[True] * pitch + (1 if rows[True] else 0)
     y1 += rows[False] * pitch + (1 if rows[False] else 0)
+    # legend: one line per coloured revision, under the drawing
+    legend = [r for r in diagram.revisions if r.id in colors]
+    if legend:
+        y = y0
+        for r in legend:
+            text = f"{r.id}: {r.note}" if r.note else r.id
+            sheet.append(Text(x0 + 1, y, text, theme.fontsize, "left", "top", r.color))
+            x1 = max(x1, x0 + 2 + _text_width(text, em))
+            y -= pitch
+        y0 = y - 0.5
     if frame:
         corners = ((x0, y0), (x1, y0), (x1, y1), (x0, y1), (x0, y0))
         sheet.append(Stroke(corners, {"lw": theme.frame_lw}))
@@ -356,30 +426,39 @@ def scene(
 
 
 # -- SchemDraw -----------------------------------------------------------------
-def _segment(item: Item) -> Any:
-    """The SchemDraw segment of one scene item."""
+def _segment(item: Item, color: str | None = None, dashed: bool = False) -> Any:
+    """The SchemDraw segment of one scene item (in ``color``, dashed: a
+    revision's change, see :func:`scene`)."""
+    kw: dict[str, Any] = {"color": color} if color else {}
     if isinstance(item, Text):
+        if item.color:
+            kw["color"] = item.color
         return SegmentText(
             (item.x, item.y),
             item.text,
             align=(item.ha, item.va),
             fontsize=item.fontsize,
+            **kw,
         )
+    if dashed:
+        kw["ls"] = "--"
     if isinstance(item, Stroke):
-        return Segment(list(item.points), **item.style)
+        return Segment(list(item.points), **{**item.style, **kw})
+    fill = item.fill and (color or item.fill)
     if isinstance(item, Polyline):
-        if item.fill:
-            return SegmentPoly(list(item.points), closed=item.closed, fill=item.fill)
+        if fill:
+            return SegmentPoly(list(item.points), closed=item.closed, fill=fill, **kw)
         pts = list(item.points) + ([item.points[0]] if item.closed else [])
-        return Segment(pts)
-    if item.fill and item.full and item.rx == item.ry:
-        return SegmentCircle((item.cx, item.cy), item.rx, fill=item.fill)
+        return Segment(pts, **kw)
+    if fill and item.full and item.rx == item.ry:
+        return SegmentCircle((item.cx, item.cy), item.rx, fill=fill, **kw)
     return SegmentArc(
         (item.cx, item.cy),
         2 * item.rx,
         2 * item.ry,
         theta1=item.theta1,
         theta2=item.theta2,
+        **kw,
     )
 
 
@@ -402,13 +481,15 @@ def draw(
     fontsize: float | None = None,
     frame: bool = True,
     theme: Theme | None = None,
+    highlight: str = "all",
 ) -> None:
     """Draw ``diagram`` to ``path`` (format from the suffix: svg / png / pdf ...,
     or xlsx -- see :mod:`.xlsx`).
 
-    ``fontsize`` overrides ``theme.fontsize``.
+    ``fontsize`` overrides ``theme.fontsize``; ``highlight``: which revisions
+    are drawn in their colour (see :func:`scene`).
     """
-    sc = scene(diagram, label, fontsize, frame, theme)
+    sc = scene(diagram, label, fontsize, frame, theme, highlight)
     if Path(path).suffix.lower() == ".xlsx":
         from .xlsx import write_xlsx
 
@@ -419,5 +500,5 @@ def draw(
     d = schemdraw.Drawing(show=False)
     configure(d, sc)
     for g in sc.groups:
-        d.add(_Shapes([_segment(i) for i in g.items]).at((0, 0)))
+        d.add(_Shapes([_segment(i, g.color, g.dashed) for i in g.items]).at((0, 0)))
     d.save(str(path), transparent=False)

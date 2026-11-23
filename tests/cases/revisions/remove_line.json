@@ -1,0 +1,16 @@
+{
+  "elements": [
+    {"id": "P-1", "type": "pump"},
+    {"id": "A", "type": "connector", "params": {"text": "A"}},
+    {"id": "B", "type": "connector", "params": {"text": "B"}},
+    {"id": "C", "type": "connector", "params": {"text": "C"}}
+  ],
+  "connections": [
+    {"from": "C.tip", "to": "P-1.in"},
+    {"from": "P-1.out", "to": "A.tail", "inline": ["valve"]},
+    {"from": "P-1.out", "to": "B.tail", "inline": ["valve"]}
+  ],
+  "revisions": [
+    {"id": "R1", "color": "blue", "remove": [{"from": "P-1.out", "to": "B.tail"}]}
+  ]
+}

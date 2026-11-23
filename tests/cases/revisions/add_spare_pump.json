@@ -1,0 +1,24 @@
+{
+  "elements": [
+    {"id": "IN", "type": "connector", "params": {"text": "原料"}},
+    {"id": "TK-1", "type": "vertical_drum"},
+    {"id": "P-1", "type": "pump"},
+    {"id": "OUT", "type": "connector", "params": {"text": "製品"}}
+  ],
+  "connections": [
+    {"from": "IN.tip", "to": "TK-1.n1"},
+    {"from": "TK-1.bottom", "to": "P-1.in"},
+    {"from": "P-1.out", "to": "OUT.tail"}
+  ],
+  "revisions": [
+    {
+      "id": "R1",
+      "note": "予備ポンプ",
+      "elements": [{"id": "P-2", "type": "pump", "desc": "予備"}],
+      "connections": [
+        {"from": "TK-1.bottom", "to": "P-2.in"},
+        {"from": "P-2.out", "to": "OUT.tail", "inline": [{"type": "valve", "params": {"kind": "check"}}]}
+      ]
+    }
+  ]
+}

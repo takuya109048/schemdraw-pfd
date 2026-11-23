@@ -30,6 +30,7 @@ from schemdraw_pfd.layout import FLANGED_RUN
 from schemdraw_pfd.model import (
     _CONNECTION_KEYS,
     _ELEMENT_KEYS,
+    _REVISION_KEYS,
     _TOP_KEYS,
     LAYOUTS,
     ROW_MODES,
@@ -138,6 +139,11 @@ def test_case_survives_a_json_round_trip(name):
     assert out.get("rows", "auto") == data.get("rows", "auto")
     assert out["elements"] == data["elements"]
     assert out["connections"] == [_written(c) for c in data["connections"]]
+    revisions = [dict(r) for r in data.get("revisions", [])]
+    for r in revisions:
+        if "connections" in r:
+            r["connections"] = [_written(c) for c in r["connections"]]
+    assert out.get("revisions", []) == revisions
     assert Flowsheet.from_dict(out).to_dict() == out
 
 
@@ -178,6 +184,13 @@ INVALID = {
     "invalid/unknown_top_key": (ValueError, "unknown top-level keys ['order']"),
     "invalid/unknown_type": (KeyError, "unknown element type 'compressor'"),
     "invalid/zero_span": (ValueError, "span must be >= 1"),
+    "invalid/revision_bad_remove": (ValueError, "must be an id or"),
+    "invalid/revision_duplicate_element": (ValueError, "duplicate id 'A'"),
+    "invalid/revision_duplicate_id": (ValueError, "revision id 'R1' is taken"),
+    "invalid/revision_remove_no_line": (KeyError, "no line A.in -> F.tail"),
+    "invalid/revision_remove_unknown": (KeyError, "no item 'X' on the sheet"),
+    "invalid/revision_unknown_equipment": (KeyError, "unknown equipment 'Z'"),
+    "invalid/revision_unknown_key": (ValueError, "unknown keys ['colour']"),
 }
 
 
@@ -245,6 +258,10 @@ def _features(data: dict) -> set[str]:
     """What one case uses, as ``kind:value`` strings."""
     out: set[str] = set()
     out |= {f"top_key:{k}" for k in data}
+    for r in data.get("revisions", []):
+        out |= {f"revision_key:{k}" for k in r}
+        for x in r.get("remove", []):
+            out.add("remove:" + ("item" if isinstance(x, str) else "line"))
     out.add(f"layout:{data.get('layout', 'omitted')}")
     out.add(f"rows:{data.get('rows', 'auto')}")
     layout = data.get("layout", "flow")
@@ -328,6 +345,8 @@ def _required() -> set[str]:
     req |= {f"anchor:{a}" for a in ANCHORS} | {"recycle:True", "recycle:False"}
     req |= {"inline:str", "inline:dict"} | {f"inline_key:{k}" for k in InlineItem.KEYS}
     req |= {f"top_key:{k}" for k in _TOP_KEYS}
+    req |= {f"revision_key:{k}" for k in _REVISION_KEYS}
+    req |= {"remove:item", "remove:line"}
     req |= {f"layout:{v}" for v in (*LAYOUTS, "omitted")}
     req |= {f"rows:{v}" for v in ROW_MODES}
     req |= {f"line_style_key:{f.name}" for f in fields(LineStyle)}
