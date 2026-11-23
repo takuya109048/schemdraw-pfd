@@ -74,6 +74,8 @@ cargo test --release
 - `tests/raster.rs`: PNG が 72 dpi の図の大きさ、PDF が図の大きさ（ポイント）の1ページ
 - `tests/invalid.rs`: `tests/cases/invalid/` の各例（48 件）が、Python 版のテスト（`tests/test_cases.py` の `INVALID`）と同じ種類・メッセージのエラーになる
 
+GitHub Actions（`.github/workflows/ci.yml`）が、プッシュと PR ごとに Python 版のテスト（`ruff`・`pyrefly`・`pytest`）と Rust 版のテスト（`cargo fmt --check`・`clippy`・`cargo test`）を回す。
+
 Python 版のスナップショットを更新したら（`PFD_UPDATE_SNAPSHOTS=1 pytest ...`）、Rust 版もそれに合わせる。
 
 ## 構成 (`src/`)
