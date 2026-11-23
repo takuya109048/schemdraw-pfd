@@ -985,13 +985,7 @@ def apply_revision(d: Any, rev: Revision, index: int, ctx: Context) -> Any:
             sheet.drop(items=[item])
     for src, dst in rev.remove_lines:
         sheet.remove_line(src, dst)
-    gone = set(rev.remove)
-    cut = set(rev.remove_lines)
-    ctx.lines = [
-        c
-        for c in ctx.lines
-        if (c.src, c.dst) not in cut and not any(e in gone for e, _ in c.ends)
-    ]
+    _forget(rev, ctx)
 
     # -- what changes ---------------------------------------------------------
     again: list[Equipment] = []  # changed items put anew, with their lines
@@ -1008,22 +1002,13 @@ def apply_revision(d: Any, rev: Revision, index: int, ctx: Context) -> Any:
             raise ValueError(f"duplicate id {e.id!r}: it is on the sheet")
     adding = list(rev.equipment) + again
     new = {e.id: e for e in adding}
-    ctx.specs.update((e.id, replace(e)) for e in rev.equipment)
     for c in rev.connections:
         for i in c.inline:
-            if i.id:
-                if i.id in sheet.placed:
-                    raise ValueError(f"duplicate id {i.id!r}: it is on the sheet")
-                ctx.specs[i.id] = Equipment(
-                    i.id, i.type, None, dict(i.params), {}, i.desc
-                )
+            if i.id and i.id in sheet.placed:
+                raise ValueError(f"duplicate id {i.id!r}: it is on the sheet")
+    _learn(rev, ctx)  # its items and lines (routed below)
     _pair(sheet, rev, ctx, adding)
-    for c in rev.connections:
-        ctx.inline.update(
-            (item.id, (item.port_in, item.port_out)) for item in c.inline if item.id
-        )
     pending = list(rev.connections) + relines
-    ctx.lines = ctx.lines + list(rev.connections)
     inline_ids: dict[int, list[str]] = {
         id(c): [
             item.id or f"{LINE_ITEM_PREFIX}R{index + 1}_{n}_{k}"
@@ -1366,13 +1351,7 @@ def _change(
     spec = ctx.specs.get(ch.id)
     if spec is None:
         raise KeyError(f"change: {ch.id!r} cannot be changed (no item written)")
-    new = replace(
-        spec,
-        type=ch.type or spec.type,
-        params={**spec.params, **ch.params},
-        desc=spec.desc if ch.desc is None else ch.desc,
-    )
-    ctx.specs[ch.id] = new
+    new = ctx.specs[ch.id] = _changed_spec(spec, ch)
     p = sheet.placed[ch.id]
     used = {
         port for k in sheet.lines_at(ch.id) for e, port in sheet.lines[k][0].ends
@@ -1452,3 +1431,46 @@ def _mark_changed(sheet: _Sheet, item: str, desc: str) -> None:
         sheet.descs[item] = desc
     else:
         sheet.descs.pop(item, None)
+
+
+# -- what a revision tells about the items and lines ---------------------------------
+def _changed_spec(spec: Equipment, ch: Change) -> Equipment:
+    return replace(
+        spec,
+        type=ch.type or spec.type,
+        params={**spec.params, **ch.params},
+        desc=spec.desc if ch.desc is None else ch.desc,
+    )
+
+
+def _forget(rev: Revision, ctx: Context) -> None:
+    """The lines ``rev`` removes, or removes an end of, are gone."""
+    gone = set(rev.remove)
+    cut = set(rev.remove_lines)
+    ctx.lines = [
+        c
+        for c in ctx.lines
+        if (c.src, c.dst) not in cut and not any(e in gone for e, _ in c.ends)
+    ]
+
+
+def _learn(rev: Revision, ctx: Context) -> None:
+    """The items and lines ``rev`` adds (named inline items included)."""
+    ctx.specs.update((e.id, replace(e)) for e in rev.equipment)
+    for c in rev.connections:
+        for i in c.inline:
+            if i.id:
+                ctx.specs[i.id] = Equipment(
+                    i.id, i.type, None, dict(i.params), {}, i.desc
+                )
+                ctx.inline[i.id] = (i.port_in, i.port_out)
+    ctx.lines = ctx.lines + list(rev.connections)
+
+
+def account_revision(rev: Revision, ctx: Context) -> None:
+    """What :func:`apply_revision` learns from ``rev``, for a revision that
+    is on the sheet already (a frozen sheet, see :mod:`.freeze`)."""
+    _forget(rev, ctx)
+    for ch in rev.changes:
+        ctx.specs[ch.id] = _changed_spec(ctx.specs[ch.id], ch)
+    _learn(rev, ctx)

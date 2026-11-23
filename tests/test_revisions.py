@@ -390,3 +390,141 @@ def test_python_change():
     assert "P-1" not in d.descs
     with pytest.raises(KeyError, match="no item 'X'"):
         fs.change("X", desc="?")
+
+
+# -- frozen sheet ------------------------------------------------------------------
+def _sheet_of(d: Diagram) -> tuple:
+    return (
+        [(p.id, p.type, p.x, p.y, p.geo.width, p.geo.height) for p in d.placed],
+        [(c.src, c.dst, c.kind, [tuple(q) for q in r.points]) for c, r in d.routes],
+        d.added,
+        [(g.rev, g.placed and g.placed.id) for g in d.ghosts],
+        d.descs,
+    )
+
+
+@pytest.mark.parametrize("name", NAMES)
+def test_a_frozen_sheet_reads_back_as_it_was(name, tmp_path):
+    fs = _fs(name)
+    built = fs.freeze()
+    path = tmp_path / "frozen.json"
+    fs.to_json(path)
+    back = Flowsheet.from_json(path)
+    assert back.frozen == fs.frozen
+    assert _sheet_of(back.build()) == _sheet_of(built)
+
+
+def test_a_frozen_sheet_is_not_laid_out_again(monkeypatch):
+    fs = _fs("two_revisions")
+    fs.freeze()
+
+    def no_layout(*_a, **_k):
+        raise AssertionError("laid out again")
+
+    monkeypatch.setattr(Flowsheet, "_build_base", no_layout)
+    fs.build()  # read back
+    fs.build(until="R2")
+
+
+def test_revisions_after_the_frozen_one_are_drawn_onto_it(monkeypatch):
+    """Frozen through R1; R2 is drawn onto the frozen sheet, which stays as
+    it was even when the layout would now come out otherwise."""
+    fs = _fs("two_revisions")
+    frozen = fs.freeze(until="R1")
+    assert fs.frozen is not None and fs.frozen["through"] == "R1"
+    shifted = json.loads(json.dumps(fs.frozen))
+    for item in shifted["sheet"]["items"]:  # a sheet the layout would not make
+        item[4] += 100
+    for line in shifted["sheet"]["lines"]:
+        line[3] = [[x + 100, y] for x, y in line[3]]
+    fs.frozen = shifted
+    after = fs.build()
+    assert after.warnings == []
+    tk = next(p for p in after.placed if p.id == "TK-1")
+    was = next(p for p in frozen.placed if p.id == "TK-1")
+    assert (tk.x, tk.y) == (was.x + 100, was.y)
+    assert after.added["PI-1"] == "R2"
+    # an earlier stage than the frozen one is laid out as written
+    assert _sheet_of(fs.build(until="base")) == _sheet_of(
+        _fs("two_revisions").build(until="base")
+    )
+
+
+def test_a_frozen_sheet_out_of_date_is_laid_out_anew():
+    fs = _fs("two_revisions")
+    fs.freeze(until="R1")
+    fs.equipment[0].params["text"] = "IN-2"  # what it was built from changed
+    d = fs.build()
+    assert any("out of date" in w for w in d.warnings)
+    fs.frozen = dict(fs.frozen or {}, through="R9")
+    assert any("no revision 'R9'" in w for w in fs.build().warnings)
+
+
+def test_cli_freeze(tmp_path, monkeypatch):
+    from schemdraw_pfd.cli import main
+
+    monkeypatch.chdir(tmp_path)
+    spec = CASES / "revisions" / "two_revisions.json"
+    out = tmp_path / "frozen.json"
+    assert main([str(spec), "--freeze", str(out), "--revision", "R1", "-j", "1"]) == 0
+    data = json.loads(out.read_text("utf-8"))
+    assert data["frozen"]["through"] == "R1"
+    assert not (tmp_path / "pfd.svg").exists()
+
+
+ALL_CASES = sorted(
+    p.relative_to(CASES).with_suffix("").as_posix()
+    for p in CASES.rglob("*.json")
+    if "invalid" not in p.parts
+)
+
+
+@pytest.mark.parametrize("name", ALL_CASES)
+def test_every_sheet_can_be_frozen(name):
+    """Every item is built from a recipe that reads back the same shape."""
+    from conftest import built_case
+
+    from schemdraw_pfd.freeze import from_data, to_data
+
+    d = built_case(name)
+    fs = Flowsheet.from_json(CASES / f"{name}.json")
+    back = from_data(json.loads(json.dumps(to_data(d))), fs.library, fs.line_styles)
+
+    def shapes(x: Diagram) -> list:
+        return [
+            (p.id, p.x, p.y, p.geo.width, p.geo.height, p.geo.shapes, p.geo.ports)
+            for p in x.placed
+        ]
+
+    assert shapes(back) == shapes(d)
+    assert [r.points for _, r in back.routes] == [r.points for _, r in d.routes]
+
+
+def test_a_line_that_routes_nowhere_becomes_a_pair_of_flags(monkeypatch):
+    """(As between the rows of a folded sheet.)  Forced here: the line from
+    P-1 to the added exchanger finds no way."""
+    from schemdraw_pfd.revise import _Sheet
+
+    route = _Sheet.route
+
+    def blocked(self, router, c):
+        if (c.src, c.dst) == ("P-1.out", "E-1.tube_in"):
+            return None
+        return route(self, router, c)
+
+    monkeypatch.setattr(_Sheet, "route", blocked)
+    d = _fs("two_revisions").build(until="R1")
+    flags = {p.id: p for p in d.placed if p.id.startswith(("_RO", "_RI"))}
+    assert len(flags) == 2
+    keys = [line_key(c) for c, _ in d.routes]
+    out = next(i for i in flags if i.startswith("_RO"))
+    back = next(i for i in flags if i.startswith("_RI"))
+    # P-1.out carries a line: the "to" half taps it
+    assert any(k.startswith("_J") and k.endswith(f"-> {out}.tail") for k in keys)
+    assert f"{back}.tip -> E-1.tube_in" in keys
+    # the pair goes as one when the line is removed
+    fs = _fs("two_revisions")
+    fs.revise("R3")
+    fs.disconnect("P-1.out", "E-1.tube_in")
+    d = fs.build()
+    assert not any(p.id.startswith(("_RO", "_RI")) for p in d.placed)

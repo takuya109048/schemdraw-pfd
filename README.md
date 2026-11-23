@@ -107,6 +107,7 @@ pfd --describe valve            # エレメントのパラメータ・ポート�
 | `--no-labels` / `--no-frame` | タグを描かない / 図面の枠を描かない |
 | `--revision ID` | その改訂までを描く（`base` で改訂前の図）。改訂の前後を比べるときに |
 | `--highlight {all,latest,none}` | 色を付ける改訂: すべて（既定）／最後の改訂だけ／なし |
+| `--freeze PATH` | 描いた図（`--revision` まで。既定は最後の改訂まで）を JSON に保存して凍結する（下記「図の凍結」） |
 | `--since ID` | この改訂から後だけを変更として色付きで描く（それより前は確定済みとして黒、撤去分も描かない） |
 
 ### Python API
@@ -188,7 +189,8 @@ fs.to_json("out.json")  # JSON と同じ形式で保存（from_json で読み戻
                     "inline": ["valve", {"type": "valve", "id": "FV-1", "params": {"kind": "control"}}],
                     "anchor": "auto"} ],
   "revisions": [ {"id": "R1", "color": "red", "note": "...", "remove": [...],
-                  "elements": [...], "connections": [...]} ]   // 任意。改訂（下記）
+                  "change": [...], "elements": [...], "connections": [...]} ],  // 任意。改訂（下記）
+  "frozen": {"through": "R1", "fingerprint": "...", "sheet": {...}}  // 任意。凍結した図（pfd --freeze が書く）
 }
 ```
 
@@ -259,6 +261,19 @@ pfd SPEC.json --since R5 -o r5_on.png            # R5 以降だけ色付き（R4
 - 改訂は何回でも重ねられる。後の改訂は前の改訂で足した機器・配管にもつなげ、撤去もできる。前の改訂の見た目は後の改訂でも変わらない
 - 折り返した図（段）で、段をまたいでしまって配管が引けないときは、両端に「to / from」のフラグの対を置く
 - Python では `fs.revise("R1", color="red", note="...")` のあと、`add` / `connect` がその改訂に入る。撤去は `fs.remove("FV-101")` と `fs.disconnect("P-1.out", "TK-1.n3")`、変更は `fs.change("V-3", kind="globe")` / `fs.change("TK-1", type="column", desc="...", height=14)`。`fs.build(until="R1")` / `fs.render(path, until="R1", highlight="latest", since="R1")`
+
+### 図の凍結
+
+図は描くたびに自動配置し直すので、元の `elements` / `connections` を書き換えたり、このツールを更新して配置の決まりが変わったりすると、改訂を重ねる土台の図も変わってしまう。確定した図は**凍結**しておく:
+
+```bash
+pfd SPEC.json --freeze SPEC.json              # 今の図（最後の改訂まで）を SPEC.json の "frozen" に保存
+pfd SPEC.json --freeze SPEC.json --revision R2  # R2 までを凍結
+```
+
+- 凍結した JSON は、以後その図（機器の位置・配管の点）を読み込み、自動配置しない。凍結の後に足した改訂は、その図の上に描く
+- 凍結した図は、元にした内容（元の図と、凍結した改訂まで）の指紋を持つ。それらを書き換えると「out of date」の警告を出して自動配置し直す。凍結した改訂より前（`--revision base` など）を描くときも自動配置になる
+- Python では `fs.freeze(until="R2")` のあと `fs.to_json(path)`
 
 ## 自動配置のしくみ（概要）
 

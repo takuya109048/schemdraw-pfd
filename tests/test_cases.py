@@ -184,6 +184,7 @@ INVALID = {
     "invalid/unknown_top_key": (ValueError, "unknown top-level keys ['order']"),
     "invalid/unknown_type": (KeyError, "unknown element type 'compressor'"),
     "invalid/zero_span": (ValueError, "span must be >= 1"),
+    "invalid/frozen_missing_keys": (ValueError, "frozen: must have exactly the keys"),
     "invalid/revision_bad_remove": (ValueError, "must be an id or"),
     "invalid/revision_change_lost_port": (KeyError, "has no port 'bottom'"),
     "invalid/revision_change_unknown": (KeyError, "change: no item 'X'"),

@@ -20,7 +20,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     ap.add_argument("spec", nargs="?", help="JSON flowsheet specification")
     ap.add_argument(
-        "-o", "--output", default="pfd.svg", help="svg/png/pdf/xlsx output path"
+        "-o", "--output", help="svg/png/pdf/xlsx output path (default: pfd.svg)"
     )
     ap.add_argument("--no-labels", action="store_true")
     ap.add_argument("--no-frame", action="store_true", help="omit the sheet border")
@@ -56,6 +56,13 @@ def main(argv: list[str] | None = None) -> int:
         "earlier ones are drawn as settled",
     )
     ap.add_argument(
+        "--freeze",
+        metavar="PATH",
+        help="write the spec with the sheet as built kept in it (through "
+        "--revision, default: the last revision), so later revisions are "
+        "drawn onto exactly that sheet",
+    )
+    ap.add_argument(
         "--list-elements",
         action="store_true",
         help="list element types (including the spec's custom elements) and exit",
@@ -83,8 +90,18 @@ def main(argv: list[str] | None = None) -> int:
     if args.jobs:
         fs.jobs = args.jobs
 
+    if args.freeze:
+        diagram = fs.freeze(until=args.revision)
+        through = args.revision or (fs.revisions[-1].id if fs.revisions else "base")
+        fs.to_json(args.freeze)
+        for w in diagram.warnings:
+            print(f"warning: {w}", file=sys.stderr)
+        print(f"wrote {args.freeze} (frozen through {through})")
+        if args.output is None:
+            return 0
+    output = args.output or "pfd.svg"
     diagram = fs.render(
-        args.output,
+        output,
         until=args.revision,
         highlight=args.highlight,
         since=args.since,
@@ -95,7 +112,7 @@ def main(argv: list[str] | None = None) -> int:
     for w in diagram.warnings:
         print(f"warning: {w}", file=sys.stderr)
     bends = ", ".join(f"{c.src}->{c.dst}: {r.bends}" for c, r in diagram.routes)
-    print(f"wrote {args.output} (bends: {bends})")
+    print(f"wrote {output} (bends: {bends})")
     return 0
 
 

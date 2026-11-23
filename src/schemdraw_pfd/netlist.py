@@ -62,6 +62,11 @@ class Equipment:
         geo = (library or DEFAULT_LIBRARY).build(self.type, self.params)
         for name, spec in self.ports.items():
             geo.ports[name] = parse_port(spec)
+        if self.ports:
+            ports = {
+                k: [p.side, p.offset] for k, p in geo.ports.items() if k in self.ports
+            }
+            geo.recipe = (self.type, dict(self.params), ports)
         return geo
 
     def to_dict(self) -> dict[str, Any]:

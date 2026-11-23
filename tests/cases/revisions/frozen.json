@@ -1,0 +1,285 @@
+{
+  "version": 1,
+  "layout": "flow",
+  "elements": [
+    {
+      "id": "IN",
+      "type": "connector",
+      "params": {
+        "text": "IN"
+      }
+    },
+    {
+      "id": "TK-1",
+      "type": "vertical_drum"
+    },
+    {
+      "id": "P-1",
+      "type": "pump"
+    },
+    {
+      "id": "OUT",
+      "type": "connector",
+      "params": {
+        "text": "OUT"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "IN.tip",
+      "to": "TK-1.n1"
+    },
+    {
+      "from": "TK-1.bottom",
+      "to": "P-1.in"
+    },
+    {
+      "from": "P-1.out",
+      "to": "OUT.tail"
+    }
+  ],
+  "revisions": [
+    {
+      "id": "R1",
+      "elements": [
+        {
+          "id": "E-1",
+          "type": "heat_exchanger"
+        }
+      ],
+      "connections": [
+        {
+          "from": "P-1.out",
+          "to": "E-1.tube_in"
+        },
+        {
+          "from": "E-1.tube_out",
+          "to": "TK-1.n3"
+        }
+      ]
+    },
+    {
+      "id": "R2",
+      "color": "#008080",
+      "note": "E-1 の戻りを撤去、計器を追加",
+      "remove": [
+        {
+          "from": "E-1.tube_out",
+          "to": "TK-1.n3"
+        }
+      ],
+      "elements": [
+        {
+          "id": "PI-1",
+          "type": "instrument",
+          "params": {
+            "function": "PI"
+          }
+        }
+      ],
+      "connections": [
+        {
+          "from": "E-1.tube_out",
+          "to": "PI-1.s",
+          "type": "instrument"
+        }
+      ]
+    }
+  ],
+  "frozen": {
+    "through": "R1",
+    "fingerprint": "3624e8efd3801256",
+    "sheet": {
+      "items": [
+        [
+          "IN",
+          "connector",
+          {
+            "text": "IN"
+          },
+          {},
+          0,
+          23,
+          1
+        ],
+        [
+          "TK-1",
+          "vertical_drum",
+          {},
+          {},
+          7,
+          12,
+          1
+        ],
+        [
+          "P-1",
+          "pump",
+          {},
+          {},
+          12,
+          0,
+          0
+        ],
+        [
+          "OUT",
+          "connector",
+          {
+            "text": "OUT"
+          },
+          {},
+          16,
+          12,
+          1
+        ],
+        [
+          "E-1",
+          "heat_exchanger",
+          {},
+          {},
+          16,
+          6,
+          0
+        ],
+        [
+          "_J1_1",
+          "junction",
+          {},
+          {},
+          14,
+          8,
+          0
+        ]
+      ],
+      "lines": [
+        [
+          "IN.tip",
+          "TK-1.n1",
+          "pipe",
+          [
+            [
+              6.0,
+              24.0
+            ],
+            [
+              9,
+              24
+            ],
+            [
+              9.0,
+              21.885618083164125
+            ]
+          ],
+          true
+        ],
+        [
+          "P-1.out",
+          "OUT.tail",
+          "pipe",
+          [
+            [
+              14,
+              3
+            ],
+            [
+              14,
+              13
+            ],
+            [
+              16,
+              13
+            ]
+          ],
+          true
+        ],
+        [
+          "TK-1.bottom",
+          "P-1.in",
+          "pipe",
+          [
+            [
+              10.0,
+              12.0
+            ],
+            [
+              10,
+              2
+            ],
+            [
+              12,
+              2
+            ]
+          ],
+          true
+        ],
+        [
+          "_J1_1.j",
+          "E-1.tube_in",
+          "pipe",
+          [
+            [
+              14.0,
+              8.0
+            ],
+            [
+              16,
+              8
+            ]
+          ],
+          true
+        ],
+        [
+          "E-1.tube_out",
+          "TK-1.n3",
+          "pipe",
+          [
+            [
+              28.0,
+              8.0
+            ],
+            [
+              29,
+              8
+            ],
+            [
+              29,
+              24
+            ],
+            [
+              11,
+              24
+            ],
+            [
+              11.0,
+              21.885618083164125
+            ]
+          ],
+          false
+        ]
+      ],
+      "warnings": [],
+      "descs": {},
+      "uturns": 1,
+      "rows": [],
+      "revisions": [
+        [
+          "R1",
+          "red",
+          ""
+        ]
+      ],
+      "added": {
+        "E-1": "R1",
+        "_J1_1": "R1",
+        "_J1_1.j -> E-1.tube_in": "R1",
+        "E-1.tube_out -> TK-1.n3": "R1"
+      },
+      "ghosts": [],
+      "hosts": {
+        "_J1_1": "P-1.out -> OUT.tail"
+      },
+      "replaced": [],
+      "changed": []
+    }
+  }
+}
