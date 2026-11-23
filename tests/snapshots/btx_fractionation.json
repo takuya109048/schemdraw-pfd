@@ -36,29 +36,29 @@
    2
   ],
   [
-   "LPS-201",
-   19,
-   -8,
-   6,
-   2
-  ],
-  [
    "E-201",
-   23,
+   19,
    -13,
    12,
    4
   ],
   [
+   "LPS-201",
+   22,
+   -7,
+   2,
+   6
+  ],
+  [
    "SC-201",
-   33,
+   29,
    -17,
    6,
    2
   ],
   [
    "_RO5",
-   40,
+   36,
    -12,
    6,
    2
@@ -66,49 +66,49 @@
   [
    "_RI5",
    0,
-   -50,
+   -49,
    6,
    2
   ],
   [
    "T-210",
    7,
-   -59,
+   -58,
    4,
    20
   ],
   [
    "_RO39",
-   37,
-   -61,
+   38,
+   -73,
    6,
    2
   ],
   [
    "HSC-21",
-   9,
-   -74,
+   11,
+   -73,
    6,
    2
   ],
   [
    "E-212",
-   16,
-   -74,
+   12,
+   -68,
    4,
    12
   ],
   [
    "HPS-21",
-   21,
-   -74,
+   17,
+   -61,
    6,
    2
   ],
   [
    "CWS-21",
    10,
-   -38,
+   -37,
    6,
    2
   ],
@@ -128,302 +128,302 @@
   ],
   [
    "V-211",
-   27,
-   -38,
+   26,
+   -68,
    8,
    4
   ],
   [
    "P-211",
    33,
-   -74,
+   -73,
    2,
    3
   ],
   [
    "FV-212",
    12,
-   -43,
+   -42,
    2,
    2
   ],
   [
    "_T_P-211_out",
    34,
-   -43,
+   -42,
    2,
    2
   ],
   [
    "PRD-21",
-   37,
-   -43,
+   38,
+   -42,
    6,
    2
   ],
   [
    "_RI39",
    0,
-   -132,
+   -125,
    6,
    2
   ],
   [
    "P-212",
    7,
-   -133,
+   -126,
    2,
    3
   ],
   [
    "FV-221",
    11,
-   -109,
+   -102,
    2,
    2
   ],
   [
    "FIC-221",
    11,
-   -97,
+   -98,
    2,
    2
   ],
   [
    "T-220",
    14,
-   -118,
+   -111,
    4,
    20
   ],
   [
    "_RO42",
-   44,
-   -120,
+   47,
+   -121,
    6,
    2
   ],
   [
    "HSC-22",
-   16,
-   -133,
+   12,
+   -126,
    6,
    2
   ],
   [
    "E-222",
-   23,
-   -133,
+   19,
+   -121,
    4,
    12
   ],
   [
    "HPS-22",
-   28,
-   -133,
+   24,
+   -114,
    6,
    2
   ],
   [
    "CWS-22",
-   17,
-   -97,
+   19,
+   -93,
    6,
    2
   ],
   [
    "E-221",
-   21,
-   -93,
+   23,
+   -90,
    12,
    4
   ],
   [
    "CWR-22",
-   31,
-   -88,
+   33,
+   -85,
    6,
    2
   ],
   [
    "V-221",
-   34,
-   -97,
+   35,
+   -121,
    8,
    4
   ],
   [
    "P-221",
-   40,
-   -133,
+   42,
+   -126,
    2,
    3
   ],
   [
    "FV-222",
-   19,
-   -102,
+   28,
+   -95,
    2,
    2
   ],
   [
    "_T_P-221_out",
-   41,
-   -102,
+   43,
+   -95,
    2,
    2
   ],
   [
    "PRD-22",
-   44,
-   -102,
+   47,
+   -95,
    6,
    2
   ],
   [
    "_RI42",
    0,
-   -198,
+   -186,
    6,
    2
   ],
   [
    "P-222",
    7,
-   -199,
+   -187,
    2,
    3
   ],
   [
    "FV-231",
    11,
-   -167,
+   -155,
    2,
    2
   ],
   [
    "FIC-231",
    11,
-   -155,
+   -151,
    2,
    2
   ],
   [
    "T-230",
    14,
-   -176,
+   -164,
    4,
    20
   ],
   [
    "P-232",
    17,
-   -199,
+   -187,
    2,
    3
   ],
   [
    "CWS-202",
    20,
-   -199,
+   -187,
    6,
    2
   ],
   [
    "E-202",
    24,
-   -196,
+   -184,
    12,
    4
   ],
   [
    "CWR-202",
    34,
-   -191,
+   -179,
    6,
    2
   ],
   [
    "HEAVY",
    73,
-   -195,
+   -183,
    6,
    2
   ],
   [
    "HSC-23",
    34,
-   -186,
+   -174,
    6,
    2
   ],
   [
    "E-232",
    41,
-   -186,
+   -174,
    4,
    12
   ],
   [
    "HPS-23",
    46,
-   -186,
+   -167,
    6,
    2
   ],
   [
    "CWS-23",
    46,
-   -155,
+   -146,
    6,
    2
   ],
   [
    "E-231",
    50,
-   -152,
+   -143,
    12,
    4
   ],
   [
    "CWR-23",
    60,
-   -147,
+   -138,
    6,
    2
   ],
   [
    "V-231",
    62,
-   -186,
+   -174,
    8,
    4
   ],
   [
    "P-231",
    69,
-   -199,
+   -187,
    2,
    3
   ],
   [
    "FV-232",
    67,
-   -160,
+   -148,
    2,
    2
   ],
   [
    "_T_P-231_out",
    70,
-   -160,
+   -148,
    2,
    2
   ],
   [
    "PRD-23",
    73,
-   -160,
+   -148,
    6,
    2
   ]
@@ -435,15 +435,15 @@
    "utility",
    [
     [
-     31.0,
+     27.0,
      -13.0
     ],
     [
-     31,
+     27,
      -16
     ],
     [
-     33,
+     29,
      -16
     ]
    ]
@@ -454,11 +454,11 @@
    "pipe",
    [
     [
-     35.0,
+     31.0,
      -11.0
     ],
     [
-     40,
+     36,
      -11
     ]
    ]
@@ -503,15 +503,11 @@
    "utility",
    [
     [
-     25,
+     23,
      -7
     ],
     [
-     27,
-     -7
-    ],
-    [
-     27,
+     23,
      -9
     ]
    ]
@@ -545,7 +541,7 @@
      -11.0
     ],
     [
-     23,
+     19,
      -11
     ]
    ]
@@ -576,11 +572,11 @@
    [
     [
      16,
-     -37
+     -36
     ],
     [
      18,
-     -37
+     -36
     ],
     [
      18,
@@ -595,11 +591,11 @@
    [
     [
      6.0,
-     -49.0
+     -48.0
     ],
     [
      7,
-     -49
+     -48
     ]
    ]
   ],
@@ -632,12 +628,12 @@
      -32.0
     ],
     [
-     29,
+     28,
      -32
     ],
     [
-     29,
-     -34
+     28,
+     -64
     ]
    ]
   ],
@@ -647,20 +643,20 @@
    "utility",
    [
     [
-     16.0,
-     -70.0
-    ],
-    [
-     7,
-     -70
-    ],
-    [
-     7,
-     -73
+     12.0,
+     -64.0
     ],
     [
      9,
-     -73
+     -64
+    ],
+    [
+     9,
+     -72
+    ],
+    [
+     11,
+     -72
     ]
    ]
   ],
@@ -670,16 +666,16 @@
    "pipe",
    [
     [
-     18.0,
-     -62.0
+     14.0,
+     -56.0
     ],
     [
-     18,
-     -55
+     14,
+     -54
     ],
     [
      11,
-     -55
+     -54
     ]
    ]
   ],
@@ -689,20 +685,12 @@
    "utility",
    [
     [
-     27,
-     -73
+     17,
+     -60
     ],
     [
-     28,
-     -73
-    ],
-    [
-     28,
-     -66
-    ],
-    [
-     20,
-     -66
+     16,
+     -60
     ]
    ]
   ],
@@ -713,11 +701,11 @@
    [
     [
      35,
-     -71
+     -70
     ],
     [
      35,
-     -43
+     -42
     ]
    ]
   ],
@@ -728,11 +716,11 @@
    [
     [
      36,
-     -42
+     -41
     ],
     [
-     37,
-     -42
+     38,
+     -41
     ]
    ]
   ],
@@ -743,11 +731,11 @@
    [
     [
      34,
-     -42
+     -41
     ],
     [
      14,
-     -42
+     -41
     ]
    ]
   ],
@@ -758,11 +746,11 @@
    [
     [
      12.0,
-     -42.0
+     -41.0
     ],
     [
      11,
-     -42
+     -41
     ]
    ]
   ],
@@ -773,19 +761,19 @@
    [
     [
      8.0,
-     -58.732051
+     -57.732051
     ],
     [
      8,
-     -76
+     -70
     ],
     [
-     18,
-     -76
+     14,
+     -70
     ],
     [
-     18,
-     -74
+     14,
+     -68
     ]
    ]
   ],
@@ -796,15 +784,23 @@
    [
     [
      10.0,
-     -58.732051
+     -57.732051
     ],
     [
      10,
-     -60
+     -69
     ],
     [
-     37,
-     -60
+     36,
+     -69
+    ],
+    [
+     36,
+     -72
+    ],
+    [
+     38,
+     -72
     ]
    ]
   ],
@@ -815,7 +811,7 @@
    [
     [
      9.0,
-     -39.0
+     -38.0
     ],
     [
      9,
@@ -833,16 +829,16 @@
    "pipe",
    [
     [
-     31.0,
-     -38.0
+     30.0,
+     -68.0
     ],
     [
-     31,
-     -72
+     30,
+     -71
     ],
     [
      33,
-     -72
+     -71
     ]
    ]
   ],
@@ -852,16 +848,16 @@
    "utility",
    [
     [
-     23,
-     -96
+     25,
+     -92
     ],
     [
-     25,
-     -96
+     27,
+     -92
     ],
     [
-     25,
-     -93
+     27,
+     -90
     ]
    ]
   ],
@@ -871,16 +867,16 @@
    "utility",
    [
     [
-     29.0,
-     -89.0
-    ],
-    [
-     29,
-     -87
+     31.0,
+     -86.0
     ],
     [
      31,
-     -87
+     -84
+    ],
+    [
+     33,
+     -84
     ]
    ]
   ],
@@ -890,16 +886,16 @@
    "pipe",
    [
     [
-     33.0,
-     -91.0
+     35.0,
+     -88.0
     ],
     [
-     36,
-     -91
+     37,
+     -88
     ],
     [
-     36,
-     -93
+     37,
+     -117
     ]
    ]
   ],
@@ -909,20 +905,20 @@
    "utility",
    [
     [
-     23.0,
-     -129.0
+     19.0,
+     -117.0
     ],
     [
-     14,
-     -129
+     10,
+     -117
     ],
     [
-     14,
-     -132
+     10,
+     -125
     ],
     [
-     16,
-     -132
+     12,
+     -125
     ]
    ]
   ],
@@ -932,16 +928,16 @@
    "pipe",
    [
     [
-     25.0,
-     -121.0
+     21.0,
+     -109.0
     ],
     [
-     25,
-     -114
+     21,
+     -107
     ],
     [
      18,
-     -114
+     -107
     ]
    ]
   ],
@@ -952,11 +948,11 @@
    [
     [
      12.0,
-     -97.0
+     -98.0
     ],
     [
      12,
-     -107
+     -100
     ]
    ]
   ],
@@ -966,20 +962,12 @@
    "utility",
    [
     [
-     34,
-     -132
+     24,
+     -113
     ],
     [
-     35,
-     -132
-    ],
-    [
-     35,
-     -125
-    ],
-    [
-     27,
-     -125
+     23,
+     -113
     ]
    ]
   ],
@@ -990,15 +978,15 @@
    [
     [
      9,
-     -130
+     -123
     ],
     [
      9,
-     -108
+     -101
     ],
     [
      11,
-     -108
+     -101
     ]
    ]
   ],
@@ -1009,11 +997,11 @@
    [
     [
      13.0,
-     -108.0
+     -101.0
     ],
     [
      14,
-     -108
+     -101
     ]
    ]
   ],
@@ -1023,12 +1011,12 @@
    "pipe",
    [
     [
-     42,
-     -130
+     44,
+     -123
     ],
     [
-     42,
-     -102
+     44,
+     -95
     ]
    ]
   ],
@@ -1038,12 +1026,12 @@
    "pipe",
    [
     [
-     43,
-     -101
+     45,
+     -94
     ],
     [
-     44,
-     -101
+     47,
+     -94
     ]
    ]
   ],
@@ -1053,12 +1041,12 @@
    "pipe",
    [
     [
-     41,
-     -101
+     43,
+     -94
     ],
     [
-     21,
-     -101
+     30,
+     -94
     ]
    ]
   ],
@@ -1068,12 +1056,12 @@
    "pipe",
    [
     [
-     19.0,
-     -101.0
+     28.0,
+     -94.0
     ],
     [
      18,
-     -101
+     -94
     ]
    ]
   ],
@@ -1084,11 +1072,11 @@
    [
     [
      6.0,
-     -131.0
+     -124.0
     ],
     [
      7,
-     -131
+     -124
     ]
    ]
   ],
@@ -1099,19 +1087,19 @@
    [
     [
      15.0,
-     -117.732051
+     -110.732051
     ],
     [
      15,
-     -135
+     -123
     ],
     [
-     25,
-     -135
+     21,
+     -123
     ],
     [
-     25,
-     -133
+     21,
+     -121
     ]
    ]
   ],
@@ -1122,15 +1110,23 @@
    [
     [
      17.0,
-     -117.732051
+     -110.732051
     ],
     [
      17,
-     -119
+     -122
     ],
     [
-     44,
-     -119
+     45,
+     -122
+    ],
+    [
+     45,
+     -120
+    ],
+    [
+     47,
+     -120
     ]
    ]
   ],
@@ -1141,15 +1137,15 @@
    [
     [
      16.0,
-     -98.0
+     -91.0
     ],
     [
      16,
-     -91
+     -88
     ],
     [
-     21,
-     -91
+     23,
+     -88
     ]
    ]
   ],
@@ -1159,16 +1155,16 @@
    "pipe",
    [
     [
-     38.0,
-     -97.0
+     39.0,
+     -121.0
     ],
     [
-     38,
-     -131
+     39,
+     -124
     ],
     [
-     40,
-     -131
+     42,
+     -124
     ]
    ]
   ],
@@ -1179,15 +1175,15 @@
    [
     [
      52,
-     -154
+     -145
     ],
     [
      54,
-     -154
+     -145
     ],
     [
      54,
-     -152
+     -143
     ]
    ]
   ],
@@ -1198,15 +1194,15 @@
    [
     [
      26,
-     -198
+     -186
     ],
     [
      28,
-     -198
+     -186
     ],
     [
      28,
-     -196
+     -184
     ]
    ]
   ],
@@ -1217,15 +1213,15 @@
    [
     [
      32.0,
-     -192.0
+     -180.0
     ],
     [
      32,
-     -190
+     -178
     ],
     [
      34,
-     -190
+     -178
     ]
    ]
   ],
@@ -1236,11 +1232,11 @@
    [
     [
      36.0,
-     -194.0
+     -182.0
     ],
     [
      73,
-     -194
+     -182
     ]
    ]
   ],
@@ -1251,15 +1247,15 @@
    [
     [
      58.0,
-     -148.0
+     -139.0
     ],
     [
      58,
-     -146
+     -137
     ],
     [
      60,
-     -146
+     -137
     ]
    ]
   ],
@@ -1270,15 +1266,15 @@
    [
     [
      62.0,
-     -150.0
+     -141.0
     ],
     [
      64,
-     -150
+     -141
     ],
     [
      64,
-     -182
+     -170
     ]
    ]
   ],
@@ -1289,19 +1285,19 @@
    [
     [
      41.0,
-     -182.0
+     -170.0
     ],
     [
      32,
-     -182
+     -170
     ],
     [
      32,
-     -185
+     -173
     ],
     [
      34,
-     -185
+     -173
     ]
    ]
   ],
@@ -1312,15 +1308,15 @@
    [
     [
      43.0,
-     -174.0
+     -162.0
     ],
     [
      43,
-     -172
+     -160
     ],
     [
      18,
-     -172
+     -160
     ]
    ]
   ],
@@ -1331,11 +1327,11 @@
    [
     [
      12.0,
-     -155.0
+     -151.0
     ],
     [
      12,
-     -165
+     -153
     ]
    ]
   ],
@@ -1345,20 +1341,12 @@
    "utility",
    [
     [
-     52,
-     -185
-    ],
-    [
-     53,
-     -185
-    ],
-    [
-     53,
-     -178
+     46,
+     -166
     ],
     [
      45,
-     -178
+     -166
     ]
    ]
   ],
@@ -1369,15 +1357,15 @@
    [
     [
      9,
-     -196
+     -184
     ],
     [
      9,
-     -166
+     -154
     ],
     [
      11,
-     -166
+     -154
     ]
    ]
   ],
@@ -1388,11 +1376,11 @@
    [
     [
      13.0,
-     -166.0
+     -154.0
     ],
     [
      14,
-     -166
+     -154
     ]
    ]
   ],
@@ -1403,11 +1391,11 @@
    [
     [
      71,
-     -196
+     -184
     ],
     [
      71,
-     -160
+     -148
     ]
    ]
   ],
@@ -1418,11 +1406,11 @@
    [
     [
      72,
-     -159
+     -147
     ],
     [
      73,
-     -159
+     -147
     ]
    ]
   ],
@@ -1433,11 +1421,11 @@
    [
     [
      70,
-     -159
+     -147
     ],
     [
      69,
-     -159
+     -147
     ]
    ]
   ],
@@ -1448,11 +1436,11 @@
    [
     [
      67.0,
-     -159.0
+     -147.0
     ],
     [
      18,
-     -159
+     -147
     ]
    ]
   ],
@@ -1463,15 +1451,15 @@
    [
     [
      19,
-     -196
+     -184
     ],
     [
      19,
-     -194
+     -182
     ],
     [
      24,
-     -194
+     -182
     ]
    ]
   ],
@@ -1482,11 +1470,11 @@
    [
     [
      6.0,
-     -197.0
+     -185.0
     ],
     [
      7,
-     -197
+     -185
     ]
    ]
   ],
@@ -1497,19 +1485,19 @@
    [
     [
      17.0,
-     -175.732051
+     -163.732051
     ],
     [
      17,
-     -188
+     -176
     ],
     [
      43,
-     -188
+     -176
     ],
     [
      43,
-     -186
+     -174
     ]
    ]
   ],
@@ -1520,15 +1508,15 @@
    [
     [
      15.0,
-     -175.732051
+     -163.732051
     ],
     [
      15,
-     -197
+     -185
     ],
     [
      17,
-     -197
+     -185
     ]
    ]
   ],
@@ -1539,15 +1527,15 @@
    [
     [
      16.0,
-     -156.0
+     -144.0
     ],
     [
      16,
-     -150
+     -141
     ],
     [
      50,
-     -150
+     -141
     ]
    ]
   ],
@@ -1558,15 +1546,15 @@
    [
     [
      66.0,
-     -186.0
+     -174.0
     ],
     [
      66,
-     -197
+     -185
     ],
     [
      69,
-     -197
+     -185
     ]
    ]
   ]
@@ -2243,86 +2231,6 @@
   ],
   [
    [
-    "SegmentArc",
-    {
-     "angle": 0,
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "center": [
-      20,
-      -7
-     ],
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "height": 2,
-     "ls": null,
-     "lw": null,
-     "theta1": 0.0,
-     "theta2": 360.0,
-     "visible": true,
-     "width": 2,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": "-",
-     "lw": 0.9,
-     "path": [
-      [
-       21,
-       -7
-      ],
-      [
-       25,
-       -7
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "SegmentText",
-    {
-     "align": [
-      "center",
-      "center"
-     ],
-     "bgcolor": null,
-     "clip": null,
-     "color": null,
-     "decoration": null,
-     "font": null,
-     "fontsize": 15.0,
-     "href": null,
-     "mathfont": null,
-     "rotation": null,
-     "rotation_global": true,
-     "rotation_mode": null,
-     "text": "LPS",
-     "visible": true,
-     "xy": [
-      20,
-      -7
-     ],
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
     "Segment",
     {
      "arrow": null,
@@ -2337,11 +2245,11 @@
      "lw": null,
      "path": [
       [
-       24,
+       20,
        -13
       ],
       [
-       34,
+       30,
        -13
       ]
      ],
@@ -2364,11 +2272,11 @@
      "lw": null,
      "path": [
       [
-       24,
+       20,
        -9
       ],
       [
-       34,
+       30,
        -9
       ]
      ],
@@ -2384,7 +2292,7 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      24,
+      20,
       -11.0
      ],
      "clip": null,
@@ -2408,7 +2316,7 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      34,
+      30,
       -11.0
      ],
      "clip": null,
@@ -2439,11 +2347,11 @@
      "lw": null,
      "path": [
       [
-       24.8,
+       20.8,
        -13.25
       ],
       [
-       24.8,
+       20.8,
        -8.75
       ]
      ],
@@ -2466,11 +2374,11 @@
      "lw": null,
      "path": [
       [
-       25.1,
+       21.1,
        -13.25
       ],
       [
-       25.1,
+       21.1,
        -8.75
       ]
      ],
@@ -2493,11 +2401,11 @@
      "lw": null,
      "path": [
       [
-       32.9,
+       28.9,
        -13.25
       ],
       [
-       32.9,
+       28.9,
        -8.75
       ]
      ],
@@ -2520,11 +2428,11 @@
      "lw": null,
      "path": [
       [
-       33.2,
+       29.2,
        -13.25
       ],
       [
-       33.2,
+       29.2,
        -8.75
       ]
      ],
@@ -2547,11 +2455,11 @@
      "lw": null,
      "path": [
       [
-       25.1,
+       21.1,
        -12.2
       ],
       [
-       32.9,
+       28.9,
        -12.2
       ]
      ],
@@ -2574,11 +2482,11 @@
      "lw": null,
      "path": [
       [
-       25.1,
+       21.1,
        -11.4
       ],
       [
-       32.9,
+       28.9,
        -11.4
       ]
      ],
@@ -2601,11 +2509,11 @@
      "lw": null,
      "path": [
       [
-       25.1,
+       21.1,
        -10.6
       ],
       [
-       32.9,
+       28.9,
        -10.6
       ]
      ],
@@ -2628,11 +2536,11 @@
      "lw": null,
      "path": [
       [
-       25.1,
+       21.1,
        -9.8
       ],
       [
-       32.9,
+       28.9,
        -9.8
       ]
      ],
@@ -2661,7 +2569,7 @@
      "text": "E-201",
      "visible": true,
      "xy": [
-      29.0,
+      25.0,
       -8.222222
      ],
      "zorder": null
@@ -2682,11 +2590,11 @@
      "lw": 0.8,
      "path": [
       [
-       28.138889,
+       24.138889,
        -8.566667
       ],
       [
-       29.861111,
+       25.861111,
        -8.566667
       ]
      ],
@@ -2697,276 +2605,6 @@
   ],
   [
    [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       33,
-       -17
-      ],
-      [
-       38,
-       -17
-      ],
-      [
-       39,
-       -16
-      ],
-      [
-       38,
-       -15
-      ],
-      [
-       33,
-       -15
-      ],
-      [
-       33,
-       -17
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "SegmentText",
-    {
-     "align": [
-      "center",
-      "center"
-     ],
-     "bgcolor": null,
-     "clip": null,
-     "color": null,
-     "decoration": null,
-     "font": null,
-     "fontsize": 16.0,
-     "href": null,
-     "mathfont": null,
-     "rotation": null,
-     "rotation_global": true,
-     "rotation_mode": null,
-     "text": "SC",
-     "visible": true,
-     "xy": [
-      35.7,
-      -16
-     ],
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       40,
-       -12
-      ],
-      [
-       45,
-       -12
-      ],
-      [
-       46,
-       -11
-      ],
-      [
-       45,
-       -10
-      ],
-      [
-       40,
-       -10
-      ],
-      [
-       40,
-       -12
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "SegmentText",
-    {
-     "align": [
-      "center",
-      "center"
-     ],
-     "bgcolor": null,
-     "clip": null,
-     "color": null,
-     "decoration": null,
-     "font": null,
-     "fontsize": 16.0,
-     "href": null,
-     "mathfont": null,
-     "rotation": null,
-     "rotation_global": true,
-     "rotation_mode": null,
-     "text": "to T-210",
-     "visible": true,
-     "xy": [
-      42.7,
-      -11
-     ],
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       0,
-       -50
-      ],
-      [
-       5,
-       -50
-      ],
-      [
-       6,
-       -49
-      ],
-      [
-       5,
-       -48
-      ],
-      [
-       0,
-       -48
-      ],
-      [
-       0,
-       -50
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "SegmentText",
-    {
-     "align": [
-      "center",
-      "center"
-     ],
-     "bgcolor": null,
-     "clip": null,
-     "color": null,
-     "decoration": null,
-     "font": null,
-     "fontsize": 16.0,
-     "href": null,
-     "mathfont": null,
-     "rotation": null,
-     "rotation_global": true,
-     "rotation_mode": null,
-     "text": "from E-201",
-     "visible": true,
-     "xy": [
-      2.7,
-      -49
-     ],
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       7,
-       -57
-      ],
-      [
-       7,
-       -41
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       11,
-       -57
-      ],
-      [
-       11,
-       -41
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
     "SegmentArc",
     {
      "angle": 0,
@@ -2974,816 +2612,8 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      9,
-      -41
-     ],
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "height": 4,
-     "ls": null,
-     "lw": null,
-     "theta1": 0,
-     "theta2": 180,
-     "visible": true,
-     "width": 4,
-     "zorder": null
-    }
-   ],
-   [
-    "SegmentArc",
-    {
-     "angle": 0,
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "center": [
-      9,
-      -57
-     ],
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "height": 4,
-     "ls": null,
-     "lw": null,
-     "theta1": 180,
-     "theta2": 360,
-     "visible": true,
-     "width": 4,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       7,
-       -56.0
-      ],
-      [
-       11,
-       -56.0
-      ],
-      [
-       11,
-       -49.5
-      ],
-      [
-       7,
-       -49.5
-      ],
-      [
-       7,
-       -56.0
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       7,
-       -56.0
-      ],
-      [
-       11,
-       -49.5
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       7,
-       -49.5
-      ],
-      [
-       11,
-       -56.0
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       7,
-       -48.5
-      ],
-      [
-       11,
-       -48.5
-      ],
-      [
-       11,
-       -42.0
-      ],
-      [
-       7,
-       -42.0
-      ],
-      [
-       7,
-       -48.5
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       7,
-       -48.5
-      ],
-      [
-       11,
-       -42.0
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       7,
-       -42.0
-      ],
-      [
-       11,
-       -48.5
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "SegmentText",
-    {
-     "align": [
-      "center",
-      "center"
-     ],
-     "bgcolor": null,
-     "clip": null,
-     "color": null,
-     "decoration": null,
-     "font": null,
-     "fontsize": 20,
-     "href": null,
-     "mathfont": null,
-     "rotation": null,
-     "rotation_global": true,
-     "rotation_mode": null,
-     "text": "T-210",
-     "visible": true,
-     "xy": [
-      5.638889,
-      -50.0
-     ],
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": 0.8,
-     "path": [
-      [
-       4.777778,
-       -50.344444
-      ],
-      [
-       6.5,
-       -50.344444
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       37,
-       -61
-      ],
-      [
-       42,
-       -61
-      ],
-      [
-       43,
-       -60
-      ],
-      [
-       42,
-       -59
-      ],
-      [
-       37,
-       -59
-      ],
-      [
-       37,
-       -61
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "SegmentText",
-    {
-     "align": [
-      "center",
-      "center"
-     ],
-     "bgcolor": null,
-     "clip": null,
-     "color": null,
-     "decoration": null,
-     "font": null,
-     "fontsize": 16.0,
-     "href": null,
-     "mathfont": null,
-     "rotation": null,
-     "rotation_global": true,
-     "rotation_mode": null,
-     "text": "to P-212",
-     "visible": true,
-     "xy": [
-      39.7,
-      -60
-     ],
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       9,
-       -74
-      ],
-      [
-       14,
-       -74
-      ],
-      [
-       15,
-       -73
-      ],
-      [
-       14,
-       -72
-      ],
-      [
-       9,
-       -72
-      ],
-      [
-       9,
-       -74
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "SegmentText",
-    {
-     "align": [
-      "center",
-      "center"
-     ],
-     "bgcolor": null,
-     "clip": null,
-     "color": null,
-     "decoration": null,
-     "font": null,
-     "fontsize": 16.0,
-     "href": null,
-     "mathfont": null,
-     "rotation": null,
-     "rotation_global": true,
-     "rotation_mode": null,
-     "text": "SC",
-     "visible": true,
-     "xy": [
-      11.7,
-      -73
-     ],
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       20,
-       -73
-      ],
-      [
-       20,
-       -63
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       16,
-       -73
-      ],
-      [
-       16,
-       -63
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "SegmentArc",
-    {
-     "angle": 0,
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "center": [
-      18.0,
-      -73
-     ],
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "height": 2,
-     "ls": null,
-     "lw": null,
-     "theta1": 180,
-     "theta2": 360,
-     "visible": true,
-     "width": 4.0,
-     "zorder": null
-    }
-   ],
-   [
-    "SegmentArc",
-    {
-     "angle": 0,
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "center": [
-      18.0,
-      -63
-     ],
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "height": 2,
-     "ls": null,
-     "lw": null,
-     "theta1": 0,
-     "theta2": 180,
-     "visible": true,
-     "width": 4.0,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       20.25,
-       -72.2
-      ],
-      [
-       15.75,
-       -72.2
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       20.25,
-       -71.9
-      ],
-      [
-       15.75,
-       -71.9
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       20.25,
-       -64.1
-      ],
-      [
-       15.75,
-       -64.1
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       20.25,
-       -63.8
-      ],
-      [
-       15.75,
-       -63.8
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       19.2,
-       -71.9
-      ],
-      [
-       19.2,
-       -64.1
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       18.4,
-       -71.9
-      ],
-      [
-       18.4,
-       -64.1
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       17.6,
-       -71.9
-      ],
-      [
-       17.6,
-       -64.1
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       16.8,
-       -71.9
-      ],
-      [
-       16.8,
-       -64.1
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "SegmentText",
-    {
-     "align": [
-      "center",
-      "center"
-     ],
-     "bgcolor": null,
-     "clip": null,
-     "color": null,
-     "decoration": null,
-     "font": null,
-     "fontsize": 20,
-     "href": null,
-     "mathfont": null,
-     "rotation": null,
-     "rotation_global": true,
-     "rotation_mode": null,
-     "text": "E-212",
-     "visible": true,
-     "xy": [
-      14.638889,
-      -68.0
-     ],
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": 0.8,
-     "path": [
-      [
-       13.777778,
-       -68.344444
-      ],
-      [
-       15.5,
-       -68.344444
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "SegmentArc",
-    {
-     "angle": 0,
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "center": [
-      22,
-      -73
+      23,
+      -2
      ],
      "clip": null,
      "color": null,
@@ -3814,11 +2644,1169 @@
      "path": [
       [
        23,
+       -3
+      ],
+      [
+       23,
+       -7
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 15.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "LPS",
+     "visible": true,
+     "xy": [
+      23,
+      -2
+     ],
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       29,
+       -17
+      ],
+      [
+       34,
+       -17
+      ],
+      [
+       35,
+       -16
+      ],
+      [
+       34,
+       -15
+      ],
+      [
+       29,
+       -15
+      ],
+      [
+       29,
+       -17
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 16.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "SC",
+     "visible": true,
+     "xy": [
+      31.7,
+      -16
+     ],
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       36,
+       -12
+      ],
+      [
+       41,
+       -12
+      ],
+      [
+       42,
+       -11
+      ],
+      [
+       41,
+       -10
+      ],
+      [
+       36,
+       -10
+      ],
+      [
+       36,
+       -12
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 16.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "to T-210",
+     "visible": true,
+     "xy": [
+      38.7,
+      -11
+     ],
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       0,
+       -49
+      ],
+      [
+       5,
+       -49
+      ],
+      [
+       6,
+       -48
+      ],
+      [
+       5,
+       -47
+      ],
+      [
+       0,
+       -47
+      ],
+      [
+       0,
+       -49
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 16.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "from E-201",
+     "visible": true,
+     "xy": [
+      2.7,
+      -48
+     ],
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       7,
+       -56
+      ],
+      [
+       7,
+       -40
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       11,
+       -56
+      ],
+      [
+       11,
+       -40
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      9,
+      -40
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 4,
+     "ls": null,
+     "lw": null,
+     "theta1": 0,
+     "theta2": 180,
+     "visible": true,
+     "width": 4,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      9,
+      -56
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 4,
+     "ls": null,
+     "lw": null,
+     "theta1": 180,
+     "theta2": 360,
+     "visible": true,
+     "width": 4,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       7,
+       -55.0
+      ],
+      [
+       11,
+       -55.0
+      ],
+      [
+       11,
+       -48.5
+      ],
+      [
+       7,
+       -48.5
+      ],
+      [
+       7,
+       -55.0
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       7,
+       -55.0
+      ],
+      [
+       11,
+       -48.5
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       7,
+       -48.5
+      ],
+      [
+       11,
+       -55.0
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       7,
+       -47.5
+      ],
+      [
+       11,
+       -47.5
+      ],
+      [
+       11,
+       -41.0
+      ],
+      [
+       7,
+       -41.0
+      ],
+      [
+       7,
+       -47.5
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       7,
+       -47.5
+      ],
+      [
+       11,
+       -41.0
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       7,
+       -41.0
+      ],
+      [
+       11,
+       -47.5
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 20,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "T-210",
+     "visible": true,
+     "xy": [
+      5.638889,
+      -49.0
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": 0.8,
+     "path": [
+      [
+       4.777778,
+       -49.344444
+      ],
+      [
+       6.5,
+       -49.344444
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       38,
        -73
       ],
       [
-       27,
+       43,
        -73
+      ],
+      [
+       44,
+       -72
+      ],
+      [
+       43,
+       -71
+      ],
+      [
+       38,
+       -71
+      ],
+      [
+       38,
+       -73
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 16.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "to P-212",
+     "visible": true,
+     "xy": [
+      40.7,
+      -72
+     ],
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       11,
+       -73
+      ],
+      [
+       16,
+       -73
+      ],
+      [
+       17,
+       -72
+      ],
+      [
+       16,
+       -71
+      ],
+      [
+       11,
+       -71
+      ],
+      [
+       11,
+       -73
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 16.0,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "SC",
+     "visible": true,
+     "xy": [
+      13.7,
+      -72
+     ],
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       16,
+       -67
+      ],
+      [
+       16,
+       -57
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       12,
+       -67
+      ],
+      [
+       12,
+       -57
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      14.0,
+      -67
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 2,
+     "ls": null,
+     "lw": null,
+     "theta1": 180,
+     "theta2": 360,
+     "visible": true,
+     "width": 4.0,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      14.0,
+      -57
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 2,
+     "ls": null,
+     "lw": null,
+     "theta1": 0,
+     "theta2": 180,
+     "visible": true,
+     "width": 4.0,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       16.25,
+       -66.2
+      ],
+      [
+       11.75,
+       -66.2
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       16.25,
+       -65.9
+      ],
+      [
+       11.75,
+       -65.9
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       16.25,
+       -58.1
+      ],
+      [
+       11.75,
+       -58.1
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       16.25,
+       -57.8
+      ],
+      [
+       11.75,
+       -57.8
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       15.2,
+       -65.9
+      ],
+      [
+       15.2,
+       -58.1
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       14.4,
+       -65.9
+      ],
+      [
+       14.4,
+       -58.1
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       13.6,
+       -65.9
+      ],
+      [
+       13.6,
+       -58.1
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       12.8,
+       -65.9
+      ],
+      [
+       12.8,
+       -58.1
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "SegmentText",
+    {
+     "align": [
+      "center",
+      "center"
+     ],
+     "bgcolor": null,
+     "clip": null,
+     "color": null,
+     "decoration": null,
+     "font": null,
+     "fontsize": 20,
+     "href": null,
+     "mathfont": null,
+     "rotation": null,
+     "rotation_global": true,
+     "rotation_mode": null,
+     "text": "E-212",
+     "visible": true,
+     "xy": [
+      17.361111,
+      -62.0
+     ],
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": 0.8,
+     "path": [
+      [
+       16.5,
+       -62.344444
+      ],
+      [
+       18.222222,
+       -62.344444
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "SegmentArc",
+    {
+     "angle": 0,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "center": [
+      22,
+      -60
+     ],
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "height": 2,
+     "ls": null,
+     "lw": null,
+     "theta1": 0.0,
+     "theta2": 360.0,
+     "visible": true,
+     "width": 2,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 0.9,
+     "path": [
+      [
+       21,
+       -60
+      ],
+      [
+       17,
+       -60
       ]
      ],
      "visible": true,
@@ -3847,7 +3835,7 @@
      "visible": true,
      "xy": [
       22,
-      -73
+      -60
      ],
      "zorder": null
     }
@@ -3863,7 +3851,7 @@
      "arrowwidth": 0.15,
      "center": [
       11,
-      -37
+      -36
      ],
      "clip": null,
      "color": null,
@@ -3894,11 +3882,11 @@
      "path": [
       [
        12,
-       -37
+       -36
       ],
       [
        16,
-       -37
+       -36
       ]
      ],
      "visible": true,
@@ -3927,7 +3915,7 @@
      "visible": true,
      "xy": [
       11,
-      -37
+      -36
      ],
      "zorder": null
     }
@@ -4395,12 +4383,12 @@
      "lw": null,
      "path": [
       [
-       28,
-       -38
+       27,
+       -68
       ],
       [
-       34,
-       -38
+       33,
+       -68
       ]
      ],
      "visible": true,
@@ -4422,12 +4410,12 @@
      "lw": null,
      "path": [
       [
-       28,
-       -34
+       27,
+       -64
       ],
       [
-       34,
-       -34
+       33,
+       -64
       ]
      ],
      "visible": true,
@@ -4442,8 +4430,8 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      28,
-      -36
+      27,
+      -66
      ],
      "clip": null,
      "color": null,
@@ -4466,8 +4454,8 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      34,
-      -36
+      33,
+      -66
      ],
      "clip": null,
      "color": null,
@@ -4503,8 +4491,8 @@
      "text": "V-211",
      "visible": true,
      "xy": [
-      31.0,
-      -36.0
+      30.0,
+      -66.0
      ],
      "zorder": null
     }
@@ -4524,12 +4512,12 @@
      "lw": 0.8,
      "path": [
       [
-       30.138889,
-       -36.344444
+       29.138889,
+       -66.344444
       ],
       [
-       31.861111,
-       -36.344444
+       30.861111,
+       -66.344444
       ]
      ],
      "visible": true,
@@ -4547,7 +4535,7 @@
      "arrowwidth": 0.15,
      "center": [
       34,
-      -72
+      -71
      ],
      "clip": null,
      "color": null,
@@ -4578,11 +4566,11 @@
      "path": [
       [
        35,
-       -72
+       -71
       ],
       [
        35,
-       -71
+       -70
       ]
      ],
      "visible": true,
@@ -4605,11 +4593,11 @@
      "path": [
       [
        33,
-       -72
+       -71
       ],
       [
        34.2,
-       -72
+       -71
       ]
      ],
      "visible": true,
@@ -4632,15 +4620,15 @@
      "path": [
       [
        33.8,
-       -71.8
+       -70.8
       ],
       [
        34.2,
-       -72
+       -71
       ],
       [
        33.8,
-       -72.2
+       -71.2
       ]
      ],
      "visible": true,
@@ -4663,19 +4651,19 @@
      "path": [
       [
        33.5,
-       -72.87
+       -71.87
       ],
       [
        33.1,
-       -73.7
+       -72.7
       ],
       [
        34.9,
-       -73.7
+       -72.7
       ],
       [
        34.5,
-       -72.87
+       -71.87
       ]
      ],
      "visible": true,
@@ -4704,7 +4692,7 @@
      "visible": true,
      "xy": [
       34.0,
-      -74.777778
+      -73.777778
      ],
      "zorder": null
     }
@@ -4725,11 +4713,11 @@
      "path": [
       [
        33.138889,
-       -75.122222
+       -74.122222
       ],
       [
        34.861111,
-       -75.122222
+       -74.122222
       ]
      ],
      "visible": true,
@@ -4754,23 +4742,23 @@
      "path": [
       [
        14,
-       -42.5
-      ],
-      [
-       14,
        -41.5
       ],
       [
-       12,
-       -42.5
+       14,
+       -40.5
       ],
       [
        12,
        -41.5
       ],
       [
+       12,
+       -40.5
+      ],
+      [
        14,
-       -42.5
+       -41.5
       ]
      ],
      "visible": true,
@@ -4793,11 +4781,11 @@
      "path": [
       [
        13,
-       -42
+       -41
       ],
       [
        13,
-       -41.4
+       -40.4
       ]
      ],
      "visible": true,
@@ -4820,11 +4808,11 @@
      "path": [
       [
        13.5,
-       -41.4
+       -40.4
       ],
       [
        12.5,
-       -41.4
+       -40.4
       ]
      ],
      "visible": true,
@@ -4840,7 +4828,7 @@
      "arrowwidth": 0.15,
      "center": [
       13,
-      -41.4
+      -40.4
      ],
      "clip": null,
      "color": null,
@@ -4873,11 +4861,11 @@
      "path": [
       [
        35,
-       -42
+       -41
       ],
       [
        35,
-       -43
+       -42
       ]
      ],
      "visible": true,
@@ -4900,11 +4888,11 @@
      "path": [
       [
        35,
-       -42
+       -41
       ],
       [
        34,
-       -42
+       -41
       ]
      ],
      "visible": true,
@@ -4927,11 +4915,11 @@
      "path": [
       [
        35,
-       -42
+       -41
       ],
       [
        36,
-       -42
+       -41
       ]
      ],
      "visible": true,
@@ -4955,28 +4943,28 @@
      "lw": null,
      "path": [
       [
-       37,
-       -43
-      ],
-      [
-       42,
-       -43
+       38,
+       -42
       ],
       [
        43,
        -42
       ],
       [
-       42,
+       44,
        -41
       ],
       [
-       37,
-       -41
+       43,
+       -40
       ],
       [
-       37,
-       -43
+       38,
+       -40
+      ],
+      [
+       38,
+       -42
       ]
      ],
      "visible": true,
@@ -5004,8 +4992,8 @@
      "text": "ベンゼン\n製品タンクへ",
      "visible": true,
      "xy": [
-      39.7,
-      -42
+      40.7,
+      -41
      ],
      "zorder": null
     }
@@ -5028,27 +5016,27 @@
      "path": [
       [
        0,
-       -132
+       -125
       ],
       [
        5,
-       -132
+       -125
       ],
       [
        6,
-       -131
+       -124
       ],
       [
        5,
-       -130
+       -123
       ],
       [
        0,
-       -130
+       -123
       ],
       [
        0,
-       -132
+       -125
       ]
      ],
      "visible": true,
@@ -5077,7 +5065,7 @@
      "visible": true,
      "xy": [
       2.7,
-      -131
+      -124
      ],
      "zorder": null
     }
@@ -5093,7 +5081,7 @@
      "arrowwidth": 0.15,
      "center": [
       8,
-      -131
+      -124
      ],
      "clip": null,
      "color": null,
@@ -5124,11 +5112,11 @@
      "path": [
       [
        9,
-       -131
+       -124
       ],
       [
        9,
-       -130
+       -123
       ]
      ],
      "visible": true,
@@ -5151,11 +5139,11 @@
      "path": [
       [
        7,
-       -131
+       -124
       ],
       [
        8.2,
-       -131
+       -124
       ]
      ],
      "visible": true,
@@ -5178,15 +5166,15 @@
      "path": [
       [
        7.8,
-       -130.8
+       -123.8
       ],
       [
        8.2,
-       -131
+       -124
       ],
       [
        7.8,
-       -131.2
+       -124.2
       ]
      ],
      "visible": true,
@@ -5209,19 +5197,19 @@
      "path": [
       [
        7.5,
-       -131.87
+       -124.87
       ],
       [
        7.1,
-       -132.7
+       -125.7
       ],
       [
        8.9,
-       -132.7
+       -125.7
       ],
       [
        8.5,
-       -131.87
+       -124.87
       ]
      ],
      "visible": true,
@@ -5250,7 +5238,7 @@
      "visible": true,
      "xy": [
       8.0,
-      -133.777778
+      -126.777778
      ],
      "zorder": null
     }
@@ -5271,11 +5259,11 @@
      "path": [
       [
        7.138889,
-       -134.122222
+       -127.122222
       ],
       [
        8.861111,
-       -134.122222
+       -127.122222
       ]
      ],
      "visible": true,
@@ -5300,23 +5288,23 @@
      "path": [
       [
        11,
-       -108.5
+       -101.5
       ],
       [
        11,
-       -107.5
+       -100.5
       ],
       [
        13,
-       -108.5
+       -101.5
       ],
       [
        13,
-       -107.5
+       -100.5
       ],
       [
        11,
-       -108.5
+       -101.5
       ]
      ],
      "visible": true,
@@ -5339,11 +5327,11 @@
      "path": [
       [
        12,
-       -108
+       -101
       ],
       [
        12,
-       -107.4
+       -100.4
       ]
      ],
      "visible": true,
@@ -5366,11 +5354,11 @@
      "path": [
       [
        11.5,
-       -107.4
+       -100.4
       ],
       [
        12.5,
-       -107.4
+       -100.4
       ]
      ],
      "visible": true,
@@ -5386,7 +5374,7 @@
      "arrowwidth": 0.15,
      "center": [
       12,
-      -107.4
+      -100.4
      ],
      "clip": null,
      "color": null,
@@ -5412,7 +5400,7 @@
      "arrowwidth": 0.15,
      "center": [
       12,
-      -96
+      -97
      ],
      "clip": null,
      "color": null,
@@ -5443,23 +5431,23 @@
      "path": [
       [
        11,
-       -97
+       -98
       ],
       [
        13,
-       -97
+       -98
       ],
       [
        13,
-       -95
+       -96
       ],
       [
        11,
-       -95
+       -96
       ],
       [
        11,
-       -97
+       -98
       ]
      ],
      "visible": true,
@@ -5488,7 +5476,7 @@
      "visible": true,
      "xy": [
       12,
-      -95.62
+      -96.62
      ],
      "zorder": null
     }
@@ -5515,7 +5503,7 @@
      "visible": true,
      "xy": [
       12,
-      -96.38
+      -97.38
      ],
      "zorder": null
     }
@@ -5538,11 +5526,11 @@
      "path": [
       [
        14,
-       -116
+       -109
       ],
       [
        14,
-       -100
+       -93
       ]
      ],
      "visible": true,
@@ -5565,11 +5553,11 @@
      "path": [
       [
        18,
-       -116
+       -109
       ],
       [
        18,
-       -100
+       -93
       ]
      ],
      "visible": true,
@@ -5585,7 +5573,7 @@
      "arrowwidth": 0.15,
      "center": [
       16,
-      -100
+      -93
      ],
      "clip": null,
      "color": null,
@@ -5609,7 +5597,7 @@
      "arrowwidth": 0.15,
      "center": [
       16,
-      -116
+      -109
      ],
      "clip": null,
      "color": null,
@@ -5640,23 +5628,23 @@
      "path": [
       [
        14,
-       -115.0
+       -108.0
       ],
       [
        18,
-       -115.0
+       -108.0
       ],
       [
        18,
-       -108.5
+       -101.5
       ],
       [
        14,
-       -108.5
+       -101.5
       ],
       [
        14,
-       -115.0
+       -108.0
       ]
      ],
      "visible": true,
@@ -5679,11 +5667,11 @@
      "path": [
       [
        14,
-       -115.0
+       -108.0
       ],
       [
        18,
-       -108.5
+       -101.5
       ]
      ],
      "visible": true,
@@ -5706,11 +5694,11 @@
      "path": [
       [
        14,
-       -108.5
+       -101.5
       ],
       [
        18,
-       -115.0
+       -108.0
       ]
      ],
      "visible": true,
@@ -5733,23 +5721,23 @@
      "path": [
       [
        14,
-       -107.5
+       -100.5
       ],
       [
        18,
-       -107.5
+       -100.5
       ],
       [
        18,
-       -101.0
+       -94.0
       ],
       [
        14,
-       -101.0
+       -94.0
       ],
       [
        14,
-       -107.5
+       -100.5
       ]
      ],
      "visible": true,
@@ -5772,11 +5760,11 @@
      "path": [
       [
        14,
-       -107.5
+       -100.5
       ],
       [
        18,
-       -101.0
+       -94.0
       ]
      ],
      "visible": true,
@@ -5799,11 +5787,11 @@
      "path": [
       [
        14,
-       -101.0
+       -94.0
       ],
       [
        18,
-       -107.5
+       -100.5
       ]
      ],
      "visible": true,
@@ -5832,7 +5820,7 @@
      "visible": true,
      "xy": [
       12.638889,
-      -109.0
+      -102.0
      ],
      "zorder": null
     }
@@ -5853,11 +5841,11 @@
      "path": [
       [
        11.777778,
-       -109.344444
+       -102.344444
       ],
       [
        13.5,
-       -109.344444
+       -102.344444
       ]
      ],
      "visible": true,
@@ -5881,28 +5869,28 @@
      "lw": null,
      "path": [
       [
-       44,
+       47,
+       -121
+      ],
+      [
+       52,
+       -121
+      ],
+      [
+       53,
        -120
       ],
       [
-       49,
-       -120
-      ],
-      [
-       50,
+       52,
        -119
       ],
       [
-       49,
-       -118
+       47,
+       -119
       ],
       [
-       44,
-       -118
-      ],
-      [
-       44,
-       -120
+       47,
+       -121
       ]
      ],
      "visible": true,
@@ -5930,8 +5918,8 @@
      "text": "to P-222",
      "visible": true,
      "xy": [
-      46.7,
-      -119
+      49.7,
+      -120
      ],
      "zorder": null
     }
@@ -5953,28 +5941,28 @@
      "lw": null,
      "path": [
       [
-       16,
-       -133
+       12,
+       -126
       ],
       [
-       21,
-       -133
+       17,
+       -126
       ],
       [
-       22,
-       -132
+       18,
+       -125
       ],
       [
-       21,
-       -131
+       17,
+       -124
       ],
       [
-       16,
-       -131
+       12,
+       -124
       ],
       [
-       16,
-       -133
+       12,
+       -126
       ]
      ],
      "visible": true,
@@ -6002,8 +5990,8 @@
      "text": "SC",
      "visible": true,
      "xy": [
-      18.7,
-      -132
+      14.7,
+      -125
      ],
      "zorder": null
     }
@@ -6025,12 +6013,12 @@
      "lw": null,
      "path": [
       [
-       27,
-       -132
+       23,
+       -120
       ],
       [
-       27,
-       -122
+       23,
+       -110
       ]
      ],
      "visible": true,
@@ -6052,12 +6040,12 @@
      "lw": null,
      "path": [
       [
-       23,
-       -132
+       19,
+       -120
       ],
       [
-       23,
-       -122
+       19,
+       -110
       ]
      ],
      "visible": true,
@@ -6072,8 +6060,8 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      25.0,
-      -132
+      21.0,
+      -120
      ],
      "clip": null,
      "color": null,
@@ -6096,8 +6084,8 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      25.0,
-      -122
+      21.0,
+      -110
      ],
      "clip": null,
      "color": null,
@@ -6127,12 +6115,12 @@
      "lw": null,
      "path": [
       [
-       27.25,
-       -131.2
+       23.25,
+       -119.2
       ],
       [
-       22.75,
-       -131.2
+       18.75,
+       -119.2
       ]
      ],
      "visible": true,
@@ -6154,12 +6142,12 @@
      "lw": null,
      "path": [
       [
-       27.25,
-       -130.9
+       23.25,
+       -118.9
       ],
       [
-       22.75,
-       -130.9
+       18.75,
+       -118.9
       ]
      ],
      "visible": true,
@@ -6181,12 +6169,12 @@
      "lw": null,
      "path": [
       [
-       27.25,
-       -123.1
+       23.25,
+       -111.1
       ],
       [
-       22.75,
-       -123.1
+       18.75,
+       -111.1
       ]
      ],
      "visible": true,
@@ -6208,12 +6196,12 @@
      "lw": null,
      "path": [
       [
-       27.25,
-       -122.8
+       23.25,
+       -110.8
       ],
       [
-       22.75,
-       -122.8
+       18.75,
+       -110.8
       ]
      ],
      "visible": true,
@@ -6235,12 +6223,12 @@
      "lw": null,
      "path": [
       [
-       26.2,
-       -130.9
+       22.2,
+       -118.9
       ],
       [
-       26.2,
-       -123.1
+       22.2,
+       -111.1
       ]
      ],
      "visible": true,
@@ -6262,12 +6250,12 @@
      "lw": null,
      "path": [
       [
-       25.4,
-       -130.9
+       21.4,
+       -118.9
       ],
       [
-       25.4,
-       -123.1
+       21.4,
+       -111.1
       ]
      ],
      "visible": true,
@@ -6289,12 +6277,12 @@
      "lw": null,
      "path": [
       [
-       24.6,
-       -130.9
+       20.6,
+       -118.9
       ],
       [
-       24.6,
-       -123.1
+       20.6,
+       -111.1
       ]
      ],
      "visible": true,
@@ -6316,12 +6304,12 @@
      "lw": null,
      "path": [
       [
-       23.8,
-       -130.9
+       19.8,
+       -118.9
       ],
       [
-       23.8,
-       -123.1
+       19.8,
+       -111.1
       ]
      ],
      "visible": true,
@@ -6349,8 +6337,8 @@
      "text": "E-222",
      "visible": true,
      "xy": [
-      21.638889,
-      -127.0
+      24.361111,
+      -115.0
      ],
      "zorder": null
     }
@@ -6370,12 +6358,12 @@
      "lw": 0.8,
      "path": [
       [
-       20.777778,
-       -127.344444
+       23.5,
+       -115.344444
       ],
       [
-       22.5,
-       -127.344444
+       25.222222,
+       -115.344444
       ]
      ],
      "visible": true,
@@ -6393,7 +6381,7 @@
      "arrowwidth": 0.15,
      "center": [
       29,
-      -132
+      -113
      ],
      "clip": null,
      "color": null,
@@ -6423,12 +6411,12 @@
      "lw": 0.9,
      "path": [
       [
-       30,
-       -132
+       28,
+       -113
       ],
       [
-       34,
-       -132
+       24,
+       -113
       ]
      ],
      "visible": true,
@@ -6457,7 +6445,7 @@
      "visible": true,
      "xy": [
       29,
-      -132
+      -113
      ],
      "zorder": null
     }
@@ -6472,8 +6460,8 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      18,
-      -96
+      20,
+      -92
      ],
      "clip": null,
      "color": null,
@@ -6503,12 +6491,12 @@
      "lw": 0.9,
      "path": [
       [
-       19,
-       -96
+       21,
+       -92
       ],
       [
-       23,
-       -96
+       25,
+       -92
       ]
      ],
      "visible": true,
@@ -6536,8 +6524,8 @@
      "text": "CWS",
      "visible": true,
      "xy": [
-      18,
-      -96
+      20,
+      -92
      ],
      "zorder": null
     }
@@ -6559,12 +6547,12 @@
      "lw": null,
      "path": [
       [
-       22,
-       -93
+       24,
+       -90
       ],
       [
-       32,
-       -93
+       34,
+       -90
       ]
      ],
      "visible": true,
@@ -6586,12 +6574,12 @@
      "lw": null,
      "path": [
       [
-       22,
-       -89
+       24,
+       -86
       ],
       [
-       32,
-       -89
+       34,
+       -86
       ]
      ],
      "visible": true,
@@ -6606,8 +6594,8 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      22,
-      -91.0
+      24,
+      -88.0
      ],
      "clip": null,
      "color": null,
@@ -6630,8 +6618,8 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      32,
-      -91.0
+      34,
+      -88.0
      ],
      "clip": null,
      "color": null,
@@ -6661,12 +6649,12 @@
      "lw": null,
      "path": [
       [
-       22.8,
-       -93.25
+       24.8,
+       -90.25
       ],
       [
-       22.8,
-       -88.75
+       24.8,
+       -85.75
       ]
      ],
      "visible": true,
@@ -6688,12 +6676,12 @@
      "lw": null,
      "path": [
       [
-       23.1,
-       -93.25
+       25.1,
+       -90.25
       ],
       [
-       23.1,
-       -88.75
+       25.1,
+       -85.75
       ]
      ],
      "visible": true,
@@ -6715,12 +6703,12 @@
      "lw": null,
      "path": [
       [
-       30.9,
-       -93.25
+       32.9,
+       -90.25
       ],
       [
-       30.9,
-       -88.75
+       32.9,
+       -85.75
       ]
      ],
      "visible": true,
@@ -6742,12 +6730,12 @@
      "lw": null,
      "path": [
       [
-       31.2,
-       -93.25
+       33.2,
+       -90.25
       ],
       [
-       31.2,
-       -88.75
+       33.2,
+       -85.75
       ]
      ],
      "visible": true,
@@ -6769,12 +6757,12 @@
      "lw": null,
      "path": [
       [
-       23.1,
-       -92.2
+       25.1,
+       -89.2
       ],
       [
-       30.9,
-       -92.2
+       32.9,
+       -89.2
       ]
      ],
      "visible": true,
@@ -6796,12 +6784,12 @@
      "lw": null,
      "path": [
       [
-       23.1,
-       -91.4
+       25.1,
+       -88.4
       ],
       [
-       30.9,
-       -91.4
+       32.9,
+       -88.4
       ]
      ],
      "visible": true,
@@ -6823,12 +6811,12 @@
      "lw": null,
      "path": [
       [
-       23.1,
-       -90.6
+       25.1,
+       -87.6
       ],
       [
-       30.9,
-       -90.6
+       32.9,
+       -87.6
       ]
      ],
      "visible": true,
@@ -6850,12 +6838,12 @@
      "lw": null,
      "path": [
       [
-       23.1,
-       -89.8
+       25.1,
+       -86.8
       ],
       [
-       30.9,
-       -89.8
+       32.9,
+       -86.8
       ]
      ],
      "visible": true,
@@ -6883,8 +6871,8 @@
      "text": "E-221",
      "visible": true,
      "xy": [
-      27.0,
-      -88.222222
+      29.0,
+      -85.222222
      ],
      "zorder": null
     }
@@ -6904,12 +6892,12 @@
      "lw": 0.8,
      "path": [
       [
-       26.138889,
-       -88.566667
+       28.138889,
+       -85.566667
       ],
       [
-       27.861111,
-       -88.566667
+       29.861111,
+       -85.566667
       ]
      ],
      "visible": true,
@@ -6933,28 +6921,28 @@
      "lw": null,
      "path": [
       [
-       31,
-       -88
+       33,
+       -85
       ],
       [
-       36,
-       -88
+       38,
+       -85
       ],
       [
-       37,
-       -87
+       39,
+       -84
       ],
       [
-       36,
-       -86
+       38,
+       -83
       ],
       [
-       31,
-       -86
+       33,
+       -83
       ],
       [
-       31,
-       -88
+       33,
+       -85
       ]
      ],
      "visible": true,
@@ -6982,8 +6970,8 @@
      "text": "CWR",
      "visible": true,
      "xy": [
-      33.7,
-      -87
+      35.7,
+      -84
      ],
      "zorder": null
     }
@@ -7005,12 +6993,12 @@
      "lw": null,
      "path": [
       [
-       35,
-       -97
+       36,
+       -121
       ],
       [
-       41,
-       -97
+       42,
+       -121
       ]
      ],
      "visible": true,
@@ -7032,12 +7020,12 @@
      "lw": null,
      "path": [
       [
-       35,
-       -93
+       36,
+       -117
       ],
       [
-       41,
-       -93
+       42,
+       -117
       ]
      ],
      "visible": true,
@@ -7052,8 +7040,8 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      35,
-      -95
+      36,
+      -119
      ],
      "clip": null,
      "color": null,
@@ -7076,8 +7064,8 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      41,
-      -95
+      42,
+      -119
      ],
      "clip": null,
      "color": null,
@@ -7113,8 +7101,8 @@
      "text": "V-221",
      "visible": true,
      "xy": [
-      38.0,
-      -95.0
+      39.0,
+      -119.0
      ],
      "zorder": null
     }
@@ -7134,12 +7122,12 @@
      "lw": 0.8,
      "path": [
       [
-       37.138889,
-       -95.344444
+       38.138889,
+       -119.344444
       ],
       [
-       38.861111,
-       -95.344444
+       39.861111,
+       -119.344444
       ]
      ],
      "visible": true,
@@ -7156,8 +7144,8 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      41,
-      -131
+      43,
+      -124
      ],
      "clip": null,
      "color": null,
@@ -7187,12 +7175,39 @@
      "lw": null,
      "path": [
       [
+       44,
+       -124
+      ],
+      [
+       44,
+       -123
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
        42,
-       -131
+       -124
       ],
       [
-       42,
-       -130
+       43.2,
+       -124
       ]
      ],
      "visible": true,
@@ -7214,12 +7229,16 @@
      "lw": null,
      "path": [
       [
-       40,
-       -131
+       42.8,
+       -123.8
       ],
       [
-       41.2,
-       -131
+       43.2,
+       -124
+      ],
+      [
+       42.8,
+       -124.2
       ]
      ],
      "visible": true,
@@ -7241,51 +7260,20 @@
      "lw": null,
      "path": [
       [
-       40.8,
-       -130.8
+       42.5,
+       -124.87
       ],
       [
-       41.2,
-       -131
+       42.1,
+       -125.7
       ],
       [
-       40.8,
-       -131.2
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       40.5,
-       -131.87
+       43.9,
+       -125.7
       ],
       [
-       40.1,
-       -132.7
-      ],
-      [
-       41.9,
-       -132.7
-      ],
-      [
-       41.5,
-       -131.87
+       43.5,
+       -124.87
       ]
      ],
      "visible": true,
@@ -7313,8 +7301,8 @@
      "text": "P-221",
      "visible": true,
      "xy": [
-      41.0,
-      -133.777778
+      43.0,
+      -126.777778
      ],
      "zorder": null
     }
@@ -7334,12 +7322,12 @@
      "lw": 0.8,
      "path": [
       [
-       40.138889,
-       -134.122222
+       42.138889,
+       -127.122222
       ],
       [
-       41.861111,
-       -134.122222
+       43.861111,
+       -127.122222
       ]
      ],
      "visible": true,
@@ -7363,24 +7351,24 @@
      "lw": null,
      "path": [
       [
-       21,
-       -101.5
+       30,
+       -94.5
       ],
       [
-       21,
-       -100.5
+       30,
+       -93.5
       ],
       [
-       19,
-       -101.5
+       28,
+       -94.5
       ],
       [
-       19,
-       -100.5
+       28,
+       -93.5
       ],
       [
-       21,
-       -101.5
+       30,
+       -94.5
       ]
      ],
      "visible": true,
@@ -7402,12 +7390,12 @@
      "lw": null,
      "path": [
       [
-       20,
-       -101
+       29,
+       -94
       ],
       [
-       20,
-       -100.4
+       29,
+       -93.4
       ]
      ],
      "visible": true,
@@ -7429,12 +7417,12 @@
      "lw": null,
      "path": [
       [
-       20.5,
-       -100.4
+       29.5,
+       -93.4
       ],
       [
-       19.5,
-       -100.4
+       28.5,
+       -93.4
       ]
      ],
      "visible": true,
@@ -7449,8 +7437,8 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      20,
-      -100.4
+      29,
+      -93.4
      ],
      "clip": null,
      "color": null,
@@ -7482,12 +7470,12 @@
      "lw": null,
      "path": [
       [
-       42,
-       -101
+       44,
+       -94
       ],
       [
-       42,
-       -102
+       44,
+       -95
       ]
      ],
      "visible": true,
@@ -7509,39 +7497,39 @@
      "lw": null,
      "path": [
       [
-       42,
-       -101
-      ],
-      [
-       41,
-       -101
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
-      [
-       42,
-       -101
+       44,
+       -94
       ],
       [
        43,
-       -101
+       -94
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       44,
+       -94
+      ],
+      [
+       45,
+       -94
       ]
      ],
      "visible": true,
@@ -7565,28 +7553,28 @@
      "lw": null,
      "path": [
       [
-       44,
-       -102
+       47,
+       -95
       ],
       [
-       49,
-       -102
+       52,
+       -95
       ],
       [
-       50,
-       -101
+       53,
+       -94
       ],
       [
-       49,
-       -100
+       52,
+       -93
       ],
       [
-       44,
-       -100
+       47,
+       -93
       ],
       [
-       44,
-       -102
+       47,
+       -95
       ]
      ],
      "visible": true,
@@ -7614,8 +7602,8 @@
      "text": "トルエン\n製品タンクへ",
      "visible": true,
      "xy": [
-      46.7,
-      -101
+      49.7,
+      -94
      ],
      "zorder": null
     }
@@ -7638,27 +7626,27 @@
      "path": [
       [
        0,
-       -198
+       -186
       ],
       [
        5,
-       -198
+       -186
       ],
       [
        6,
-       -197
+       -185
       ],
       [
        5,
-       -196
+       -184
       ],
       [
        0,
-       -196
+       -184
       ],
       [
        0,
-       -198
+       -186
       ]
      ],
      "visible": true,
@@ -7687,7 +7675,7 @@
      "visible": true,
      "xy": [
       2.7,
-      -197
+      -185
      ],
      "zorder": null
     }
@@ -7703,7 +7691,7 @@
      "arrowwidth": 0.15,
      "center": [
       8,
-      -197
+      -185
      ],
      "clip": null,
      "color": null,
@@ -7734,11 +7722,11 @@
      "path": [
       [
        9,
-       -197
+       -185
       ],
       [
        9,
-       -196
+       -184
       ]
      ],
      "visible": true,
@@ -7761,11 +7749,11 @@
      "path": [
       [
        7,
-       -197
+       -185
       ],
       [
        8.2,
-       -197
+       -185
       ]
      ],
      "visible": true,
@@ -7788,15 +7776,15 @@
      "path": [
       [
        7.8,
-       -196.8
+       -184.8
       ],
       [
        8.2,
-       -197
+       -185
       ],
       [
        7.8,
-       -197.2
+       -185.2
       ]
      ],
      "visible": true,
@@ -7819,19 +7807,19 @@
      "path": [
       [
        7.5,
-       -197.87
+       -185.87
       ],
       [
        7.1,
-       -198.7
+       -186.7
       ],
       [
        8.9,
-       -198.7
+       -186.7
       ],
       [
        8.5,
-       -197.87
+       -185.87
       ]
      ],
      "visible": true,
@@ -7860,7 +7848,7 @@
      "visible": true,
      "xy": [
       8.0,
-      -199.777778
+      -187.777778
      ],
      "zorder": null
     }
@@ -7881,11 +7869,11 @@
      "path": [
       [
        7.138889,
-       -200.122222
+       -188.122222
       ],
       [
        8.861111,
-       -200.122222
+       -188.122222
       ]
      ],
      "visible": true,
@@ -7910,23 +7898,23 @@
      "path": [
       [
        11,
-       -166.5
+       -154.5
       ],
       [
        11,
-       -165.5
+       -153.5
       ],
       [
        13,
-       -166.5
+       -154.5
       ],
       [
        13,
-       -165.5
+       -153.5
       ],
       [
        11,
-       -166.5
+       -154.5
       ]
      ],
      "visible": true,
@@ -7949,11 +7937,11 @@
      "path": [
       [
        12,
-       -166
+       -154
       ],
       [
        12,
-       -165.4
+       -153.4
       ]
      ],
      "visible": true,
@@ -7976,11 +7964,11 @@
      "path": [
       [
        11.5,
-       -165.4
+       -153.4
       ],
       [
        12.5,
-       -165.4
+       -153.4
       ]
      ],
      "visible": true,
@@ -7996,7 +7984,7 @@
      "arrowwidth": 0.15,
      "center": [
       12,
-      -165.4
+      -153.4
      ],
      "clip": null,
      "color": null,
@@ -8022,7 +8010,7 @@
      "arrowwidth": 0.15,
      "center": [
       12,
-      -154
+      -150
      ],
      "clip": null,
      "color": null,
@@ -8053,23 +8041,23 @@
      "path": [
       [
        11,
-       -155
+       -151
       ],
       [
        13,
-       -155
+       -151
       ],
       [
        13,
-       -153
+       -149
       ],
       [
        11,
-       -153
+       -149
       ],
       [
        11,
-       -155
+       -151
       ]
      ],
      "visible": true,
@@ -8098,7 +8086,7 @@
      "visible": true,
      "xy": [
       12,
-      -153.62
+      -149.62
      ],
      "zorder": null
     }
@@ -8125,7 +8113,7 @@
      "visible": true,
      "xy": [
       12,
-      -154.38
+      -150.38
      ],
      "zorder": null
     }
@@ -8148,11 +8136,11 @@
      "path": [
       [
        14,
-       -174
+       -162
       ],
       [
        14,
-       -158
+       -146
       ]
      ],
      "visible": true,
@@ -8175,11 +8163,11 @@
      "path": [
       [
        18,
-       -174
+       -162
       ],
       [
        18,
-       -158
+       -146
       ]
      ],
      "visible": true,
@@ -8195,7 +8183,7 @@
      "arrowwidth": 0.15,
      "center": [
       16,
-      -158
+      -146
      ],
      "clip": null,
      "color": null,
@@ -8219,7 +8207,7 @@
      "arrowwidth": 0.15,
      "center": [
       16,
-      -174
+      -162
      ],
      "clip": null,
      "color": null,
@@ -8250,23 +8238,23 @@
      "path": [
       [
        14,
-       -173.0
+       -161.0
       ],
       [
        18,
-       -173.0
+       -161.0
       ],
       [
        18,
-       -166.5
+       -154.5
       ],
       [
        14,
-       -166.5
+       -154.5
       ],
       [
        14,
-       -173.0
+       -161.0
       ]
      ],
      "visible": true,
@@ -8289,11 +8277,11 @@
      "path": [
       [
        14,
-       -173.0
+       -161.0
       ],
       [
        18,
-       -166.5
+       -154.5
       ]
      ],
      "visible": true,
@@ -8316,11 +8304,11 @@
      "path": [
       [
        14,
-       -166.5
+       -154.5
       ],
       [
        18,
-       -173.0
+       -161.0
       ]
      ],
      "visible": true,
@@ -8343,23 +8331,23 @@
      "path": [
       [
        14,
-       -165.5
+       -153.5
       ],
       [
        18,
-       -165.5
+       -153.5
       ],
       [
        18,
-       -159.0
+       -147.0
       ],
       [
        14,
-       -159.0
+       -147.0
       ],
       [
        14,
-       -165.5
+       -153.5
       ]
      ],
      "visible": true,
@@ -8382,11 +8370,11 @@
      "path": [
       [
        14,
-       -165.5
+       -153.5
       ],
       [
        18,
-       -159.0
+       -147.0
       ]
      ],
      "visible": true,
@@ -8409,11 +8397,11 @@
      "path": [
       [
        14,
-       -159.0
+       -147.0
       ],
       [
        18,
-       -165.5
+       -153.5
       ]
      ],
      "visible": true,
@@ -8442,7 +8430,7 @@
      "visible": true,
      "xy": [
       12.638889,
-      -167.0
+      -155.0
      ],
      "zorder": null
     }
@@ -8463,11 +8451,11 @@
      "path": [
       [
        11.777778,
-       -167.344444
+       -155.344444
       ],
       [
        13.5,
-       -167.344444
+       -155.344444
       ]
      ],
      "visible": true,
@@ -8485,7 +8473,7 @@
      "arrowwidth": 0.15,
      "center": [
       18,
-      -197
+      -185
      ],
      "clip": null,
      "color": null,
@@ -8516,11 +8504,11 @@
      "path": [
       [
        19,
-       -197
+       -185
       ],
       [
        19,
-       -196
+       -184
       ]
      ],
      "visible": true,
@@ -8543,11 +8531,11 @@
      "path": [
       [
        17,
-       -197
+       -185
       ],
       [
        18.2,
-       -197
+       -185
       ]
      ],
      "visible": true,
@@ -8570,15 +8558,15 @@
      "path": [
       [
        17.8,
-       -196.8
+       -184.8
       ],
       [
        18.2,
-       -197
+       -185
       ],
       [
        17.8,
-       -197.2
+       -185.2
       ]
      ],
      "visible": true,
@@ -8601,19 +8589,19 @@
      "path": [
       [
        17.5,
-       -197.87
+       -185.87
       ],
       [
        17.1,
-       -198.7
+       -186.7
       ],
       [
        18.9,
-       -198.7
+       -186.7
       ],
       [
        18.5,
-       -197.87
+       -185.87
       ]
      ],
      "visible": true,
@@ -8642,7 +8630,7 @@
      "visible": true,
      "xy": [
       18.0,
-      -199.777778
+      -187.777778
      ],
      "zorder": null
     }
@@ -8663,11 +8651,11 @@
      "path": [
       [
        17.138889,
-       -200.122222
+       -188.122222
       ],
       [
        18.861111,
-       -200.122222
+       -188.122222
       ]
      ],
      "visible": true,
@@ -8685,7 +8673,7 @@
      "arrowwidth": 0.15,
      "center": [
       21,
-      -198
+      -186
      ],
      "clip": null,
      "color": null,
@@ -8716,11 +8704,11 @@
      "path": [
       [
        22,
-       -198
+       -186
       ],
       [
        26,
-       -198
+       -186
       ]
      ],
      "visible": true,
@@ -8749,7 +8737,7 @@
      "visible": true,
      "xy": [
       21,
-      -198
+      -186
      ],
      "zorder": null
     }
@@ -8772,11 +8760,11 @@
      "path": [
       [
        25,
-       -196
+       -184
       ],
       [
        35,
-       -196
+       -184
       ]
      ],
      "visible": true,
@@ -8799,11 +8787,11 @@
      "path": [
       [
        25,
-       -192
+       -180
       ],
       [
        35,
-       -192
+       -180
       ]
      ],
      "visible": true,
@@ -8819,7 +8807,7 @@
      "arrowwidth": 0.15,
      "center": [
       25,
-      -194.0
+      -182.0
      ],
      "clip": null,
      "color": null,
@@ -8843,7 +8831,7 @@
      "arrowwidth": 0.15,
      "center": [
       35,
-      -194.0
+      -182.0
      ],
      "clip": null,
      "color": null,
@@ -8874,11 +8862,11 @@
      "path": [
       [
        25.8,
-       -196.25
+       -184.25
       ],
       [
        25.8,
-       -191.75
+       -179.75
       ]
      ],
      "visible": true,
@@ -8901,11 +8889,11 @@
      "path": [
       [
        26.1,
-       -196.25
+       -184.25
       ],
       [
        26.1,
-       -191.75
+       -179.75
       ]
      ],
      "visible": true,
@@ -8928,11 +8916,11 @@
      "path": [
       [
        33.9,
-       -196.25
+       -184.25
       ],
       [
        33.9,
-       -191.75
+       -179.75
       ]
      ],
      "visible": true,
@@ -8955,11 +8943,11 @@
      "path": [
       [
        34.2,
-       -196.25
+       -184.25
       ],
       [
        34.2,
-       -191.75
+       -179.75
       ]
      ],
      "visible": true,
@@ -8982,11 +8970,11 @@
      "path": [
       [
        26.1,
-       -195.2
+       -183.2
       ],
       [
        33.9,
-       -195.2
+       -183.2
       ]
      ],
      "visible": true,
@@ -9009,11 +8997,11 @@
      "path": [
       [
        26.1,
-       -194.4
+       -182.4
       ],
       [
        33.9,
-       -194.4
+       -182.4
       ]
      ],
      "visible": true,
@@ -9036,11 +9024,11 @@
      "path": [
       [
        26.1,
-       -193.6
+       -181.6
       ],
       [
        33.9,
-       -193.6
+       -181.6
       ]
      ],
      "visible": true,
@@ -9063,11 +9051,11 @@
      "path": [
       [
        26.1,
-       -192.8
+       -180.8
       ],
       [
        33.9,
-       -192.8
+       -180.8
       ]
      ],
      "visible": true,
@@ -9096,7 +9084,7 @@
      "visible": true,
      "xy": [
       30.0,
-      -191.222222
+      -179.222222
      ],
      "zorder": null
     }
@@ -9117,11 +9105,11 @@
      "path": [
       [
        29.138889,
-       -191.566667
+       -179.566667
       ],
       [
        30.861111,
-       -191.566667
+       -179.566667
       ]
      ],
      "visible": true,
@@ -9146,27 +9134,27 @@
      "path": [
       [
        34,
-       -191
+       -179
       ],
       [
        39,
-       -191
+       -179
       ],
       [
        40,
-       -190
+       -178
       ],
       [
        39,
-       -189
+       -177
       ],
       [
        34,
-       -189
+       -177
       ],
       [
        34,
-       -191
+       -179
       ]
      ],
      "visible": true,
@@ -9195,7 +9183,7 @@
      "visible": true,
      "xy": [
       36.7,
-      -190
+      -178
      ],
      "zorder": null
     }
@@ -9218,27 +9206,27 @@
      "path": [
       [
        73,
-       -195
+       -183
       ],
       [
        78,
-       -195
+       -183
       ],
       [
        79,
-       -194
+       -182
       ],
       [
        78,
-       -193
+       -181
       ],
       [
        73,
-       -193
+       -181
       ],
       [
        73,
-       -195
+       -183
       ]
      ],
      "visible": true,
@@ -9267,7 +9255,7 @@
      "visible": true,
      "xy": [
       75.7,
-      -194
+      -182
      ],
      "zorder": null
     }
@@ -9290,27 +9278,27 @@
      "path": [
       [
        34,
-       -186
+       -174
       ],
       [
        39,
-       -186
+       -174
       ],
       [
        40,
-       -185
+       -173
       ],
       [
        39,
-       -184
+       -172
       ],
       [
        34,
-       -184
+       -172
       ],
       [
        34,
-       -186
+       -174
       ]
      ],
      "visible": true,
@@ -9339,7 +9327,7 @@
      "visible": true,
      "xy": [
       36.7,
-      -185
+      -173
      ],
      "zorder": null
     }
@@ -9362,11 +9350,11 @@
      "path": [
       [
        45,
-       -185
+       -173
       ],
       [
        45,
-       -175
+       -163
       ]
      ],
      "visible": true,
@@ -9389,11 +9377,11 @@
      "path": [
       [
        41,
-       -185
+       -173
       ],
       [
        41,
-       -175
+       -163
       ]
      ],
      "visible": true,
@@ -9409,7 +9397,7 @@
      "arrowwidth": 0.15,
      "center": [
       43.0,
-      -185
+      -173
      ],
      "clip": null,
      "color": null,
@@ -9433,7 +9421,7 @@
      "arrowwidth": 0.15,
      "center": [
       43.0,
-      -175
+      -163
      ],
      "clip": null,
      "color": null,
@@ -9464,11 +9452,11 @@
      "path": [
       [
        45.25,
-       -184.2
+       -172.2
       ],
       [
        40.75,
-       -184.2
+       -172.2
       ]
      ],
      "visible": true,
@@ -9491,11 +9479,11 @@
      "path": [
       [
        45.25,
-       -183.9
+       -171.9
       ],
       [
        40.75,
-       -183.9
+       -171.9
       ]
      ],
      "visible": true,
@@ -9518,11 +9506,11 @@
      "path": [
       [
        45.25,
-       -176.1
+       -164.1
       ],
       [
        40.75,
-       -176.1
+       -164.1
       ]
      ],
      "visible": true,
@@ -9545,11 +9533,11 @@
      "path": [
       [
        45.25,
-       -175.8
+       -163.8
       ],
       [
        40.75,
-       -175.8
+       -163.8
       ]
      ],
      "visible": true,
@@ -9572,11 +9560,11 @@
      "path": [
       [
        44.2,
-       -183.9
+       -171.9
       ],
       [
        44.2,
-       -176.1
+       -164.1
       ]
      ],
      "visible": true,
@@ -9599,11 +9587,11 @@
      "path": [
       [
        43.4,
-       -183.9
+       -171.9
       ],
       [
        43.4,
-       -176.1
+       -164.1
       ]
      ],
      "visible": true,
@@ -9626,11 +9614,11 @@
      "path": [
       [
        42.6,
-       -183.9
+       -171.9
       ],
       [
        42.6,
-       -176.1
+       -164.1
       ]
      ],
      "visible": true,
@@ -9653,11 +9641,11 @@
      "path": [
       [
        41.8,
-       -183.9
+       -171.9
       ],
       [
        41.8,
-       -176.1
+       -164.1
       ]
      ],
      "visible": true,
@@ -9686,7 +9674,7 @@
      "visible": true,
      "xy": [
       39.638889,
-      -180.0
+      -168.0
      ],
      "zorder": null
     }
@@ -9707,11 +9695,11 @@
      "path": [
       [
        38.777778,
-       -180.344444
+       -168.344444
       ],
       [
        40.5,
-       -180.344444
+       -168.344444
       ]
      ],
      "visible": true,
@@ -9728,8 +9716,8 @@
      "arrowlength": 0.25,
      "arrowwidth": 0.15,
      "center": [
-      47,
-      -185
+      51,
+      -166
      ],
      "clip": null,
      "color": null,
@@ -9759,12 +9747,12 @@
      "lw": 0.9,
      "path": [
       [
-       48,
-       -185
+       50,
+       -166
       ],
       [
-       52,
-       -185
+       46,
+       -166
       ]
      ],
      "visible": true,
@@ -9792,8 +9780,8 @@
      "text": "HPS",
      "visible": true,
      "xy": [
-      47,
-      -185
+      51,
+      -166
      ],
      "zorder": null
     }
@@ -9809,7 +9797,7 @@
      "arrowwidth": 0.15,
      "center": [
       47,
-      -154
+      -145
      ],
      "clip": null,
      "color": null,
@@ -9840,11 +9828,11 @@
      "path": [
       [
        48,
-       -154
+       -145
       ],
       [
        52,
-       -154
+       -145
       ]
      ],
      "visible": true,
@@ -9873,7 +9861,7 @@
      "visible": true,
      "xy": [
       47,
-      -154
+      -145
      ],
      "zorder": null
     }
@@ -9896,11 +9884,11 @@
      "path": [
       [
        51,
-       -152
+       -143
       ],
       [
        61,
-       -152
+       -143
       ]
      ],
      "visible": true,
@@ -9923,11 +9911,11 @@
      "path": [
       [
        51,
-       -148
+       -139
       ],
       [
        61,
-       -148
+       -139
       ]
      ],
      "visible": true,
@@ -9943,7 +9931,7 @@
      "arrowwidth": 0.15,
      "center": [
       51,
-      -150.0
+      -141.0
      ],
      "clip": null,
      "color": null,
@@ -9967,7 +9955,7 @@
      "arrowwidth": 0.15,
      "center": [
       61,
-      -150.0
+      -141.0
      ],
      "clip": null,
      "color": null,
@@ -9998,11 +9986,11 @@
      "path": [
       [
        51.8,
-       -152.25
+       -143.25
       ],
       [
        51.8,
-       -147.75
+       -138.75
       ]
      ],
      "visible": true,
@@ -10025,11 +10013,11 @@
      "path": [
       [
        52.1,
-       -152.25
+       -143.25
       ],
       [
        52.1,
-       -147.75
+       -138.75
       ]
      ],
      "visible": true,
@@ -10052,11 +10040,11 @@
      "path": [
       [
        59.9,
-       -152.25
+       -143.25
       ],
       [
        59.9,
-       -147.75
+       -138.75
       ]
      ],
      "visible": true,
@@ -10079,11 +10067,11 @@
      "path": [
       [
        60.2,
-       -152.25
+       -143.25
       ],
       [
        60.2,
-       -147.75
+       -138.75
       ]
      ],
      "visible": true,
@@ -10106,11 +10094,11 @@
      "path": [
       [
        52.1,
-       -151.2
+       -142.2
       ],
       [
        59.9,
-       -151.2
+       -142.2
       ]
      ],
      "visible": true,
@@ -10133,11 +10121,11 @@
      "path": [
       [
        52.1,
-       -150.4
+       -141.4
       ],
       [
        59.9,
-       -150.4
+       -141.4
       ]
      ],
      "visible": true,
@@ -10160,11 +10148,11 @@
      "path": [
       [
        52.1,
-       -149.6
+       -140.6
       ],
       [
        59.9,
-       -149.6
+       -140.6
       ]
      ],
      "visible": true,
@@ -10187,11 +10175,11 @@
      "path": [
       [
        52.1,
-       -148.8
+       -139.8
       ],
       [
        59.9,
-       -148.8
+       -139.8
       ]
      ],
      "visible": true,
@@ -10220,7 +10208,7 @@
      "visible": true,
      "xy": [
       56.0,
-      -147.222222
+      -138.222222
      ],
      "zorder": null
     }
@@ -10241,11 +10229,11 @@
      "path": [
       [
        55.138889,
-       -147.566667
+       -138.566667
       ],
       [
        56.861111,
-       -147.566667
+       -138.566667
       ]
      ],
      "visible": true,
@@ -10270,27 +10258,27 @@
      "path": [
       [
        60,
-       -147
+       -138
       ],
       [
        65,
-       -147
+       -138
       ],
       [
        66,
-       -146
+       -137
       ],
       [
        65,
-       -145
+       -136
       ],
       [
        60,
-       -145
+       -136
       ],
       [
        60,
-       -147
+       -138
       ]
      ],
      "visible": true,
@@ -10319,7 +10307,7 @@
      "visible": true,
      "xy": [
       62.7,
-      -146
+      -137
      ],
      "zorder": null
     }
@@ -10342,11 +10330,11 @@
      "path": [
       [
        63,
-       -186
+       -174
       ],
       [
        69,
-       -186
+       -174
       ]
      ],
      "visible": true,
@@ -10369,11 +10357,11 @@
      "path": [
       [
        63,
-       -182
+       -170
       ],
       [
        69,
-       -182
+       -170
       ]
      ],
      "visible": true,
@@ -10389,7 +10377,7 @@
      "arrowwidth": 0.15,
      "center": [
       63,
-      -184
+      -172
      ],
      "clip": null,
      "color": null,
@@ -10413,7 +10401,7 @@
      "arrowwidth": 0.15,
      "center": [
       69,
-      -184
+      -172
      ],
      "clip": null,
      "color": null,
@@ -10450,7 +10438,7 @@
      "visible": true,
      "xy": [
       66.0,
-      -184.0
+      -172.0
      ],
      "zorder": null
     }
@@ -10471,11 +10459,11 @@
      "path": [
       [
        65.138889,
-       -184.344444
+       -172.344444
       ],
       [
        66.861111,
-       -184.344444
+       -172.344444
       ]
      ],
      "visible": true,
@@ -10493,7 +10481,7 @@
      "arrowwidth": 0.15,
      "center": [
       70,
-      -197
+      -185
      ],
      "clip": null,
      "color": null,
@@ -10524,11 +10512,11 @@
      "path": [
       [
        71,
-       -197
+       -185
       ],
       [
        71,
-       -196
+       -184
       ]
      ],
      "visible": true,
@@ -10551,11 +10539,11 @@
      "path": [
       [
        69,
-       -197
+       -185
       ],
       [
        70.2,
-       -197
+       -185
       ]
      ],
      "visible": true,
@@ -10578,15 +10566,15 @@
      "path": [
       [
        69.8,
-       -196.8
+       -184.8
       ],
       [
        70.2,
-       -197
+       -185
       ],
       [
        69.8,
-       -197.2
+       -185.2
       ]
      ],
      "visible": true,
@@ -10609,19 +10597,19 @@
      "path": [
       [
        69.5,
-       -197.87
+       -185.87
       ],
       [
        69.1,
-       -198.7
+       -186.7
       ],
       [
        70.9,
-       -198.7
+       -186.7
       ],
       [
        70.5,
-       -197.87
+       -185.87
       ]
      ],
      "visible": true,
@@ -10650,7 +10638,7 @@
      "visible": true,
      "xy": [
       70.0,
-      -199.777778
+      -187.777778
      ],
      "zorder": null
     }
@@ -10671,11 +10659,11 @@
      "path": [
       [
        69.138889,
-       -200.122222
+       -188.122222
       ],
       [
        70.861111,
-       -200.122222
+       -188.122222
       ]
      ],
      "visible": true,
@@ -10700,23 +10688,23 @@
      "path": [
       [
        69,
-       -159.5
+       -147.5
       ],
       [
        69,
-       -158.5
+       -146.5
       ],
       [
        67,
-       -159.5
+       -147.5
       ],
       [
        67,
-       -158.5
+       -146.5
       ],
       [
        69,
-       -159.5
+       -147.5
       ]
      ],
      "visible": true,
@@ -10739,11 +10727,11 @@
      "path": [
       [
        68,
-       -159
+       -147
       ],
       [
        68,
-       -158.4
+       -146.4
       ]
      ],
      "visible": true,
@@ -10766,11 +10754,11 @@
      "path": [
       [
        68.5,
-       -158.4
+       -146.4
       ],
       [
        67.5,
-       -158.4
+       -146.4
       ]
      ],
      "visible": true,
@@ -10786,7 +10774,7 @@
      "arrowwidth": 0.15,
      "center": [
       68,
-      -158.4
+      -146.4
      ],
      "clip": null,
      "color": null,
@@ -10819,11 +10807,11 @@
      "path": [
       [
        71,
-       -159
+       -147
       ],
       [
        71,
-       -160
+       -148
       ]
      ],
      "visible": true,
@@ -10846,11 +10834,11 @@
      "path": [
       [
        71,
-       -159
+       -147
       ],
       [
        70,
-       -159
+       -147
       ]
      ],
      "visible": true,
@@ -10873,11 +10861,11 @@
      "path": [
       [
        71,
-       -159
+       -147
       ],
       [
        72,
-       -159
+       -147
       ]
      ],
      "visible": true,
@@ -10902,27 +10890,27 @@
      "path": [
       [
        73,
-       -160
+       -148
       ],
       [
        78,
-       -160
+       -148
       ],
       [
        79,
-       -159
+       -147
       ],
       [
        78,
-       -158
+       -146
       ],
       [
        73,
-       -158
+       -146
       ],
       [
        73,
-       -160
+       -148
       ]
      ],
      "visible": true,
@@ -10951,7 +10939,7 @@
      "visible": true,
      "xy": [
       75.7,
-      -159
+      -147
      ],
      "zorder": null
     }
@@ -10973,15 +10961,15 @@
      "lw": 0.9,
      "path": [
       [
-       31.0,
+       27.0,
        -13.0
       ],
       [
-       31,
+       27,
        -16
       ],
       [
-       33,
+       29,
        -16
       ]
      ],
@@ -11004,11 +10992,11 @@
      "lw": null,
      "path": [
       [
-       31.3,
+       27.3,
        -13.45
       ],
       [
-       30.7,
+       26.7,
        -13.45
       ]
      ],
@@ -11033,11 +11021,11 @@
      "lw": 1.1,
      "path": [
       [
-       35.0,
+       31.0,
        -11.0
       ],
       [
-       40,
+       36,
        -11
       ]
      ],
@@ -11060,11 +11048,11 @@
      "lw": null,
      "path": [
       [
-       35.45,
+       31.45,
        -11.3
       ],
       [
-       35.45,
+       31.45,
        -10.7
       ]
      ],
@@ -11178,15 +11166,11 @@
      "lw": 0.9,
      "path": [
       [
-       25,
+       23,
        -7
       ],
       [
-       27,
-       -7
-      ],
-      [
-       27,
+       23,
        -9
       ]
      ],
@@ -11209,11 +11193,11 @@
      "lw": null,
      "path": [
       [
-       26.7,
+       22.7,
        -8.55
       ],
       [
-       27.3,
+       23.3,
        -8.55
       ]
      ],
@@ -11275,7 +11259,7 @@
        -11.0
       ],
       [
-       23,
+       19,
        -11
       ]
      ],
@@ -11298,11 +11282,11 @@
      "lw": null,
      "path": [
       [
-       22.55,
+       18.55,
        -10.7
       ],
       [
-       22.55,
+       18.55,
        -11.3
       ]
      ],
@@ -11388,11 +11372,11 @@
      "path": [
       [
        16,
-       -37
+       -36
       ],
       [
        18,
-       -37
+       -36
       ],
       [
        18,
@@ -11448,11 +11432,11 @@
      "path": [
       [
        6.0,
-       -49.0
+       -48.0
       ],
       [
        7,
-       -49
+       -48
       ]
      ],
      "visible": true,
@@ -11475,11 +11459,11 @@
      "path": [
       [
        6.55,
-       -48.7
+       -47.7
       ],
       [
        6.55,
-       -49.3
+       -48.3
       ]
      ],
      "visible": true,
@@ -11551,9 +11535,9 @@
    [
     "Segment",
     {
-     "arrow": "->",
-     "arrowlength": 0.3,
-     "arrowwidth": 0.2,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
      "capstyle": null,
      "clip": null,
      "color": null,
@@ -11567,12 +11551,39 @@
        -32.0
       ],
       [
-       29,
+       28,
        -32
       ],
       [
-       29,
-       -34
+       28,
+       -40.7
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       28,
+       -41.3
+      ],
+      [
+       28,
+       -64
       ]
      ],
      "visible": true,
@@ -11621,12 +11632,12 @@
      "lw": null,
      "path": [
       [
-       28.7,
-       -33.55
+       27.7,
+       -63.55
       ],
       [
-       29.3,
-       -33.55
+       28.3,
+       -63.55
       ]
      ],
      "visible": true,
@@ -11638,9 +11649,9 @@
    [
     "Segment",
     {
-     "arrow": "->",
-     "arrowlength": 0.3,
-     "arrowwidth": 0.2,
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
      "capstyle": null,
      "clip": null,
      "color": null,
@@ -11650,76 +11661,16 @@
      "lw": 0.9,
      "path": [
       [
-       16.0,
-       -70.0
-      ],
-      [
-       7,
-       -70
-      ],
-      [
-       7,
-       -73
+       12.0,
+       -64.0
       ],
       [
        9,
-       -73
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": null,
-     "lw": null,
-     "path": [
+       -64
+      ],
       [
-       15.55,
+       9,
        -69.7
-      ],
-      [
-       15.55,
-       -70.3
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": "-",
-     "lw": 1.1,
-     "path": [
-      [
-       18.0,
-       -62.0
-      ],
-      [
-       18.0,
-       -60.3
       ]
      ],
      "visible": true,
@@ -11738,19 +11689,19 @@
      "fill": null,
      "joinstyle": null,
      "ls": "-",
-     "lw": 1.1,
+     "lw": 0.9,
      "path": [
       [
-       18.0,
-       -59.7
+       9,
+       -70.3
       ],
       [
-       18,
-       -55
+       9,
+       -72
       ],
       [
        11,
-       -55
+       -72
       ]
      ],
      "visible": true,
@@ -11772,12 +11723,72 @@
      "lw": null,
      "path": [
       [
-       17.7,
-       -61.55
+       11.55,
+       -63.7
       ],
       [
-       18.3,
-       -61.55
+       11.55,
+       -64.3
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       14.0,
+       -56.0
+      ],
+      [
+       14,
+       -54
+      ],
+      [
+       11,
+       -54
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": null,
+     "lw": null,
+     "path": [
+      [
+       13.7,
+       -55.55
+      ],
+      [
+       14.3,
+       -55.55
       ]
      ],
      "visible": true,
@@ -11800,11 +11811,11 @@
      "path": [
       [
        11.45,
-       -55.3
+       -54.3
       ],
       [
        11.45,
-       -54.7
+       -53.7
       ]
      ],
      "visible": true,
@@ -11828,20 +11839,12 @@
      "lw": 0.9,
      "path": [
       [
-       27,
-       -73
+       17,
+       -60
       ],
       [
-       28,
-       -73
-      ],
-      [
-       28,
-       -66
-      ],
-      [
-       20,
-       -66
+       16,
+       -60
       ]
      ],
      "visible": true,
@@ -11863,12 +11866,12 @@
      "lw": null,
      "path": [
       [
-       20.45,
-       -66.3
+       16.45,
+       -60.3
       ],
       [
-       20.45,
-       -65.7
+       16.45,
+       -59.7
       ]
      ],
      "visible": true,
@@ -11893,11 +11896,11 @@
      "path": [
       [
        35,
-       -71
+       -70
       ],
       [
        35,
-       -60.3
+       -69.3
       ]
      ],
      "visible": true,
@@ -11920,11 +11923,11 @@
      "path": [
       [
        35,
-       -59.7
+       -68.7
       ],
       [
        35,
-       -43
+       -42
       ]
      ],
      "visible": true,
@@ -11949,11 +11952,11 @@
      "path": [
       [
        36,
-       -42
+       -41
       ],
       [
-       37,
-       -42
+       38,
+       -41
       ]
      ],
      "visible": true,
@@ -11978,11 +11981,11 @@
      "path": [
       [
        34,
-       -42
+       -41
       ],
       [
        14,
-       -42
+       -41
       ]
      ],
      "visible": true,
@@ -12007,11 +12010,11 @@
      "path": [
       [
        12.0,
-       -42.0
+       -41.0
       ],
       [
        11,
-       -42
+       -41
       ]
      ],
      "visible": true,
@@ -12034,11 +12037,11 @@
      "path": [
       [
        11.45,
-       -42.3
+       -41.3
       ],
       [
        11.45,
-       -41.7
+       -40.7
       ]
      ],
      "visible": true,
@@ -12063,38 +12066,19 @@
      "path": [
       [
        8.0,
-       -58.732051
+       -57.732051
       ],
       [
-       8.0,
-       -69.7
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": "-",
-     "lw": 1.1,
-     "path": [
-      [
-       8.0,
-       -70.3
+       8,
+       -70
       ],
       [
-       8.0,
-       -72.7
+       14,
+       -70
+      ],
+      [
+       14,
+       -69.3
       ]
      ],
      "visible": true,
@@ -12116,20 +12100,12 @@
      "lw": 1.1,
      "path": [
       [
-       8.0,
-       -73.3
+       14,
+       -68.7
       ],
       [
-       8,
-       -76
-      ],
-      [
-       18,
-       -76
-      ],
-      [
-       18,
-       -74
+       14,
+       -68
       ]
      ],
      "visible": true,
@@ -12152,11 +12128,11 @@
      "path": [
       [
        8.3,
-       -59.182051
+       -58.182051
       ],
       [
        7.7,
-       -59.182051
+       -58.182051
       ]
      ],
      "visible": true,
@@ -12178,12 +12154,12 @@
      "lw": null,
      "path": [
       [
-       18.3,
-       -74.45
+       14.3,
+       -68.45
       ],
       [
-       17.7,
-       -74.45
+       13.7,
+       -68.45
       ]
      ],
      "visible": true,
@@ -12192,6 +12168,33 @@
    ]
   ],
   [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       10.0,
+       -57.732051
+      ],
+      [
+       10.0,
+       -63.7
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
    [
     "Segment",
     {
@@ -12208,15 +12211,23 @@
      "path": [
       [
        10.0,
-       -58.732051
+       -64.3
       ],
       [
        10,
-       -60
+       -69
       ],
       [
-       37,
-       -60
+       36,
+       -69
+      ],
+      [
+       36,
+       -72
+      ],
+      [
+       38,
+       -72
       ]
      ],
      "visible": true,
@@ -12239,11 +12250,11 @@
      "path": [
       [
        10.3,
-       -59.182051
+       -58.182051
       ],
       [
        9.7,
-       -59.182051
+       -58.182051
       ]
      ],
      "visible": true,
@@ -12268,7 +12279,7 @@
      "path": [
       [
        9.0,
-       -39.0
+       -38.0
       ],
       [
        9,
@@ -12299,11 +12310,11 @@
      "path": [
       [
        8.7,
-       -38.55
+       -37.55
       ],
       [
        9.3,
-       -38.55
+       -37.55
       ]
      ],
      "visible": true,
@@ -12354,39 +12365,12 @@
      "lw": 1.1,
      "path": [
       [
-       31.0,
-       -38.0
+       30.0,
+       -68.0
       ],
       [
-       31.0,
-       -41.7
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": "-",
-     "lw": 1.1,
-     "path": [
-      [
-       31.0,
-       -42.3
-      ],
-      [
-       31.0,
-       -59.7
+       30.0,
+       -68.7
       ]
      ],
      "visible": true,
@@ -12408,16 +12392,16 @@
      "lw": 1.1,
      "path": [
       [
-       31.0,
-       -60.3
+       30.0,
+       -69.3
       ],
       [
-       31,
-       -72
+       30,
+       -71
       ],
       [
        33,
-       -72
+       -71
       ]
      ],
      "visible": true,
@@ -12439,12 +12423,12 @@
      "lw": null,
      "path": [
       [
-       31.3,
-       -38.45
+       30.3,
+       -68.45
       ],
       [
-       30.7,
-       -38.45
+       29.7,
+       -68.45
       ]
      ],
      "visible": true,
@@ -12468,16 +12452,16 @@
      "lw": 0.9,
      "path": [
       [
-       23,
-       -96
+       25,
+       -92
       ],
       [
-       25,
-       -96
+       27,
+       -92
       ],
       [
-       25,
-       -93
+       27,
+       -90
       ]
      ],
      "visible": true,
@@ -12499,12 +12483,12 @@
      "lw": null,
      "path": [
       [
-       25.3,
-       -93.45
+       27.3,
+       -90.45
       ],
       [
-       24.7,
-       -93.45
+       26.7,
+       -90.45
       ]
      ],
      "visible": true,
@@ -12528,16 +12512,16 @@
      "lw": 0.9,
      "path": [
       [
-       29.0,
-       -89.0
-      ],
-      [
-       29,
-       -87
+       31.0,
+       -86.0
       ],
       [
        31,
-       -87
+       -84
+      ],
+      [
+       33,
+       -84
       ]
      ],
      "visible": true,
@@ -12559,12 +12543,12 @@
      "lw": null,
      "path": [
       [
-       28.7,
-       -88.55
+       30.7,
+       -85.55
       ],
       [
-       29.3,
-       -88.55
+       31.3,
+       -85.55
       ]
      ],
      "visible": true,
@@ -12573,6 +12557,37 @@
    ]
   ],
   [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       35.0,
+       -88.0
+      ],
+      [
+       37,
+       -88
+      ],
+      [
+       37,
+       -93.7
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
    [
     "Segment",
     {
@@ -12588,16 +12603,12 @@
      "lw": 1.1,
      "path": [
       [
-       33.0,
-       -91.0
+       37,
+       -94.3
       ],
       [
-       36,
-       -91
-      ],
-      [
-       36,
-       -93
+       37,
+       -117
       ]
      ],
      "visible": true,
@@ -12619,12 +12630,12 @@
      "lw": null,
      "path": [
       [
-       33.45,
-       -91.3
+       35.45,
+       -88.3
       ],
       [
-       33.45,
-       -90.7
+       35.45,
+       -87.7
       ]
      ],
      "visible": true,
@@ -12646,12 +12657,12 @@
      "lw": null,
      "path": [
       [
-       35.7,
-       -92.55
+       36.7,
+       -116.55
       ],
       [
-       36.3,
-       -92.55
+       37.3,
+       -116.55
       ]
      ],
      "visible": true,
@@ -12675,20 +12686,20 @@
      "lw": 0.9,
      "path": [
       [
-       23.0,
-       -129.0
+       19.0,
+       -117.0
       ],
       [
-       14,
-       -129
+       10,
+       -117
       ],
       [
-       14,
-       -132
+       10,
+       -125
       ],
       [
-       16,
-       -132
+       12,
+       -125
       ]
      ],
      "visible": true,
@@ -12710,12 +12721,12 @@
      "lw": null,
      "path": [
       [
-       22.55,
-       -128.7
+       18.55,
+       -116.7
       ],
       [
-       22.55,
-       -129.3
+       18.55,
+       -117.3
       ]
      ],
      "visible": true,
@@ -12724,33 +12735,6 @@
    ]
   ],
   [
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": "-",
-     "lw": 1.1,
-     "path": [
-      [
-       25.0,
-       -121.0
-      ],
-      [
-       25.0,
-       -119.3
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
    [
     "Segment",
     {
@@ -12766,16 +12750,16 @@
      "lw": 1.1,
      "path": [
       [
-       25.0,
-       -118.7
+       21.0,
+       -109.0
       ],
       [
-       25,
-       -114
+       21,
+       -107
       ],
       [
        18,
-       -114
+       -107
       ]
      ],
      "visible": true,
@@ -12797,12 +12781,12 @@
      "lw": null,
      "path": [
       [
-       24.7,
-       -120.55
+       20.7,
+       -108.55
       ],
       [
-       25.3,
-       -120.55
+       21.3,
+       -108.55
       ]
      ],
      "visible": true,
@@ -12825,11 +12809,11 @@
      "path": [
       [
        18.45,
-       -114.3
+       -107.3
       ],
       [
        18.45,
-       -113.7
+       -106.7
       ]
      ],
      "visible": true,
@@ -12854,11 +12838,11 @@
      "path": [
       [
        12.0,
-       -97.0
+       -98.0
       ],
       [
        12,
-       -107
+       -100
       ]
      ],
      "visible": true,
@@ -12882,20 +12866,12 @@
      "lw": 0.9,
      "path": [
       [
-       34,
-       -132
+       24,
+       -113
       ],
       [
-       35,
-       -132
-      ],
-      [
-       35,
-       -125
-      ],
-      [
-       27,
-       -125
+       23,
+       -113
       ]
      ],
      "visible": true,
@@ -12917,12 +12893,12 @@
      "lw": null,
      "path": [
       [
-       27.45,
-       -125.3
+       23.45,
+       -113.3
       ],
       [
-       27.45,
-       -124.7
+       23.45,
+       -112.7
       ]
      ],
      "visible": true,
@@ -12947,15 +12923,15 @@
      "path": [
       [
        9,
-       -130
+       -123
       ],
       [
        9,
-       -108
+       -101
       ],
       [
        11,
-       -108
+       -101
       ]
      ],
      "visible": true,
@@ -12980,11 +12956,11 @@
      "path": [
       [
        13.0,
-       -108.0
+       -101.0
       ],
       [
        14,
-       -108
+       -101
       ]
      ],
      "visible": true,
@@ -13007,11 +12983,11 @@
      "path": [
       [
        13.55,
-       -107.7
+       -100.7
       ],
       [
        13.55,
-       -108.3
+       -101.3
       ]
      ],
      "visible": true,
@@ -13035,12 +13011,12 @@
      "lw": 1.1,
      "path": [
       [
-       42,
-       -130
+       44,
+       -123
       ],
       [
-       42,
-       -119.3
+       44,
+       -122.3
       ]
      ],
      "visible": true,
@@ -13062,12 +13038,41 @@
      "lw": 1.1,
      "path": [
       [
-       42,
-       -118.7
+       44,
+       -121.7
       ],
       [
-       42,
-       -102
+       44,
+       -95
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ]
+  ],
+  [
+   [
+    "Segment",
+    {
+     "arrow": "->",
+     "arrowlength": 0.3,
+     "arrowwidth": 0.2,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       45,
+       -94
+      ],
+      [
+       47,
+       -94
       ]
      ],
      "visible": true,
@@ -13092,11 +13097,11 @@
      "path": [
       [
        43,
-       -101
+       -94
       ],
       [
-       44,
-       -101
+       30,
+       -94
       ]
      ],
      "visible": true,
@@ -13120,41 +13125,12 @@
      "lw": 1.1,
      "path": [
       [
-       41,
-       -101
-      ],
-      [
-       21,
-       -101
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ]
-  ],
-  [
-   [
-    "Segment",
-    {
-     "arrow": "->",
-     "arrowlength": 0.3,
-     "arrowwidth": 0.2,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": "-",
-     "lw": 1.1,
-     "path": [
-      [
-       19.0,
-       -101.0
+       28.0,
+       -94.0
       ],
       [
        18,
-       -101
+       -94
       ]
      ],
      "visible": true,
@@ -13177,11 +13153,11 @@
      "path": [
       [
        18.45,
-       -101.3
+       -94.3
       ],
       [
        18.45,
-       -100.7
+       -93.7
       ]
      ],
      "visible": true,
@@ -13206,11 +13182,11 @@
      "path": [
       [
        6.0,
-       -131.0
+       -124.0
       ],
       [
        7,
-       -131
+       -124
       ]
      ],
      "visible": true,
@@ -13235,11 +13211,11 @@
      "path": [
       [
        15.0,
-       -117.732051
+       -110.732051
       ],
       [
        15.0,
-       -128.7
+       -116.7
       ]
      ],
      "visible": true,
@@ -13262,11 +13238,19 @@
      "path": [
       [
        15.0,
-       -129.3
+       -117.3
       ],
       [
-       15.0,
-       -131.7
+       15,
+       -123
+      ],
+      [
+       21,
+       -123
+      ],
+      [
+       21,
+       -122.3
       ]
      ],
      "visible": true,
@@ -13288,20 +13272,12 @@
      "lw": 1.1,
      "path": [
       [
-       15.0,
-       -132.3
+       21,
+       -121.7
       ],
       [
-       15,
-       -135
-      ],
-      [
-       25,
-       -135
-      ],
-      [
-       25,
-       -133
+       21,
+       -121
       ]
      ],
      "visible": true,
@@ -13324,11 +13300,11 @@
      "path": [
       [
        15.3,
-       -118.182051
+       -111.182051
       ],
       [
        14.7,
-       -118.182051
+       -111.182051
       ]
      ],
      "visible": true,
@@ -13350,12 +13326,12 @@
      "lw": null,
      "path": [
       [
-       25.3,
-       -133.45
+       21.3,
+       -121.45
       ],
       [
-       24.7,
-       -133.45
+       20.7,
+       -121.45
       ]
      ],
      "visible": true,
@@ -13364,6 +13340,33 @@
    ]
   ],
   [
+   [
+    "Segment",
+    {
+     "arrow": null,
+     "arrowlength": 0.25,
+     "arrowwidth": 0.15,
+     "capstyle": null,
+     "clip": null,
+     "color": null,
+     "fill": null,
+     "joinstyle": null,
+     "ls": "-",
+     "lw": 1.1,
+     "path": [
+      [
+       17.0,
+       -110.732051
+      ],
+      [
+       17.0,
+       -116.7
+      ]
+     ],
+     "visible": true,
+     "zorder": null
+    }
+   ],
    [
     "Segment",
     {
@@ -13380,15 +13383,23 @@
      "path": [
       [
        17.0,
-       -117.732051
+       -117.3
       ],
       [
        17,
-       -119
+       -122
       ],
       [
-       44,
-       -119
+       45,
+       -122
+      ],
+      [
+       45,
+       -120
+      ],
+      [
+       47,
+       -120
       ]
      ],
      "visible": true,
@@ -13411,11 +13422,11 @@
      "path": [
       [
        17.3,
-       -118.182051
+       -111.182051
       ],
       [
        16.7,
-       -118.182051
+       -111.182051
       ]
      ],
      "visible": true,
@@ -13440,15 +13451,15 @@
      "path": [
       [
        16.0,
-       -98.0
+       -91.0
       ],
       [
        16,
-       -91
+       -88
       ],
       [
-       21,
-       -91
+       23,
+       -88
       ]
      ],
      "visible": true,
@@ -13471,11 +13482,11 @@
      "path": [
       [
        15.7,
-       -97.55
+       -90.55
       ],
       [
        16.3,
-       -97.55
+       -90.55
       ]
      ],
      "visible": true,
@@ -13497,12 +13508,12 @@
      "lw": null,
      "path": [
       [
-       20.55,
-       -90.7
+       22.55,
+       -87.7
       ],
       [
-       20.55,
-       -91.3
+       22.55,
+       -88.3
       ]
      ],
      "visible": true,
@@ -13526,39 +13537,12 @@
      "lw": 1.1,
      "path": [
       [
-       38.0,
-       -97.0
+       39.0,
+       -121.0
       ],
       [
-       38.0,
-       -100.7
-      ]
-     ],
-     "visible": true,
-     "zorder": null
-    }
-   ],
-   [
-    "Segment",
-    {
-     "arrow": null,
-     "arrowlength": 0.25,
-     "arrowwidth": 0.15,
-     "capstyle": null,
-     "clip": null,
-     "color": null,
-     "fill": null,
-     "joinstyle": null,
-     "ls": "-",
-     "lw": 1.1,
-     "path": [
-      [
-       38.0,
-       -101.3
-      ],
-      [
-       38.0,
-       -118.7
+       39.0,
+       -121.7
       ]
      ],
      "visible": true,
@@ -13580,16 +13564,16 @@
      "lw": 1.1,
      "path": [
       [
-       38.0,
-       -119.3
+       39.0,
+       -122.3
       ],
       [
-       38,
-       -131
+       39,
+       -124
       ],
       [
-       40,
-       -131
+       42,
+       -124
       ]
      ],
      "visible": true,
@@ -13611,12 +13595,12 @@
      "lw": null,
      "path": [
       [
-       38.3,
-       -97.45
+       39.3,
+       -121.45
       ],
       [
-       37.7,
-       -97.45
+       38.7,
+       -121.45
       ]
      ],
      "visible": true,
@@ -13641,15 +13625,15 @@
      "path": [
       [
        52,
-       -154
+       -145
       ],
       [
        54,
-       -154
+       -145
       ],
       [
        54,
-       -152
+       -143
       ]
      ],
      "visible": true,
@@ -13672,11 +13656,11 @@
      "path": [
       [
        54.3,
-       -152.45
+       -143.45
       ],
       [
        53.7,
-       -152.45
+       -143.45
       ]
      ],
      "visible": true,
@@ -13701,15 +13685,15 @@
      "path": [
       [
        26,
-       -198
+       -186
       ],
       [
        28,
-       -198
+       -186
       ],
       [
        28,
-       -196
+       -184
       ]
      ],
      "visible": true,
@@ -13732,11 +13716,11 @@
      "path": [
       [
        28.3,
-       -196.45
+       -184.45
       ],
       [
        27.7,
-       -196.45
+       -184.45
       ]
      ],
      "visible": true,
@@ -13761,15 +13745,15 @@
      "path": [
       [
        32.0,
-       -192.0
+       -180.0
       ],
       [
        32,
-       -190
+       -178
       ],
       [
        34,
-       -190
+       -178
       ]
      ],
      "visible": true,
@@ -13792,11 +13776,11 @@
      "path": [
       [
        31.7,
-       -191.55
+       -179.55
       ],
       [
        32.3,
-       -191.55
+       -179.55
       ]
      ],
      "visible": true,
@@ -13821,11 +13805,11 @@
      "path": [
       [
        36.0,
-       -194.0
+       -182.0
       ],
       [
        73,
-       -194
+       -182
       ]
      ],
      "visible": true,
@@ -13848,11 +13832,11 @@
      "path": [
       [
        36.45,
-       -194.3
+       -182.3
       ],
       [
        36.45,
-       -193.7
+       -181.7
       ]
      ],
      "visible": true,
@@ -13877,15 +13861,15 @@
      "path": [
       [
        58.0,
-       -148.0
+       -139.0
       ],
       [
        58,
-       -146
+       -137
       ],
       [
        60,
-       -146
+       -137
       ]
      ],
      "visible": true,
@@ -13908,11 +13892,11 @@
      "path": [
       [
        57.7,
-       -147.55
+       -138.55
       ],
       [
        58.3,
-       -147.55
+       -138.55
       ]
      ],
      "visible": true,
@@ -13937,15 +13921,15 @@
      "path": [
       [
        62.0,
-       -150.0
+       -141.0
       ],
       [
        64,
-       -150
+       -141
       ],
       [
        64,
-       -158.7
+       -146.7
       ]
      ],
      "visible": true,
@@ -13968,11 +13952,11 @@
      "path": [
       [
        64,
-       -159.3
+       -147.3
       ],
       [
        64,
-       -182
+       -170
       ]
      ],
      "visible": true,
@@ -13995,11 +13979,11 @@
      "path": [
       [
        62.45,
-       -150.3
+       -141.3
       ],
       [
        62.45,
-       -149.7
+       -140.7
       ]
      ],
      "visible": true,
@@ -14022,11 +14006,11 @@
      "path": [
       [
        63.7,
-       -181.55
+       -169.55
       ],
       [
        64.3,
-       -181.55
+       -169.55
       ]
      ],
      "visible": true,
@@ -14051,19 +14035,19 @@
      "path": [
       [
        41.0,
-       -182.0
+       -170.0
       ],
       [
        32,
-       -182
+       -170
       ],
       [
        32,
-       -185
+       -173
       ],
       [
        34,
-       -185
+       -173
       ]
      ],
      "visible": true,
@@ -14086,11 +14070,11 @@
      "path": [
       [
        40.55,
-       -181.7
+       -169.7
       ],
       [
        40.55,
-       -182.3
+       -170.3
       ]
      ],
      "visible": true,
@@ -14115,15 +14099,15 @@
      "path": [
       [
        43.0,
-       -174.0
+       -162.0
       ],
       [
        43,
-       -172
+       -160
       ],
       [
        18,
-       -172
+       -160
       ]
      ],
      "visible": true,
@@ -14146,11 +14130,11 @@
      "path": [
       [
        42.7,
-       -173.55
+       -161.55
       ],
       [
        43.3,
-       -173.55
+       -161.55
       ]
      ],
      "visible": true,
@@ -14173,11 +14157,11 @@
      "path": [
       [
        18.45,
-       -172.3
+       -160.3
       ],
       [
        18.45,
-       -171.7
+       -159.7
       ]
      ],
      "visible": true,
@@ -14202,11 +14186,11 @@
      "path": [
       [
        12.0,
-       -155.0
+       -151.0
       ],
       [
        12,
-       -165
+       -153
       ]
      ],
      "visible": true,
@@ -14230,20 +14214,12 @@
      "lw": 0.9,
      "path": [
       [
-       52,
-       -185
-      ],
-      [
-       53,
-       -185
-      ],
-      [
-       53,
-       -178
+       46,
+       -166
       ],
       [
        45,
-       -178
+       -166
       ]
      ],
      "visible": true,
@@ -14266,11 +14242,11 @@
      "path": [
       [
        45.45,
-       -178.3
+       -166.3
       ],
       [
        45.45,
-       -177.7
+       -165.7
       ]
      ],
      "visible": true,
@@ -14295,15 +14271,15 @@
      "path": [
       [
        9,
-       -196
+       -184
       ],
       [
        9,
-       -166
+       -154
       ],
       [
        11,
-       -166
+       -154
       ]
      ],
      "visible": true,
@@ -14328,11 +14304,11 @@
      "path": [
       [
        13.0,
-       -166.0
+       -154.0
       ],
       [
        14,
-       -166
+       -154
       ]
      ],
      "visible": true,
@@ -14355,11 +14331,11 @@
      "path": [
       [
        13.55,
-       -165.7
+       -153.7
       ],
       [
        13.55,
-       -166.3
+       -154.3
       ]
      ],
      "visible": true,
@@ -14384,11 +14360,11 @@
      "path": [
       [
        71,
-       -196
+       -184
       ],
       [
        71,
-       -194.3
+       -182.3
       ]
      ],
      "visible": true,
@@ -14411,11 +14387,11 @@
      "path": [
       [
        71,
-       -193.7
+       -181.7
       ],
       [
        71,
-       -160
+       -148
       ]
      ],
      "visible": true,
@@ -14440,11 +14416,11 @@
      "path": [
       [
        72,
-       -159
+       -147
       ],
       [
        73,
-       -159
+       -147
       ]
      ],
      "visible": true,
@@ -14469,11 +14445,11 @@
      "path": [
       [
        70,
-       -159
+       -147
       ],
       [
        69,
-       -159
+       -147
       ]
      ],
      "visible": true,
@@ -14498,11 +14474,11 @@
      "path": [
       [
        67.0,
-       -159.0
+       -147.0
       ],
       [
        18,
-       -159
+       -147
       ]
      ],
      "visible": true,
@@ -14525,11 +14501,11 @@
      "path": [
       [
        18.45,
-       -159.3
+       -147.3
       ],
       [
        18.45,
-       -158.7
+       -146.7
       ]
      ],
      "visible": true,
@@ -14554,15 +14530,15 @@
      "path": [
       [
        19,
-       -196
+       -184
       ],
       [
        19,
-       -194
+       -182
       ],
       [
        24,
-       -194
+       -182
       ]
      ],
      "visible": true,
@@ -14585,11 +14561,11 @@
      "path": [
       [
        23.55,
-       -193.7
+       -181.7
       ],
       [
        23.55,
-       -194.3
+       -182.3
       ]
      ],
      "visible": true,
@@ -14614,11 +14590,11 @@
      "path": [
       [
        6.0,
-       -197.0
+       -185.0
       ],
       [
        7,
-       -197
+       -185
       ]
      ],
      "visible": true,
@@ -14643,19 +14619,19 @@
      "path": [
       [
        17.0,
-       -175.732051
+       -163.732051
       ],
       [
        17,
-       -188
+       -176
       ],
       [
        43,
-       -188
+       -176
       ],
       [
        43,
-       -186
+       -174
       ]
      ],
      "visible": true,
@@ -14678,11 +14654,11 @@
      "path": [
       [
        17.3,
-       -176.182051
+       -164.182051
       ],
       [
        16.7,
-       -176.182051
+       -164.182051
       ]
      ],
      "visible": true,
@@ -14705,11 +14681,11 @@
      "path": [
       [
        43.3,
-       -186.45
+       -174.45
       ],
       [
        42.7,
-       -186.45
+       -174.45
       ]
      ],
      "visible": true,
@@ -14734,15 +14710,15 @@
      "path": [
       [
        15.0,
-       -175.732051
+       -163.732051
       ],
       [
        15,
-       -197
+       -185
       ],
       [
        17,
-       -197
+       -185
       ]
      ],
      "visible": true,
@@ -14765,11 +14741,11 @@
      "path": [
       [
        15.3,
-       -176.182051
+       -164.182051
       ],
       [
        14.7,
-       -176.182051
+       -164.182051
       ]
      ],
      "visible": true,
@@ -14794,15 +14770,15 @@
      "path": [
       [
        16.0,
-       -156.0
+       -144.0
       ],
       [
        16,
-       -150
+       -141
       ],
       [
        50,
-       -150
+       -141
       ]
      ],
      "visible": true,
@@ -14825,11 +14801,11 @@
      "path": [
       [
        15.7,
-       -155.55
+       -143.55
       ],
       [
        16.3,
-       -155.55
+       -143.55
       ]
      ],
      "visible": true,
@@ -14852,11 +14828,11 @@
      "path": [
       [
        49.55,
-       -149.7
+       -140.7
       ],
       [
        49.55,
-       -150.3
+       -141.3
       ]
      ],
      "visible": true,
@@ -14881,11 +14857,11 @@
      "path": [
       [
        66.0,
-       -186.0
+       -174.0
       ],
       [
        66.0,
-       -193.7
+       -181.7
       ]
      ],
      "visible": true,
@@ -14908,15 +14884,15 @@
      "path": [
       [
        66.0,
-       -194.3
+       -182.3
       ],
       [
        66,
-       -197
+       -185
       ],
       [
        69,
-       -197
+       -185
       ]
      ],
      "visible": true,
@@ -14939,11 +14915,11 @@
      "path": [
       [
        66.3,
-       -186.45
+       -174.45
       ],
       [
        65.7,
-       -186.45
+       -174.45
       ]
      ],
      "visible": true,
@@ -15000,7 +14976,7 @@
      "text": "E-201\nフィード予熱器",
      "visible": true,
      "xy": [
-      29.0,
+      25.0,
       2.0
      ],
      "zorder": null
@@ -15054,7 +15030,7 @@
      "text": "E-212\nベンゼン塔リボイラー",
      "visible": true,
      "xy": [
-      18.0,
+      14.0,
       -25.0
      ],
      "zorder": null
@@ -15081,7 +15057,7 @@
      "text": "E-211\nベンゼン塔コンデンサー",
      "visible": true,
      "xy": [
-      24.388889,
+      20.388889,
       -25.0
      ],
      "zorder": null
@@ -15108,7 +15084,7 @@
      "text": "V-211\nベンゼン塔還流槽",
      "visible": true,
      "xy": [
-      31.0,
+      30.0,
       -25.0
      ],
      "zorder": null
@@ -15136,7 +15112,7 @@
      "visible": true,
      "xy": [
       16.0,
-      -84.0
+      -81.0
      ],
      "zorder": null
     }
@@ -15162,8 +15138,8 @@
      "text": "E-222\nトルエン塔リボイラー",
      "visible": true,
      "xy": [
-      25.0,
-      -84.0
+      21.0,
+      -81.0
      ],
      "zorder": null
     }
@@ -15189,8 +15165,8 @@
      "text": "E-221\nトルエン塔コンデンサー",
      "visible": true,
      "xy": [
-      31.388889,
-      -84.0
+      29.0,
+      -81.0
      ],
      "zorder": null
     }
@@ -15216,8 +15192,8 @@
      "text": "V-221\nトルエン塔還流槽",
      "visible": true,
      "xy": [
-      38.0,
-      -84.0
+      39.0,
+      -81.0
      ],
      "zorder": null
     }
@@ -15244,7 +15220,7 @@
      "visible": true,
      "xy": [
       16.0,
-      -143.0
+      -134.0
      ],
      "zorder": null
     }
@@ -15271,7 +15247,7 @@
      "visible": true,
      "xy": [
       30.0,
-      -143.0
+      -134.0
      ],
      "zorder": null
     }
@@ -15298,7 +15274,7 @@
      "visible": true,
      "xy": [
       43.0,
-      -143.0
+      -134.0
      ],
      "zorder": null
     }
@@ -15325,7 +15301,7 @@
      "visible": true,
      "xy": [
       56.0,
-      -143.0
+      -134.0
      ],
      "zorder": null
     }
@@ -15352,7 +15328,7 @@
      "visible": true,
      "xy": [
       66.0,
-      -143.0
+      -134.0
      ],
      "zorder": null
     }
@@ -15406,7 +15382,7 @@
      "visible": true,
      "xy": [
       34.0,
-      -78.0
+      -75.0
      ],
      "zorder": null
     }
@@ -15433,7 +15409,7 @@
      "visible": true,
      "xy": [
       8.0,
-      -137.0
+      -128.0
      ],
      "zorder": null
     }
@@ -15459,8 +15435,8 @@
      "text": "P-221\nトルエン塔還流ポンプ",
      "visible": true,
      "xy": [
-      41.0,
-      -137.0
+      43.0,
+      -128.0
      ],
      "zorder": null
     }
@@ -15487,7 +15463,7 @@
      "visible": true,
      "xy": [
       8.0,
-      -201.0
+      -189.0
      ],
      "zorder": null
     }
@@ -15514,7 +15490,7 @@
      "visible": true,
      "xy": [
       18.0,
-      -201.0
+      -189.0
      ],
      "zorder": null
     }
@@ -15541,7 +15517,7 @@
      "visible": true,
      "xy": [
       70.0,
-      -201.0
+      -189.0
      ],
      "zorder": null
     }
@@ -15562,11 +15538,11 @@
      "path": [
       [
        -2.0,
-       -203.611111
+       -191.611111
       ],
       [
        81.0,
-       -203.611111
+       -191.611111
       ],
       [
        81.0,
@@ -15578,7 +15554,7 @@
       ],
       [
        -2.0,
-       -203.611111
+       -191.611111
       ]
      ],
      "visible": true,

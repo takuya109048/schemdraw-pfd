@@ -159,7 +159,7 @@ fs.to_json("out.json")  # JSON と同じ形式で保存（from_json で読み戻
 | `instrument` | 計器。`mount`: `field`(丸=現場計器) / `dcs`(四角の中に丸) | `function`("FIC"等), `number` / `n`,`s`,`e`,`w` |
 | `tee` | 配管の分岐点（計器の取り出しにも使う。黒丸なし） | `arms`("wen"等) |
 | `connector` | 図面間接続の五角形フラグ | `text`, `point`(`right`/`left`) / `tip`, `tail` |
-| `utility` | ユーティリティの供給元（丸の中に略号。`STM`・`N2`・`CWS` など）。使う機器のすぐ横に置く。丸から `out` まで引き出し線が付くので、計器と見分けがつく程度に機器から離れる | `text`, `point`(`right`/`left`/`up`/`down`: 線が出る向き), `lead`(引き出し線のセル数、既定 4) / `out` |
+| `utility` | ユーティリティの供給元（丸の中に略号。`STM`・`N2`・`CWS` など）。使う機器のすぐ横に置く。丸から `out` まで引き出し線が付くので、計器と見分けがつく程度に機器から離れる | `text`, `point`(`right`/`left`/`up`/`down`: 線が出る向き。省略すると、つなぐ先の口へまっすぐ向く。上向きの口へは真上から下向きに、横向きの口へは真横から。下向きの口へは横から入り、丸は口のすぐ下に置かれる), `lead`(引き出し線のセル数、既定 4) / `out` |
 | `header` | 主管＋上向き枝管 | `branches`, `pitch`, `branch_elements` |
 
 - 全エレメント共通: `rotation`（0/90/180/270、反時計回り）と `mirror`（左右反転。回転より先に適用）
@@ -325,7 +325,7 @@ pfd SPEC.json --freeze SPEC.json --revision R2  # R2 までを凍結
 | ファイル | 内容 | 結果 |
 |---|---|---|
 | [`feed_heating`](examples/feed_heating.png) | 原料タンク → 原料ポンプ → スチーム加熱器 → 反応工程へ。ポンプの吐出の一部をタンクへ戻す（クイックスタートの例） | 機器7・交差0・警告0 |
-| [`solvent_recovery`](examples/solvent_recovery.png) | 使用済み溶剤の蒸留回収。フィード予熱器・回収塔・塔頂コンデンサー・還流槽・縦置きリボイラー・回収溶剤クーラー。流量（FIC）・液面（LIC）・温度（TIC）の制御ループは、調節弁をインラインに書き、調節計から信号線でつなぐ | 機器24＋インライン調節弁4・交差9・警告0 |
+| [`solvent_recovery`](examples/solvent_recovery.png) | 使用済み溶剤の蒸留回収。フィード予熱器・回収塔・塔頂コンデンサー・還流槽・縦置きリボイラー・回収溶剤クーラー。流量（FIC）・液面（LIC）・温度（TIC）の制御ループは、調節弁をインラインに書き、調節計から信号線でつなぐ | 機器24＋インライン調節弁4・交差6・警告0 |
 | [`btx_fractionation`](examples/btx_fractionation.png) | 改質油の BTX 留分をベンゼン塔 → トルエン塔 → キシレン塔の順に精留。主流が3基の塔を通るので、予熱／各塔の4段に自動で折り返す（段をまたぐ配管は「to / from」のフラグの対） | 機器46＋インライン調節弁6・4段・交差15・警告0 |
 | [`loading_station`](examples/loading_station.png) | 製品タンク3基 → 出荷ポンプ → 出荷フィルターの3系列並列のローリー出荷設備。受入・N2・出荷の3本の共通主管は自動で入る。[Excel 出力の例](examples/loading_station.xlsx)も置いている | 機器12＋インライン弁9・交差2・警告0 |
 | [`cooling_water`](examples/cooling_water.png) | 冷却水の循環系統。冷却塔と Y 形ストレーナーは `custom_elements` で定義。常用・予備のポンプ2台からヘッダーで3台のクーラーへ送り、戻りは冷却塔へ合流 | 機器10＋インライン弁6・交差3・警告0 |

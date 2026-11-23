@@ -523,3 +523,21 @@ def test_utility_circle_stands_beside_its_user_never_on_an_edge():
     )
     placed = {p.id: p for p in fs.build().placed}
     assert placed["F"].x < placed["STM"].x < placed["P"].x
+
+
+def test_utility_circle_faces_the_port_of_its_one_line():
+    fs = Flowsheet()
+    fs.add("heat_exchanger", "E-1")
+    fs.add("vertical_drum", "D-1")
+    fs.add("utility", "STM", text="STM")
+    fs.add("utility", "N2", text="N2")
+    fs.add("utility", "IA", text="IA", point="left")
+    fs.connect("STM.out", "E-1.shell_in")  # a top nozzle: straight down
+    fs.connect("IA.out", "D-1.e_high")  # written out: kept
+    assert fs.geometry("STM").ports["out"].side == "S"
+    assert fs.geometry("IA").ports["out"].side == "W"
+    fs.connect("N2.out", "D-1.top")
+    assert fs.geometry("N2").ports["out"].side == "S"
+    fs.connect("N2.out", "E-1.shell_out")  # two lines: the default again
+    assert fs.geometry("N2").ports["out"].side == "E"
+    assert "point" not in fs.to_dict()["elements"][2].get("params", {})

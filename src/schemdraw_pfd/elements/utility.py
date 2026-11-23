@@ -20,7 +20,9 @@ class UtilitySpec(ElementSpec):
 
     params: ``text`` (the abbreviation; longer text is drawn smaller to fit),
     ``point`` (``right`` / ``left`` / ``up`` / ``down``: the way the line
-    leaves, default ``right``), ``lead`` (cells of line between the circle
+    leaves; left out, it faces the port its one line goes to -- straight
+    down onto a top nozzle, left into an east one ... -- and ``right`` when
+    it has several lines), ``lead`` (cells of line between the circle
     and the port, default 4).  Port: ``out``, at the end of the lead.
 
     It never takes a sheet edge: it stands right beside the item it serves,
@@ -28,6 +30,7 @@ class UtilitySpec(ElementSpec):
     """
 
     name = "utility"
+    aims = True
 
     def build(self, params):
         point = params.get("point", "right")

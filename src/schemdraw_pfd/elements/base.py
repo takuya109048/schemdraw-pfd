@@ -85,6 +85,9 @@ class ElementSpec:
     """Base class: subclass, set ``name`` and implement :meth:`build`."""
 
     name = "element"
+    # ``point`` left out: face the port of the item's one line (see
+    # :meth:`.Flowsheet.connect`; ``right`` / ``left`` / ``up`` / ``down``)
+    aims = False
 
     def build(self, params: dict[str, Any]) -> Geometry:  # pragma: no cover
         raise NotImplementedError
