@@ -351,3 +351,18 @@ pyrefly check
 - 作例とは別に、観点ごとの小さな例（機器2〜8個）を `tests/cases/` に置いている。全エレメント・全ポート・全パラメータ値・全 JSON キー・ポートの向きの総当たりを、どれかの例が必ず使っていることをテストで確かめる（[tests/cases/README.md](tests/cases/README.md)）
 - 単一ファイル版は `tools/build_single.py` が `src/schemdraw_pfd/` から作る。ソースを圧縮して埋め込み、先頭の import フックがメモリから読み込むので、コードの書き換えはしない。SchemDraw のうち使わないサブパッケージ（logic, dsp, flow, parsing, pictorial）は省く。`tests/test_single_file.py` が、全モジュールの import と、全ケースのレイアウト・配線がパッケージ版と一致することを確かめる
 - ソースの構成・設計上の決まり・配線探索の高速化と性能は [docs/internals.md](docs/internals.md)
+
+### リリース
+
+`pyproject.toml` と `rust/Cargo.toml` のバージョンを揃えて main にマージし、同じ番号のタグを push する。
+
+```bash
+git tag v0.2.0
+git push origin v0.2.0
+```
+
+`.github/workflows/release.yml` がタグとバージョンの一致を確かめ、テスト（CI と同じ）を回してから、次のファイルを添付した GitHub Release を作る。
+
+- `pfd.py`（単一ファイル版）、wheel、sdist
+- Rust 版のバイナリ: Linux（x86_64）、macOS（Apple Silicon）、Windows（x86_64）
+- `SHA256SUMS`
