@@ -363,6 +363,5 @@ git push origin v0.2.0
 
 `.github/workflows/release.yml` がタグとバージョンの一致を確かめ、テスト（CI と同じ）を回してから、次のファイルを添付した GitHub Release を作る。
 
-- `pfd.py`（単一ファイル版）、wheel、sdist
 - Rust 版のバイナリ: Linux（x86_64）、macOS（Apple Silicon）、Windows（x86_64）
 - `SHA256SUMS`
